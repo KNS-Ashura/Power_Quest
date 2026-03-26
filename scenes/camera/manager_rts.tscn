@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://ybntlc6fwopw"]
+
+[ext_resource type="Script" uid="uid://cg2p1vgrrljbm" path="res://scenes/camera/manager_rts.gd" id="1_ot2pa"]
+
+[node name="ManagerRTS" type="Node2D" unique_id=631515687]
+script = ExtResource("1_ot2pa")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=476234077]
+position = Vector2(321, 180)
+position_smoothing_enabled = true
+
+[node name="BoiteSelection" type="ColorRect" parent="." unique_id=244269276]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(0.47843137, 0.7294118, 0.4862745, 0.58431375)

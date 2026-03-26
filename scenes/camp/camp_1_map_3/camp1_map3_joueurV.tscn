@@ -1,0 +1,137 @@
+[gd_scene format=3 uid="uid://2rsxqtas1p5d"]
+
+[ext_resource type="Texture2D" uid="uid://b7ulmbgkkhwtx" path="res://assets/objects/Objects_animated.png" id="1_34n83"]
+[ext_resource type="Script" uid="uid://cocu8mx37wqtj" path="res://scenes/camp/camp_1_map_3/camp_1_map_3_joueur_v.gd" id="1_x2pli"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]
+atlas = ExtResource("1_34n83")
+region = Rect2(21, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5j30k"]
+atlas = ExtResource("1_34n83")
+region = Rect2(133, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lfpy8"]
+atlas = ExtResource("1_34n83")
+region = Rect2(245, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_boffh"]
+atlas = ExtResource("1_34n83")
+region = Rect2(357, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m34xq"]
+atlas = ExtResource("1_34n83")
+region = Rect2(469, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uwkrd"]
+atlas = ExtResource("1_34n83")
+region = Rect2(581, 315, 85, 105)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pwn8b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_stol8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5j30k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lfpy8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_boffh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m34xq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uwkrd")
+}],
+"loop": true,
+"name": &"animation_camp_V",
+"speed": 11.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x2pli"]
+size = Vector2(90, 106)
+
+[node name="camp" type="Area2D" unique_id=1255783347]
+script = ExtResource("1_x2pli")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1028446195]
+position = Vector2(79, 80)
+rotation = -0.00797035
+sprite_frames = SubResource("SpriteFrames_pwn8b")
+animation = &"animation_camp_V"
+frame_progress = 0.0070738103
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
+position = Vector2(80, 78)
+shape = SubResource("RectangleShape2D_x2pli")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Timer" type="Timer" parent="." unique_id=1702314306]
+autostart = true
+
+[node name="PointApparition" type="Marker2D" parent="." unique_id=592443713]
+position = Vector2(79, 141)
+
+[node name="HUDLayer" type="CanvasLayer" parent="." unique_id=722450]
+
+[node name="LabelArgent" type="Label" parent="HUDLayer" unique_id=87507131]
+offset_left = 4.0
+offset_top = 5.0
+offset_right = 150.0
+offset_bottom = 28.0
+text = "Argent disponible :"
+
+[node name="CampMenu" type="Panel" parent="HUDLayer" unique_id=694643167]
+offset_left = 1.0
+offset_top = 281.0
+offset_right = 641.0
+offset_bottom = 357.0
+
+[node name="Label" type="Label" parent="HUDLayer/CampMenu" unique_id=962368486]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 5.0
+offset_right = 153.0
+offset_bottom = 28.0
+rotation = 0.00017742025
+text = "Unités disponibles :"
+
+[node name="GridContainer" type="GridContainer" parent="HUDLayer/CampMenu" unique_id=2123253301]
+layout_mode = 0
+offset_left = 163.0
+offset_top = 9.0
+offset_right = 243.0
+offset_bottom = 49.0
+columns = 4
+
+[node name="Button" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=1749362846]
+layout_mode = 2
+
+[node name="Button2" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=731603544]
+layout_mode = 2
+
+[node name="Button3" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=1829331102]
+layout_mode = 2
+
+[node name="Button4" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=516595086]
+layout_mode = 2
+
+[node name="Button5" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=1686978869]
+layout_mode = 2
+
+[node name="Button6" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=150145141]
+layout_mode = 2
+
+[node name="Button7" type="Button" parent="HUDLayer/CampMenu/GridContainer" unique_id=777099446]
+layout_mode = 2
+
+[node name="TimerEntrainement" type="Timer" parent="." unique_id=1386819710]
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="TimerEntrainement" to="." method="_on_timer_entrainement_timeout"]

@@ -1,0 +1,86 @@
+[gd_scene format=3 uid="uid://dax8y2w1v7p05"]
+
+[ext_resource type="Script" uid="uid://kpl3c5qwxq6u" path="res://scenes/camp/camp_ennemi.gd" id="1_ot5p4"]
+[ext_resource type="Texture2D" uid="uid://b7ulmbgkkhwtx" path="res://assets/objects/Objects_animated.png" id="2_t83co"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]
+atlas = ExtResource("2_t83co")
+region = Rect2(21, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5j30k"]
+atlas = ExtResource("2_t83co")
+region = Rect2(133, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lfpy8"]
+atlas = ExtResource("2_t83co")
+region = Rect2(245, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_boffh"]
+atlas = ExtResource("2_t83co")
+region = Rect2(357, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m34xq"]
+atlas = ExtResource("2_t83co")
+region = Rect2(469, 315, 85, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uwkrd"]
+atlas = ExtResource("2_t83co")
+region = Rect2(581, 315, 85, 105)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kvsxf"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_stol8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5j30k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lfpy8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_boffh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m34xq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uwkrd")
+}],
+"loop": true,
+"name": &"animation_camp_V",
+"speed": 11.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8p3q1"]
+size = Vector2(90, 100)
+
+[node name="CampEnnemi" type="StaticBody2D" unique_id=247234414 groups=["ennemis"]]
+script = ExtResource("1_ot5p4")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2053075323]
+position = Vector2(2, 1)
+rotation = -0.00797035
+sprite_frames = SubResource("SpriteFrames_kvsxf")
+animation = &"animation_camp_V"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1161536086]
+offset_left = -43.0
+offset_top = -52.0
+offset_right = 46.0
+offset_bottom = 48.0
+color = Color(0.8, 0.101960786, 0.101960786, 0.28235295)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=740916457]
+position = Vector2(1, -1)
+shape = SubResource("RectangleShape2D_8p3q1")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Label" type="Label" parent="." unique_id=734940941]
+offset_left = -41.0
+offset_top = -71.0
+offset_right = 39.0
+offset_bottom = -48.0
+text = "ENNEMI"
+horizontal_alignment = 1
