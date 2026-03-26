@@ -18,4 +18,8 @@ data_*/
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 assets
+=======
+assets/
+>>>>>>> 4120aee4bec032df72d0b97551dcae3c200367f3
