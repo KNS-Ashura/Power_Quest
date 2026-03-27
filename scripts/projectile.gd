@@ -19,11 +19,9 @@ func _process(delta):
 		look_at(cible.global_position)
 		global_position += direction * vitesse * delta
 		
-		# Sécurité impact si collisionArea rate de peu
 		if global_position.distance_to(cible.global_position) < 12:
 			_appliquer_degats()
 	else:
-		# Si la cible est détruite avant l'impact, on détruit le projectile
 		queue_free()
 
 func _on_body_entered(body):
@@ -32,16 +30,14 @@ func _on_body_entered(body):
 
 func _appliquer_degats():
 	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null and auteur.stats.type_unite == 6:
-		# Explosion de zone pour Mortier (Type 6)
 		_explosion_mortier()
 	else:
-		# Impact direct classique
 		if is_instance_valid(cible) and cible.has_method("recevoir_degats"):
 			cible.recevoir_degats(degats, auteur, equipe_tireur)
 	queue_free()
 
 func _explosion_mortier():
-	var rayon_explosion = 100.0 # Rayon d'impact spécifié
+	var rayon_explosion = 100.0
 	var espace = get_world_2d().direct_space_state
 	
 	var requete = PhysicsShapeQueryParameters2D.new()
@@ -52,15 +48,9 @@ func _explosion_mortier():
 	requete.collide_with_areas = false
 	requete.collide_with_bodies = true
 	
-	var resultats = espace.intersect_shape(requete)
-	
-	for res in resultats:
+	for res in espace.intersect_shape(requete):
 		var obj = res.collider
 		if obj and obj.has_method("recevoir_degats") and not obj.is_in_group("camps"):
-			# Dégâts de zone (friendly fire désactivé)
 			if obj.get("equipe") != null and obj.get("equipe") != equipe_tireur:
-				var distance = global_position.distance_to(obj.global_position)
-				var ratio = 1.0 - clamp(distance / rayon_explosion, 0.0, 1.0)
-				ratio = max(0.2, ratio) # Minimum 20% de dégâts sur les bords
-				var degats_calcules = int(float(degats) * ratio)
-				obj.recevoir_degats(degats_calcules, auteur, equipe_tireur)
+				var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / rayon_explosion, 0.0, 1.0))
+				obj.recevoir_degats(int(float(degats) * ratio), auteur, equipe_tireur)
