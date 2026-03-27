@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 4
+nom = "Heal"
+prix = 100
+hp_max = 80
+vitesse = 140.0
+degats = 0
+portee = 0.0
+temps_fabrication = 8.0
+est_a_distance = false
+couleur = Color(0.2, 0.9, 0.7, 1)
+cooldown_sort = 20.0
+duree_sort = 0.0

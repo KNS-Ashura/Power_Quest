@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dax8y2w1v7p05"]
 
-[ext_resource type="Script" uid="uid://kpl3c5qwxq6u" path="res://scenes/camp/camp_ennemi.gd" id="1_ot5p4"]
+[ext_resource type="Script" uid="uid://cq0ugv3dt8awy" path="res://scripts/camp.gd" id="1_ot5p4"]
 [ext_resource type="Texture2D" uid="uid://b7ulmbgkkhwtx" path="res://assets/objects/Objects_animated.png" id="2_t83co"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]
@@ -58,6 +58,7 @@ size = Vector2(90, 100)
 
 [node name="CampEnnemi" type="StaticBody2D" unique_id=247234414 groups=["ennemis"]]
 script = ExtResource("1_ot5p4")
+equipe = 1
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2053075323]
 position = Vector2(2, 1)
@@ -76,6 +77,9 @@ color = Color(0.8, 0.101960786, 0.101960786, 0.28235295)
 position = Vector2(1, -1)
 shape = SubResource("RectangleShape2D_8p3q1")
 debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Marker2D" type="Marker2D" parent="." unique_id=581900003]
+position = Vector2(1, 64)
 
 [node name="Label" type="Label" parent="." unique_id=734940941]
 offset_left = -41.0
