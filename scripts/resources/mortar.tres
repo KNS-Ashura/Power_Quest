@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 6
+nom = "Mortier"
+prix = 200
+hp_max = 60
+vitesse = 80.0
+degats = 40
+portee = 250.0
+temps_fabrication = 15.0
+est_a_distance = true
+couleur = Color(0.2, 0.2, 0.2, 1)
+cooldown_sort = 0.0
+duree_sort = 0.0
