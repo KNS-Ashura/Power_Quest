@@ -15,6 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="2proj"
+run/main_scene="uid://dfq5q56s6bic1"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
@@ -22,6 +23,9 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 Economie="*res://scripts/economie.gd"
 GameManager="*res://scripts/game_manager.gd"
 IAManager="*res://scripts/ia_manager.gd"
+Nakama="*uid://dp22oh0b7cnqv"
+ServerConnection="*uid://c4hadsfv1ymsd"
+AuthManager="*uid://xgn0kshb78lt"
 
 [display]
 
@@ -40,7 +44,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/discord_social_sdk/plugin.cfg")
+enabled=PackedStringArray()
 
 [physics]
 
