@@ -2,33 +2,92 @@
 
 [ext_resource type="Script" uid="uid://1y3h2bc3lalj" path="res://scripts/Nakama_multi/LoginScreen.gd" id="1_m0rjf"]
 
-[node name="Scene_login" type="Node" unique_id=1319533123]
+[node name="Scene_login" type="Control" unique_id=1870547968]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_m0rjf")
 
 [node name="Panel" type="Panel" parent="." unique_id=431374615]
+layout_mode = 0
 offset_left = 388.0
 offset_top = 100.0
 offset_right = 589.0
 offset_bottom = 276.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=209093525]
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel" unique_id=729437865]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+theme_override_constants/separation = 60
+alignment = 1
 
-[node name="LineEdit_Email" type="LineEdit" parent="Panel/VBoxContainer" unique_id=1063142460]
+[node name="VBoxInscription" type="VBoxContainer" parent="Panel/HBoxContainer" unique_id=209093525]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Label_Inscription_titre" type="Label" parent="Panel/HBoxContainer/VBoxInscription" unique_id=1828460579]
+layout_mode = 2
+text = "Inscription de con"
+
+[node name="Label_Email" type="Label" parent="Panel/HBoxContainer/VBoxInscription" unique_id=1906782573]
+layout_mode = 2
+text = "Titre"
+
+[node name="LineEdit_Email" type="LineEdit" parent="Panel/HBoxContainer/VBoxInscription" unique_id=1063142460]
+layout_mode = 2
+text = "Email"
+
+[node name="Label_password" type="Label" parent="Panel/HBoxContainer/VBoxInscription" unique_id=1347235948]
+layout_mode = 2
+text = "Password"
+
+[node name="LineEdit_Password" type="LineEdit" parent="Panel/HBoxContainer/VBoxInscription" unique_id=2097209960]
+layout_mode = 2
+text = "Password"
+
+[node name="Label_Status" type="Label" parent="Panel/HBoxContainer/VBoxInscription" unique_id=776616798]
+layout_mode = 2
+text = "affichage erreur"
+
+[node name="LineEdit_Username" type="LineEdit" parent="Panel/HBoxContainer/VBoxInscription" unique_id=126964682]
 layout_mode = 2
 
-[node name="LineEdit_Password" type="LineEdit" parent="Panel/VBoxContainer" unique_id=2097209960]
+[node name="Button_Login" type="Button" parent="Panel/HBoxContainer/VBoxInscription" unique_id=2098512709]
+layout_mode = 2
+text = "S'inscrire"
+
+[node name="VSeparator" type="VSeparator" parent="Panel/HBoxContainer/VBoxInscription" unique_id=594646581]
 layout_mode = 2
 
-[node name="Label_Status" type="Label" parent="Panel/VBoxContainer" unique_id=776616798]
+[node name="VBoxConnexion" type="VBoxContainer" parent="Panel/HBoxContainer" unique_id=1399263238]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label_Connexion_titre" type="Label" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=1907410544]
+layout_mode = 2
+text = "Connexion de con aussi tiens"
+
+[node name="Label_Email_Login" type="Label" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=1695764232]
+layout_mode = 2
+text = "Email login :"
+
+[node name="LineEdit_Email_Login" type="LineEdit" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=607254975]
 layout_mode = 2
 
-[node name="LineEdit_Username" type="LineEdit" parent="Panel/VBoxContainer" unique_id=126964682]
+[node name="Label_Password_Login" type="Label" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=1003836754]
+layout_mode = 2
+text = "Password :"
+
+[node name="LineEdit_Password_Login" type="LineEdit" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=823226790]
 layout_mode = 2
 
-[node name="Button_Login" type="Button" parent="Panel/VBoxContainer" unique_id=2098512709]
+[node name="Label_Status_login" type="Label" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=356421933]
 layout_mode = 2
+text = "affichage erreur"
 
-[connection signal="pressed" from="Panel/VBoxContainer/Button_Login" to="." method="_on_button_login_pressed"]
+[node name="Button_connexion" type="Button" parent="Panel/HBoxContainer/VBoxConnexion" unique_id=1131587829]
+layout_mode = 2
+text = "Se connecter"
+
+[connection signal="pressed" from="Panel/HBoxContainer/VBoxConnexion/Button_connexion" to="." method="_on_button_connexion_pressed"]

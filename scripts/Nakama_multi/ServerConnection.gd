@@ -1,29 +1,34 @@
 extends Node
 
-# Configuration identique au docker-compose
-var server_key: String = "admin"
+var server_key: String = "admin" 
 var host: String = "127.0.0.1"
 var port: int = 7350
 var scheme: String = "http"
 
-# On utilise des variables typées pour aider l'autocomplétion
 var client: NakamaClient
 var session: NakamaSession
 var socket: NakamaSocket
 
 func _ready():
-	# Initialisation immédiate du client
 	client = Nakama.create_client(server_key, host, port, scheme)
-	
 	if client:
-		print("[Nakama] Client initialisé avec succès sur ", host, ":", port)
-	else:
-		push_error("[Nakama] Échec de l'initialisation du client !")
+		print("[Nakama] Client initialisé.")
 
 func set_session(new_session: NakamaSession):
 	session = new_session
-	print("[Nakama] Session active pour l'utilisateur : ", session.username)
+	print("[Nakama] Session active : ", session.username)
 
-# Vérification de sécurité pour les autres scripts
-func is_ready() -> bool:
-	return client != null
+# connexion a la game instant
+func connect_socket():
+	# on recup la fonction create_socket_from deja dans les addons
+	socket = Nakama.create_socket_from(client)
+	
+	
+	var connected = await socket.connect_async(session)
+	
+	if not connected.is_exception():
+		print("[Nakama] Socket ouvert avec succès !")
+		return true
+	else:
+		print("[Nakama] Erreur d'ouverture du Socket : ", connected.get_exception().message)
+		return false

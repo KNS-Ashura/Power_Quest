@@ -1,17 +1,18 @@
-extends Node  # Modifié ici (Node au lieu de Node2D)
+extends Node  
 
-@onready var server = ServerConnection
-
-func authenticate_player(email: String, password: String, username: String = ""):
-	if not server.client:
-		await get_tree().process_frame 
+func authenticate_player(email: String, password: String, username: String, create: bool):
+	var server = ServerConnection
 	
-	# Appel à Nakama (create_account: true permet l'inscription auto)
-	var auth_result = await server.client.authenticate_email_async(email, password, username, true)
+	
+	var auth_result = await server.client.authenticate_email_async(email, password, username, create)
 	
 	if auth_result.is_exception():
 		print("[Auth] Erreur : ", auth_result.get_exception().message)
-		return false
+		return {"success": false, "message": auth_result.get_exception().message}
 	
 	server.set_session(auth_result)
-	return true
+	
+	
+	await server.connect_socket()
+	
+	return {"success": true, "message": "OK"}
