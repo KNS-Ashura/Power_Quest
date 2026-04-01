@@ -1,41 +1,78 @@
 extends Control
 
-# INSCRIPTION
-@onready var ins_email = $Panel/HBoxContainer/VBoxInscription/LineEdit_Email
-@onready var ins_pass = $Panel/HBoxContainer/VBoxInscription/LineEdit_Password
-@onready var ins_user = $Panel/HBoxContainer/VBoxInscription/LineEdit_Username
-@onready var status_label = $Panel/HBoxContainer/VBoxInscription/Label_Status
+# --- UI inscription ---
+@onready var signup_email = %LineEdit_Email
+@onready var signup_pass = %LineEdit_Password
+@onready var signup_user = %LineEdit_Username
+@onready var signup_status = %Label_Status
+@onready var btn_signup = %Button_login
 
-# CONNEXION
-@onready var log_email = $Panel/HBoxContainer/VBoxConnexion/LineEdit_Email_Login
-@onready var log_pass = $Panel/HBoxContainer/VBoxConnexion/LineEdit_Password_Login
+# --- UI connexion ---
+@onready var login_email = %LineEdit_Email_Login
+@onready var login_pass = %LineEdit_Password_Login
+@onready var login_status = %Label_Status_login
+@onready var btn_login = %Button_connexion
 
-# pour le bouton inscrire
-func _on_button_register_pressed(): #lien vers le bouton s'inscrire comme une requete en gross
-	_start_auth(ins_email.text, ins_pass.text, ins_user.text, true)
+func _ready():
+	
+	signup_status.text = ""
+	login_status.text = ""
 
-# pour le bouton se connecter
-func _on_button_connexion_pressed(): #idem que pour s'incrire mais pr la connexion
-	_start_auth(log_email.text, log_pass.text, "", false)
-
-
-func _start_auth(email, password, username, create):
-	if email.is_empty() or password.length() < 6:
-		status_label.text = "Email vide ou MDP trop court (min 6)."
-		status_label.modulate = Color.RED
+func _on_button_login_pressed():
+	# inscritpion
+	var email = signup_email.text.strip_edges().to_lower()
+	var password = signup_pass.text.strip_edges()
+	var username = signup_user.text.strip_edges()
+	
+	if email == "" or password == "" or username == "":
+		signup_status.text = "Tous les champs sont requis !"
 		return
+
+	_set_loading(true, "Création du compte...", signup_status)
 	
-	status_label.text = "Action en cours..."
-	status_label.modulate = Color.WHITE
 	
-	var result = await AuthManager.authenticate_player(email, password, username, create)
-	
-	if result.success:
-		status_label.text = "Succès ! Authentifié."
-		status_label.modulate = Color.GREEN
-		# On attend 1 sec pour que le joueur voit le message et on change de scène
-		await get_tree().create_timer(1.0).timeout
-		get_tree().change_scene_to_file("res://scenes/jeu/Main.tscn")
+	var res = await ServerConnection.client.authenticate_email_async(email, password, username, true)
+
+	if res.is_exception():
+		var msg = res.get_exception().message
+		signup_status.text = "Erreur : " + msg
+		_set_loading(false, "", signup_status)
 	else:
-		status_label.text = "Erreur : " + result.message
-		status_label.modulate = Color.RED
+		await _finalize_auth(res, signup_status)
+
+func _on_button_connexion_pressed():
+	# connexion
+	var email = login_email.text.strip_edges().to_lower()
+	var password = login_pass.text.strip_edges()
+	
+	if email == "" or password == "":
+		login_status.text = "Email/Pass vides !"
+		return
+
+	_set_loading(true, "Connexion...", login_status)
+	
+	
+	var res = await ServerConnection.client.authenticate_email_async(email, password, "", false)
+
+	if res.is_exception():
+		login_status.text = "Identifiants incorrects."
+		_set_loading(false, "", login_status)
+	else:
+		await _finalize_auth(res, login_status)
+
+func _finalize_auth(session_ready, status_label):
+	ServerConnection.session = session_ready
+	var socket_ok = await ServerConnection.connect_socket()
+	
+	if socket_ok:
+		
+		get_tree().change_scene_to_file("res://Lobby.tscn")
+	else:
+		status_label.text = "Erreur de connexion Socket."
+		_set_loading(false, "", status_label)
+
+func _set_loading(is_loading: bool, msg: String, status_label: Label):
+	if btn_signup: btn_signup.disabled = is_loading
+	if btn_login: btn_login.disabled = is_loading
+	if msg != "":
+		status_label.text = msg

@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://co2b4fmnyusb2"]
+
+[ext_resource type="Script" uid="uid://qioacq5it58a" path="res://scripts/Nakama_multi/LobbyScreen.gd" id="1_gv8if"]
+
+[node name="Lobby" type="Control" unique_id=773446534]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_gv8if")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1080027066]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PanelContainer" type="Panel" parent="CenterContainer" unique_id=531496740]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer" unique_id=1580189034]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer" unique_id=1593601727]
+layout_mode = 2
+
+[node name="Label (CODE DU SALON)" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1162486231]
+layout_mode = 2
+
+[node name="Label_CodeRecu" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=513164891]
+unique_name_in_owner = true
+layout_mode = 2
+text = "------"
+
+[node name="Label_Status_Lobby" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=352860502]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Button_creer" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=919069620]
+unique_name_in_owner = true
+layout_mode = 2
+text = "CRÉER UN SALON"
+
+[node name="Button_copy" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=977941213]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Copier le code"
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=166307281]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LineEdit_SaisieCode" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=222776552]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Entrer code pour rejoindre"
+
+[node name="Button_join" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=902906732]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rejoindre"
+
+[node name="ItemList_Joueurs" type="ItemList" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1966269686]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Button_start" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1656801707]
+unique_name_in_owner = true
+layout_mode = 2
+text = "LANCER"
+
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_creer" to="." method="_on_button_creer_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_copy" to="." method="_on_button_copy_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_join_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_copy_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_start_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_create_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_start" to="." method="_on_button_start_pressed"]

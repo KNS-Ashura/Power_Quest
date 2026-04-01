@@ -1,34 +1,32 @@
 extends Node
 
-var server_key: String = "admin" 
-var host: String = "127.0.0.1"
-var port: int = 7350
-var scheme: String = "http"
-
 var client: NakamaClient
 var session: NakamaSession
 var socket: NakamaSocket
 
 func _ready():
-	client = Nakama.create_client(server_key, host, port, scheme)
-	if client:
-		print("[Nakama] Client initialisé.")
+	
+	client = Nakama.create_client("admin", "127.0.0.1", 7350, "http")
 
-func set_session(new_session: NakamaSession):
-	session = new_session
-	print("[Nakama] Session active : ", session.username)
-
-# connexion a la game instant
-func connect_socket():
-	# on recup la fonction create_socket_from deja dans les addons
-	socket = Nakama.create_socket_from(client)
-	
-	
-	var connected = await socket.connect_async(session)
-	
-	if not connected.is_exception():
-		print("[Nakama] Socket ouvert avec succès !")
+func connect_socket() -> bool:
+	if socket and not socket.is_closed():
 		return true
-	else:
-		print("[Nakama] Erreur d'ouverture du Socket : ", connected.get_exception().message)
+
+	socket = Nakama.create_socket_from(client)
+	var result = await socket.connect_async(session)
+
+	if result.is_exception():
+		print("[ERREUR SOCKET] ", result.get_exception().message)
 		return false
+
+	print("[SOCKET CONNECTÉ]")
+	return true
+
+
+func join_match(match_id: String) -> bool:
+	if not socket: return false
+	var res = await socket.join_match_async(match_id)
+	if res.is_exception():
+		print("[ERREUR JOIN] ", res.get_exception().message)
+		return false
+	return true
