@@ -59,10 +59,17 @@ func _on_match_state(state: NakamaRTAPI.MatchData):
 
 	match data.get("type", ""):
 		"player_joined":
+			status_label.text = "Joueurs : %d/2" % data.get("player_count", 0)
 			if data.get("player_count", 0) >= 2:
 				_start_game()
 		"lobby_state":
 			status_label.text = "Joueurs : %d/2" % data.get("player_count", 0)
+		"player_left":
+			status_label.text = "Joueurs : %d/2 — En attente..." % data.get("player_count", 0)
+		"match_terminated":
+			status_label.text = "Salon fermé par le serveur."
+			_update_ui(State.IDLE)
+			label_code.text = ""
 
 func _on_button_copy_pressed():
 	if label_code.text != "":
