@@ -23,6 +23,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 Economie="*res://scripts/economie.gd"
 GameManager="*res://scripts/game_manager.gd"
 IAManager="*res://scripts/ia_manager.gd"
+Sound="*uid://c6u57jpr1208q"
 
 [display]
 
