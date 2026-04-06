@@ -16,6 +16,7 @@ func _ready():
 	_on_argent_modifie(Economie.argent)
 
 func _on_batiment_change(bat):
+	Sound.play_menu2()
 	if current_batiment and current_batiment.has_signal("production_maj"):
 		if current_batiment.production_maj.is_connected(_update_queue_display):
 			current_batiment.production_maj.disconnect(_update_queue_display)
@@ -27,6 +28,8 @@ func _on_batiment_change(bat):
 		_update_queue_display(0, 0)
 		if not current_batiment.production_maj.is_connected(_update_queue_display):
 			current_batiment.production_maj.connect(_update_queue_display)
+			
+			Sound.play_menu2()
 	else:
 		panel.hide()
 
