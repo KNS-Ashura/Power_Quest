@@ -36,7 +36,11 @@ func _update_queue_display(taille, progression):
 	else:
 		label_queue.text = "File vide"
 
-func _on_btn_inf_pressed(): if current_batiment: current_batiment.demander_production(0)
+func _on_btn_inf_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(0)
+
 func _on_btn_arc_pressed(): if current_batiment: current_batiment.demander_production(1)
 func _on_btn_lourd_pressed(): if current_batiment: current_batiment.demander_production(2)
 func _on_btn_support_pressed(): if current_batiment: current_batiment.demander_production(3)
