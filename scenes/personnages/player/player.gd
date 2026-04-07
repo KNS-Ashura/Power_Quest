@@ -47,6 +47,7 @@ func _ready():
 		agent_navigation.target_desired_distance = stats.portee - 5.0
 	
 	agent_navigation.path_desired_distance = 10.0
+	await get_tree().process_frame
 	agent_navigation.target_position = global_position
 	timer_attaque.timeout.connect(_on_timer_attaque_timeout)
 
