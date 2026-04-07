@@ -44,12 +44,35 @@ func _on_btn_inf_pressed():
 	if current_batiment:
 		current_batiment.demander_production(0)
 
-func _on_btn_arc_pressed(): if current_batiment: current_batiment.demander_production(1)
-func _on_btn_lourd_pressed(): if current_batiment: current_batiment.demander_production(2)
-func _on_btn_support_pressed(): if current_batiment: current_batiment.demander_production(3)
-func _on_btn_heal_pressed(): if current_batiment: current_batiment.demander_production(4)
-func _on_btn_anti_armor_pressed(): if current_batiment: current_batiment.demander_production(5)
-func _on_btn_mortar_pressed(): if current_batiment: current_batiment.demander_production(6)
+func _on_btn_arc_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(1)
+
+func _on_btn_lourd_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(2)
+
+func _on_btn_support_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(3)
+
+func _on_btn_heal_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(4)
+
+func _on_btn_anti_armor_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(5)
+
+func _on_btn_mortar_pressed():
+	Sound.play_menu1()
+	if current_batiment:
+		current_batiment.demander_production(6)
 
 func _on_argent_modifie(val):
 	label_argent.text = "OR : " + str(val)
