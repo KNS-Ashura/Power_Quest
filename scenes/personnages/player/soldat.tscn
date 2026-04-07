@@ -299,8 +299,25 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.12, 0.12, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0, 0.8, 0, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_rmpvb"]
 radius = 12.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_atk"]
+radius = 50.0
 
 [node name="player" type="CharacterBody2D" unique_id=1299368703 groups=["soldats"]]
 script = ExtResource("1_dyhcn")
@@ -315,3 +332,22 @@ position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_rmpvb")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1608767778]
+
+[node name="ZoneDetection" type="Area2D" parent="." unique_id=581900000]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ZoneDetection" unique_id=581900001]
+shape = SubResource("CircleShape2D_atk")
+debug_color = Color(0.8, 0, 0, 0.15)
+
+[node name="TimerAttaque" type="Timer" parent="." unique_id=581900002]
+wait_time = 1.0
+
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=581900003]
+offset_left = -15.0
+offset_top = -25.0
+offset_right = 15.0
+offset_bottom = -21.0
+theme_override_styles/background = SubResource("StyleBoxFlat_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+value = 100.0
+show_percentage = false

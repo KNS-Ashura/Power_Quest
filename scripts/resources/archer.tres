@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UniteStats" format=3 uid="uid://b0icorh4iycal"]
+
+[ext_resource type="Script" uid="uid://bp66fhu00e2ui" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 1
+nom = "Archer"
+prix = 80
+hp_max = 80
+vitesse = 130.0
+degats = 8
+portee = 180.0
+temps_fabrication = 6.0
+est_a_distance = true
+couleur = Color(0.2, 0.5, 1, 1)
