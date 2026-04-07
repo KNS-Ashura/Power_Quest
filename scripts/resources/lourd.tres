@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UniteStats" format=3 uid="uid://cjs3ulb4lu1jo"]
+
+[ext_resource type="Script" uid="uid://bp66fhu00e2ui" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 2
+nom = "Lourd"
+prix = 150
+hp_max = 300
+vitesse = 90.0
+degats = 15
+portee = 30.0
+temps_fabrication = 10.0
+couleur = Color(1, 0.2, 0.2, 1)

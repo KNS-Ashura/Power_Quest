@@ -2,6 +2,7 @@
 .godot/
 /android/
 
+addons
 # Imports
 .import/
 
@@ -18,3 +19,4 @@ data_*/
 Thumbs.db
 
 assets/
+assets

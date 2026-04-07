@@ -15,21 +15,34 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="2proj"
+run/main_scene="uid://cjncnq5yit72b"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
 Economie="*res://scripts/economie.gd"
+GameManager="*res://scripts/game_manager.gd"
+IAManager="*res://scripts/ia_manager.gd"
+Sound="*uid://c6u57jpr1208q"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="viewport"
 window/stretch/aspect="keep_height"
 window/stretch/scale_mode="integer"
+
+[editor]
+
+version_control/plugin_name="GitPlugin"
+version_control/autoload_on_startup=true
+
+[editor_plugins]
+
+enabled=PackedStringArray()
 
 [physics]
 
@@ -39,3 +52,5 @@ window/stretch/scale_mode="integer"
 
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://cui68p4q4p4m"]
+
+[ext_resource type="Script" uid="uid://bowkmm0vjgh7c" path="res://scripts/production_ui.gd" id="1_ui"]
+
+[node name="ProductionUI" type="CanvasLayer" unique_id=846747788]
+script = ExtResource("1_ui")
+
+[node name="Control" type="Control" parent="." unique_id=464497417]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelArgent" type="Label" parent="Control" unique_id=1309799976]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -150.0
+offset_top = 14.0
+offset_right = -20.0
+offset_bottom = 38.0
+grow_horizontal = 0
+text = "OR : 0"
+horizontal_alignment = 2
+
+[node name="Panel" type="Panel" parent="Control" unique_id=164534520]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="GridContainer" type="GridContainer" parent="Control/Panel" unique_id=1406184346]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -35.0
+offset_right = 320.0
+offset_bottom = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 10
+columns = 4
+
+[node name="BtnInf" type="Button" parent="Control/Panel/GridContainer" unique_id=1272985626]
+layout_mode = 2
+text = "Infanterie (50G)"
+
+[node name="BtnArc" type="Button" parent="Control/Panel/GridContainer" unique_id=294927998]
+layout_mode = 2
+text = "Archer (80G)"
+
+[node name="BtnLourd" type="Button" parent="Control/Panel/GridContainer" unique_id=399910550]
+layout_mode = 2
+text = "Lourd (150G)"
+
+[node name="BtnSupport" type="Button" parent="Control/Panel/GridContainer" unique_id=400000001]
+layout_mode = 2
+text = "Support (100G)"
+
+[node name="BtnHeal" type="Button" parent="Control/Panel/GridContainer" unique_id=400000002]
+layout_mode = 2
+text = "Heal (100G)"
+
+[node name="BtnAntiArmor" type="Button" parent="Control/Panel/GridContainer" unique_id=400000003]
+layout_mode = 2
+text = "Anti-Armor (90G)"
+
+[node name="BtnMortar" type="Button" parent="Control/Panel/GridContainer" unique_id=400000004]
+layout_mode = 2
+text = "Mortier (200G)"
+
+[node name="LabelQueue" type="Label" parent="Control/Panel" unique_id=1765385264]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -11.5
+offset_right = 120.0
+offset_bottom = 11.5
+grow_vertical = 2
+text = "File vide"
+
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnInf" to="." method="_on_btn_inf_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnArc" to="." method="_on_btn_arc_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnLourd" to="." method="_on_btn_lourd_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnSupport" to="." method="_on_btn_support_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnMortar" to="." method="_on_btn_mortar_pressed"]

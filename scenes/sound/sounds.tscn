@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://c6u57jpr1208q"]
+
+[ext_resource type="Script" uid="uid://bnh31kb0ukbp5" path="res://scenes/sound/sound.gd" id="1_10jgt"]
+[ext_resource type="AudioStream" uid="uid://dn5wnouc3rou" path="res://assets/sounds/menu1.wav" id="2_luwxf"]
+[ext_resource type="AudioStream" uid="uid://m4e8fc28xnq" path="res://assets/sounds/menu2.wav" id="3_t1vbi"]
+[ext_resource type="AudioStream" uid="uid://b7yhiaqqshsmh" path="res://assets/sounds/menu3.wav" id="4_m2yx0"]
+
+[node name="Sounds" type="Node2D" unique_id=1907370792]
+script = ExtResource("1_10jgt")
+
+[node name="Menu1" type="AudioStreamPlayer2D" parent="." unique_id=1715604848]
+stream = ExtResource("2_luwxf")
+
+[node name="Menu2" type="AudioStreamPlayer2D" parent="." unique_id=1987096139]
+stream = ExtResource("3_t1vbi")
+
+[node name="Menu3" type="AudioStreamPlayer2D" parent="." unique_id=33137904]
+stream = ExtResource("4_m2yx0")
