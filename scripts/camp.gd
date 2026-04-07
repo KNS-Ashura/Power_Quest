@@ -88,8 +88,8 @@ func _invoquer_gardien():
 	if is_instance_valid(gardien): return
 	var nouveau_gardien = SCENE_BASE_SOLDAT.instantiate()
 	nouveau_gardien.stats = stats_lourd if equipe == Proprietaire.NEUTRE else stats_infanterie
-	
-	nouveau_gardien.global_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
+
+	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	nouveau_gardien.equipe = equipe
 	
 	if equipe == Proprietaire.JOUEUR: nouveau_gardien.add_to_group("soldats")
@@ -97,8 +97,10 @@ func _invoquer_gardien():
 		if nouveau_gardien.is_in_group("soldats"): nouveau_gardien.remove_from_group("soldats")
 		nouveau_gardien.add_to_group("ennemis")
 		
-	nouveau_gardien.mort_par_tueur.connect(_on_gardien_tue)
 	get_parent().add_child(nouveau_gardien)
+	nouveau_gardien.global_position = spawn_position
+	nouveau_gardien.mort_par_tueur.connect(_on_gardien_tue)
+	print("Gardien spawn à :", nouveau_gardien.global_position)
 	gardien = nouveau_gardien
 
 func _on_gardien_tue(tueur : Node2D, tueur_equipe : int = -1):
@@ -128,7 +130,7 @@ func terminer_production():
 	var stat = catalogue_unites[file_production.pop_front()]
 	var soldat = SCENE_BASE_SOLDAT.instantiate()
 	soldat.stats = stat
-	soldat.global_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
+	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	soldat.equipe = equipe
 	
 	if equipe == Proprietaire.JOUEUR: soldat.add_to_group("soldats")
@@ -137,6 +139,12 @@ func terminer_production():
 		soldat.add_to_group("ennemis")
 		
 	get_parent().add_child(soldat)
+	soldat.global_position = spawn_position
+	print("Soldat spawn à :", soldat.global_position)
+	
+	print("Camp :", global_position)
+	print("Point apparition :", point_apparition.global_position)
+	print("Parent :", get_parent().name)
 	
 	if file_production.size() > 0:
 		temps_total_unite_actuelle = catalogue_unites[file_production[0]].temps_fabrication
@@ -182,8 +190,9 @@ func recevoir_renforts(quantite : int):
 	for i in range(quantite):
 		var s = SCENE_BASE_SOLDAT.instantiate()
 		s.stats = stats_infanterie
-		s.global_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+		var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
 		get_parent().add_child(s)
+		s.global_position = spawn_position
 
 func _on_zone_body_entered(_body):
 	if timer_attaque.is_stopped():
