@@ -48,6 +48,7 @@ tile_set = ExtResource("1_j8wkn")
 position = Vector2(51, -69)
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=2057829229]
+visible = false
 position = Vector2(-2, -2)
 navigation_polygon = SubResource("NavigationPolygon_j8wkn")
 
