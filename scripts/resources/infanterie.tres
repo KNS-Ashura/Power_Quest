@@ -1,15 +1,8 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UniteStats" format=3 uid="uid://c1us3821no7yi"]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" uid="uid://bp66fhu00e2ui" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
 nom = "Infanterie"
-prix = 50
-hp_max = 100
-vitesse = 150.0
-degats = 10
-portee = 40.0
-temps_fabrication = 5.0
-est_a_distance = false
 couleur = Color(0.2, 0.8, 0.2, 1)
