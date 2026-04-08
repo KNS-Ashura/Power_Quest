@@ -8,6 +8,7 @@ var hp_actuels : int = hp_max
 var gardien : Node2D = null
 
 const SCENE_BASE_SOLDAT = preload("res://scenes/personnages/player/soldat.tscn")
+const SCENE_GARDIEN = preload("res://scenes/personnages/guardian/gardien.tscn")
 var stats_infanterie = preload("res://scripts/resources/infanterie.tres")
 var stats_archer = preload("res://scripts/resources/archer.tres")
 var stats_lourd = preload("res://scripts/resources/lourd.tres")
@@ -86,7 +87,7 @@ func _process(delta):
 
 func _invoquer_gardien():
 	if is_instance_valid(gardien): return
-	var nouveau_gardien = SCENE_BASE_SOLDAT.instantiate()
+	var nouveau_gardien = SCENE_GARDIEN.instantiate()
 	nouveau_gardien.stats = stats_lourd if equipe == Proprietaire.NEUTRE else stats_infanterie
 
 	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
