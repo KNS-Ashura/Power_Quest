@@ -8,6 +8,7 @@ var hp_actuels : int = hp_max
 var gardien : Node2D = null
 
 const SCENE_BASE_SOLDAT = preload("res://scenes/personnages/player/soldat.tscn")
+const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie.tscn")
 const SCENE_GARDIEN = preload("res://scenes/personnages/guardian/gardien.tscn")
 var stats_infanterie = preload("res://scripts/resources/infanterie.tres")
 var stats_archer = preload("res://scripts/resources/archer.tres")
@@ -127,9 +128,14 @@ func demander_production(id : int = 0):
 			temps_total_unite_actuelle = data.temps_fabrication
 			temps_restant = temps_total_unite_actuelle
 
+func _scene_pour_unite(stat: UniteStats) -> PackedScene:
+	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
+		return SCENE_INFANTERIE
+	return SCENE_BASE_SOLDAT
+
 func terminer_production():
 	var stat = catalogue_unites[file_production.pop_front()]
-	var soldat = SCENE_BASE_SOLDAT.instantiate()
+	var soldat = _scene_pour_unite(stat).instantiate()
 	soldat.stats = stat
 	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	soldat.equipe = equipe
@@ -189,7 +195,7 @@ func _draw(): pass
 
 func recevoir_renforts(quantite : int):
 	for i in range(quantite):
-		var s = SCENE_BASE_SOLDAT.instantiate()
+		var s = _scene_pour_unite(stats_infanterie).instantiate()
 		s.stats = stats_infanterie
 		var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
 		get_parent().add_child(s)
