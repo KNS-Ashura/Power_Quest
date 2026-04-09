@@ -4,6 +4,12 @@ var MODULE_NAME = "power_quest";
 var CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var CODE_LENGTH = 6;
 var MAX_PLAYERS = 2;
+var OP_LOBBY_STATE = 10;
+var OP_PLAYER_JOINED = 11;
+var OP_HOST_CHANGED = 12;
+var OP_PLAYER_LEFT = 13;
+var OP_GAME_START = 20;
+var OP_PLAYER_STATE = 21;
 
 function generateCode() {
   var code = "";
@@ -25,10 +31,12 @@ function matchInit(ctx, logger, nk, params) {
       label: label,
       hostSessionId: "",
       players: {},
+      playerStates: {},
       tickCount: 0,
-      emptyTicks: 0
+      emptyTicks: 0,
+      gameStarted: false
     },
-    tickRate: 5,
+    tickRate: 30,
     label: label
   };
 }
@@ -53,17 +61,32 @@ function matchJoin(ctx, logger, nk, dispatcher, tick, state, presences) {
       logger.info("Nouvel hôte assigné : " + p.userId);
     }
 
-    broadcastJson(dispatcher, 10, {
+    var playersList = [];
+    var sessionIds = Object.keys(state.players);
+    for (var s = 0; s < sessionIds.length; s++) {
+      var sp = state.players[sessionIds[s]];
+      playersList.push({
+        session_id: sp.sessionId,
+        user_id: sp.userId,
+        username: sp.username
+      });
+    }
+
+    broadcastJson(dispatcher, OP_LOBBY_STATE, {
       type: "lobby_state",
       player_count: Object.keys(state.players).length,
       max_players: MAX_PLAYERS,
       label: state.label,
-      is_host: (p.sessionId === state.hostSessionId)
+      is_host: (p.sessionId === state.hostSessionId),
+      host_user_id: state.players[state.hostSessionId].userId,
+      self_session_id: p.sessionId,
+      players: playersList
     }, [p]);
 
-    broadcastJson(dispatcher, 11, {
+    broadcastJson(dispatcher, OP_PLAYER_JOINED, {
       type: "player_joined",
       user_id: p.userId,
+      session_id: p.sessionId,
       player_count: Object.keys(state.players).length
     }, null);
   }
@@ -86,16 +109,19 @@ function matchLeave(ctx, logger, nk, dispatcher, tick, state, presences) {
     if (wasHost) {
       state.hostSessionId = remaining[0];
       var newHost = state.players[state.hostSessionId];
-      broadcastJson(dispatcher, 12, {
+      broadcastJson(dispatcher, OP_HOST_CHANGED, {
         type: "host_changed",
         new_host_user_id: newHost.userId,
         new_host_session_id: state.hostSessionId
       }, null);
     }
 
-    broadcastJson(dispatcher, 13, {
+    delete state.playerStates[p.userId];
+
+    broadcastJson(dispatcher, OP_PLAYER_LEFT, {
       type: "player_left",
       user_id: p.userId,
+      session_id: p.sessionId,
       player_count: remaining.length
     }, null);
   }
@@ -104,6 +130,26 @@ function matchLeave(ctx, logger, nk, dispatcher, tick, state, presences) {
 
 function matchLoop(ctx, logger, nk, dispatcher, tick, state, messages) {
   state.tickCount = tick;
+  for (var i = 0; i < messages.length; i++) {
+    var msg = messages[i];
+    var sender = state.players[msg.sender.sessionId];
+    if (!sender) {
+      continue;
+    }
+
+    if (msg.opCode === OP_GAME_START && msg.sender.sessionId === state.hostSessionId && !state.gameStarted) {
+      state.gameStarted = true;
+      broadcastJson(dispatcher, OP_GAME_START, {
+        type: "game_start",
+        started_at_tick: tick
+      }, null);
+      continue;
+    }
+
+    if (msg.opCode === OP_PLAYER_STATE) {
+      dispatcher.broadcastMessage(OP_PLAYER_STATE, msg.data, null, null, true);
+    }
+  }
 
   if (Object.keys(state.players).length === 0) {
     state.emptyTicks++;
