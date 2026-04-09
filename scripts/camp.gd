@@ -106,6 +106,8 @@ func _invoquer_gardien():
 		
 	get_parent().add_child(nouveau_gardien)
 	nouveau_gardien.global_position = spawn_position
+	if nouveau_gardien.has_method("configurer_mode_gardien"):
+		nouveau_gardien.configurer_mode_gardien(spawn_position, 260.0, 320.0)
 	nouveau_gardien.mort_par_tueur.connect(_on_gardien_tue)
 	gardien = nouveau_gardien
 
