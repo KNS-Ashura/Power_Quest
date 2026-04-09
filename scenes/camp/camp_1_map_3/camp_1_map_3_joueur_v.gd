@@ -15,7 +15,7 @@ var file_attente : Array = []
 
 var troupes_data = {
 	0: {"nom": "Épéiste", "prix": 50},
-	1: {"nom": "Archer", "prix": 75},
+	1: {"nom": "Range", "prix": 75},
 	2: {"nom": "Lancier", "prix": 60},
 	3: {"nom": "Cavalier", "prix": 150},
 	4: {"nom": "Mage", "prix": 200},
