@@ -26,6 +26,7 @@ var timer_recherche : float = 0.0
 var cooldown_actuel_sort : float = 0.0
 var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
+var est_en_train_de_mourir : bool = false
 
 func _ready():
 	if stats:
@@ -50,6 +51,8 @@ func _ready():
 	await get_tree().process_frame
 	agent_navigation.target_position = global_position
 	timer_attaque.timeout.connect(_on_timer_attaque_timeout)
+	_configurer_animations_mort()
+	_configurer_animations_attaque()
 
 func set_selection(etat : bool):
 	est_selectionne = etat
@@ -67,6 +70,9 @@ func attaquer_cible(cible : Node2D):
 var dernier_regard : String = "f"
 
 func _physics_process(_delta):
+	if est_en_train_de_mourir:
+		return
+
 	var doit_avancer = true
 	
 	if cooldown_actuel_sort > 0:
@@ -111,6 +117,7 @@ func _physics_process(_delta):
 
 func _on_timer_attaque_timeout():
 	if is_instance_valid(cible_attaque):
+		_jouer_animation_attaque(cible_attaque)
 		if stats and stats.est_a_distance:
 			var proj = SCENE_PROJECTILE.instantiate()
 			get_parent().add_child(proj)
@@ -125,12 +132,7 @@ func _on_timer_attaque_timeout():
 
 func _animer_attaque_melee():
 	if is_instance_valid(cible_attaque):
-		var anim_tween = create_tween()
-		var dir = global_position.direction_to(cible_attaque.global_position)
-		var pos_initiale = $AnimatedSprite2D.position
-		anim_tween.tween_property($AnimatedSprite2D, "position", pos_initiale + dir * 8, 0.1)
-		anim_tween.tween_property($AnimatedSprite2D, "position", pos_initiale, 0.1)
-		
+		# Plus de "dash" visuel: l'animation d'attaque gère maintenant le mouvement perçu.
 		var flash = create_tween()
 		flash.tween_property($AnimatedSprite2D, "modulate", Color.RED, 0.1)
 		flash.tween_property($AnimatedSprite2D, "modulate", stats.couleur if stats else Color.WHITE, 0.1)
@@ -150,14 +152,25 @@ func _rechercher_cible_automatique():
 		attaquer_cible(cibles[0])
 
 func mettre_a_jour_animation():
+	if not has_node("AnimatedSprite2D"):
+		return
+
+	var sprite: AnimatedSprite2D = $AnimatedSprite2D
+	if sprite.is_playing():
+		if sprite.animation.begins_with("attack_") or sprite.animation.begins_with("death_"):
+			return
+
 	if velocity.length() > 5.0:
 		if abs(velocity.x) > abs(velocity.y): dernier_regard = "r" if velocity.x > 0 else "l"
 		else: dernier_regard = "f" if velocity.y > 0 else "b"
-		$AnimatedSprite2D.play("run_" + dernier_regard)
+		sprite.play("run_" + dernier_regard)
 	else:
-		$AnimatedSprite2D.play("idle_" + dernier_regard)
+		sprite.play("idle_" + dernier_regard)
 
 func recevoir_degats(montant : int, auteur : Node2D = null, auteur_equipe : int = -1):
+	if est_en_train_de_mourir:
+		return
+
 	var degats_finaux = montant
 	
 	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null:
@@ -176,8 +189,197 @@ func recevoir_degats(montant : int, auteur : Node2D = null, auteur_equipe : int 
 		moteur_de_mort(auteur, eq)
 
 func moteur_de_mort(tueur : Node2D = null, tueur_equipe : int = -1):
+	if est_en_train_de_mourir:
+		return
+
+	est_en_train_de_mourir = true
 	mort_par_tueur.emit(tueur, tueur_equipe)
+	velocity = Vector2.ZERO
+	cible_attaque = null
+	timer_attaque.stop()
+
+	# Stoppe tout blocage physique/agent dès le début de l'anim de mort.
+	collision_layer = 0
+	collision_mask = 0
+	if is_instance_valid(agent_navigation):
+		agent_navigation.target_position = global_position
+		agent_navigation.avoidance_enabled = false
+
+	if has_node("CollisionShape2D"):
+		$CollisionShape2D.set_deferred("disabled", true)
+	if has_node("ZoneDetection"):
+		$ZoneDetection.monitoring = false
+		$ZoneDetection.monitorable = false
+	if has_node("ZoneDetection/CollisionShape2D"):
+		$ZoneDetection/CollisionShape2D.set_deferred("disabled", true)
+
+	var anim_mort_jouee := _jouer_animation_mort()
+	if anim_mort_jouee:
+		await $AnimatedSprite2D.animation_finished
 	queue_free()
+
+func _jouer_animation_mort() -> bool:
+	if not has_node("AnimatedSprite2D"):
+		return false
+
+	var sprite: AnimatedSprite2D = $AnimatedSprite2D
+	var anim = "death_" + dernier_regard
+	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
+		sprite.play(anim)
+		return true
+	elif sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_" + dernier_regard):
+		sprite.play("idle_" + dernier_regard)
+	return false
+
+func _jouer_animation_attaque(cible: Node2D):
+	if not is_instance_valid(cible):
+		return
+	if not has_node("AnimatedSprite2D"):
+		return
+
+	var sprite: AnimatedSprite2D = $AnimatedSprite2D
+	var dir := _direction_depuis_cible(cible.global_position)
+	var anim := "attack_" + dir
+	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
+		sprite.play(anim)
+
+func _direction_depuis_cible(pos_cible: Vector2) -> String:
+	var delta := pos_cible - global_position
+	if abs(delta.y) >= abs(delta.x):
+		return "b" if delta.y < 0 else "f"
+	return "l" if delta.x < 0 else "r"
+
+func _configurer_animations_mort():
+	if not has_node("AnimatedSprite2D"):
+		return
+
+	var sprite: AnimatedSprite2D = $AnimatedSprite2D
+	var frames = sprite.sprite_frames
+	if frames == null:
+		return
+	if not frames.has_animation("run_f") or frames.get_frame_count("run_f") == 0:
+		return
+
+	var run_frame = frames.get_frame_texture("run_f", 0)
+	if not (run_frame is AtlasTexture):
+		return
+
+	var atlas_run: AtlasTexture = run_frame
+	if atlas_run.atlas == null:
+		return
+
+	var base_path := atlas_run.atlas.resource_path
+	if base_path == "":
+		return
+
+	var death_path := base_path.get_base_dir() + "/death.png"
+	if not ResourceLoader.exists(death_path):
+		return
+
+	var death_tex = load(death_path)
+	if not (death_tex is Texture2D):
+		return
+
+	var frame_size := atlas_run.region.size
+	if frame_size.x <= 0 or frame_size.y <= 0:
+		return
+
+	var cols := int(floor(float(death_tex.get_width()) / frame_size.x))
+	var rows := int(floor(float(death_tex.get_height()) / frame_size.y))
+	if cols <= 0 or rows <= 0:
+		return
+
+	var directions: Dictionary = {
+		"f": 0,
+		"l": 1,
+		"r": 2,
+		"b": 3
+	}
+	var speed := frames.get_animation_speed("run_f")
+
+	for d: String in directions.keys():
+		var row: int = int(directions[d])
+		if row >= rows:
+			continue
+
+		var anim_name: String = "death_" + d
+		if frames.has_animation(anim_name):
+			frames.remove_animation(anim_name)
+		frames.add_animation(anim_name)
+		frames.set_animation_loop(anim_name, false)
+		frames.set_animation_speed(anim_name, speed)
+
+		for i in range(cols):
+			var a := AtlasTexture.new()
+			a.atlas = death_tex
+			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
+			frames.add_frame(anim_name, a)
+
+func _configurer_animations_attaque():
+	if not has_node("AnimatedSprite2D"):
+		return
+
+	var sprite: AnimatedSprite2D = $AnimatedSprite2D
+	var frames = sprite.sprite_frames
+	if frames == null:
+		return
+	if not frames.has_animation("run_f") or frames.get_frame_count("run_f") == 0:
+		return
+
+	var run_frame = frames.get_frame_texture("run_f", 0)
+	if not (run_frame is AtlasTexture):
+		return
+
+	var atlas_run: AtlasTexture = run_frame
+	if atlas_run.atlas == null:
+		return
+
+	var base_path := atlas_run.atlas.resource_path
+	if base_path == "":
+		return
+
+	var attack_path := base_path.get_base_dir() + "/attack.png"
+	if not ResourceLoader.exists(attack_path):
+		return
+
+	var attack_tex = load(attack_path)
+	if not (attack_tex is Texture2D):
+		return
+
+	var frame_size := atlas_run.region.size
+	if frame_size.x <= 0 or frame_size.y <= 0:
+		return
+
+	var cols := int(floor(float(attack_tex.get_width()) / frame_size.x))
+	var rows := int(floor(float(attack_tex.get_height()) / frame_size.y))
+	if cols <= 0 or rows <= 0:
+		return
+
+	var directions: Dictionary = {
+		"f": 0, # 1ere ligne = front
+		"b": 1, # 2eme ligne = back
+		"l": 2, # 3eme ligne = gauche
+		"r": 3  # 4eme ligne = droite
+	}
+	var speed := frames.get_animation_speed("run_f")
+
+	for d: String in directions.keys():
+		var row: int = int(directions[d])
+		if row >= rows:
+			continue
+
+		var anim_name: String = "attack_" + d
+		if frames.has_animation(anim_name):
+			frames.remove_animation(anim_name)
+		frames.add_animation(anim_name)
+		frames.set_animation_loop(anim_name, false)
+		frames.set_animation_speed(anim_name, speed)
+
+		for i in range(cols):
+			var a := AtlasTexture.new()
+			a.atlas = attack_tex
+			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
+			frames.add_frame(anim_name, a)
 
 func lancer_sort():
 	if not stats or stats.cooldown_sort <= 0 or cooldown_actuel_sort > 0: return

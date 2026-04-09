@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://de28cj50q7iyy"]
+[gd_scene format=3 uid="uid://ntiarmor0001"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_player_gd"]
-[ext_resource type="Texture2D" uid="uid://dqr42yvf0t7sl" path="res://assets/character/support/Unarmed_Run_without_shadow.png" id="2_run"]
-[ext_resource type="Texture2D" uid="uid://11xqddqviyn6" path="res://assets/character/support/Unarmed_Idle_without_shadow.png" id="3_idle"]
+[ext_resource type="Texture2D" uid="uid://cjmsbjfhmm0bj" path="res://assets/character/anti-armor/Unarmed_Run_without_shadow.png" id="2_run"]
+[ext_resource type="Texture2D" uid="uid://ew40e3hv2rmt" path="res://assets/character/anti-armor/Unarmed_Idle_without_shadow.png" id="3_idle"]
 
 [sub_resource type="AtlasTexture" id="idle_l0"]
 atlas = ExtResource("3_idle")
@@ -92,6 +92,14 @@ region = Rect2(256, 64, 64, 64)
 atlas = ExtResource("2_run")
 region = Rect2(320, 64, 64, 64)
 
+[sub_resource type="AtlasTexture" id="run_l6"]
+atlas = ExtResource("2_run")
+region = Rect2(384, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="run_l7"]
+atlas = ExtResource("2_run")
+region = Rect2(448, 64, 64, 64)
+
 [sub_resource type="AtlasTexture" id="run_f0"]
 atlas = ExtResource("2_run")
 region = Rect2(0, 0, 64, 64)
@@ -115,6 +123,14 @@ region = Rect2(256, 0, 64, 64)
 [sub_resource type="AtlasTexture" id="run_f5"]
 atlas = ExtResource("2_run")
 region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="run_f6"]
+atlas = ExtResource("2_run")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="run_f7"]
+atlas = ExtResource("2_run")
+region = Rect2(448, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="run_r0"]
 atlas = ExtResource("2_run")
@@ -140,6 +156,14 @@ region = Rect2(256, 128, 64, 64)
 atlas = ExtResource("2_run")
 region = Rect2(320, 128, 64, 64)
 
+[sub_resource type="AtlasTexture" id="run_r6"]
+atlas = ExtResource("2_run")
+region = Rect2(384, 128, 64, 64)
+
+[sub_resource type="AtlasTexture" id="run_r7"]
+atlas = ExtResource("2_run")
+region = Rect2(448, 128, 64, 64)
+
 [sub_resource type="AtlasTexture" id="run_b0"]
 atlas = ExtResource("2_run")
 region = Rect2(0, 192, 64, 64)
@@ -164,7 +188,15 @@ region = Rect2(256, 192, 64, 64)
 atlas = ExtResource("2_run")
 region = Rect2(320, 192, 64, 64)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_support"]
+[sub_resource type="AtlasTexture" id="run_b6"]
+atlas = ExtResource("2_run")
+region = Rect2(384, 192, 64, 64)
+
+[sub_resource type="AtlasTexture" id="run_b7"]
+atlas = ExtResource("2_run")
+region = Rect2(448, 192, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_anti"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -252,6 +284,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_l5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_l6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_l7")
 }],
 "loop": true,
 "name": &"run_b",
@@ -275,6 +313,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_f5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_f6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_f7")
 }],
 "loop": true,
 "name": &"run_f",
@@ -298,6 +342,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_r5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_r6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_r7")
 }],
 "loop": true,
 "name": &"run_l",
@@ -321,6 +371,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("run_b5")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_b6")
+}, {
+"duration": 1.0,
+"texture": SubResource("run_b7")
 }],
 "loop": true,
 "name": &"run_r",
@@ -347,33 +403,35 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="support" type="CharacterBody2D" unique_id=1064204014 groups=["soldats"]]
+[node name="anti_armor" type="CharacterBody2D" unique_id=81716249 groups=["soldats"]]
 script = ExtResource("1_player_gd")
+equipe = null
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1384377072]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=200497238]
 position = Vector2(1, -11)
-sprite_frames = SubResource("SpriteFrames_support")
-animation = &"run_l"
+sprite_frames = SubResource("SpriteFrames_anti")
+animation = &"run_r"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=489419685]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=734048962]
 position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_body")
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=715779153]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1845562280]
 
-[node name="ZoneDetection" type="Area2D" parent="." unique_id=106250616]
+[node name="ZoneDetection" type="Area2D" parent="." unique_id=321323169]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ZoneDetection" unique_id=1728806579]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ZoneDetection" unique_id=1143890242]
+position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_atk")
 debug_color = Color(0.8, 0, 0, 0.15)
 
-[node name="TimerAttaque" type="Timer" parent="." unique_id=323321238]
+[node name="TimerAttaque" type="Timer" parent="." unique_id=257425221]
 
-[node name="ProgressBar" type="ProgressBar" parent="." unique_id=1799906684]
-offset_left = -15.0
-offset_top = -41.0
-offset_right = 15.0
-offset_bottom = -37.0
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=350484913]
+offset_left = -14.0
+offset_top = -45.0
+offset_right = 16.0
+offset_bottom = -41.0
 theme_override_styles/background = SubResource("StyleBoxFlat_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
 value = 100.0
