@@ -28,6 +28,10 @@ var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
 var multiplicateur_cadence_attaque: float = 1.0
 var est_en_train_de_mourir : bool = false
+var est_gardien_camp: bool = false
+var position_garde: Vector2 = Vector2.ZERO
+var rayon_defense_gardien: float = 260.0
+var rayon_poursuite_gardien: float = 320.0
 
 func _ready():
 	if stats:
@@ -35,7 +39,7 @@ func _ready():
 		hp_actuels = hp_max
 		vitesse_unite = stats.vitesse
 		degats_unite = stats.degats
-		$AnimatedSprite2D.modulate = stats.couleur
+		_appliquer_couleur_unite()
 		
 		if has_node("ProgressBar"):
 			$ProgressBar.max_value = hp_max
@@ -60,10 +64,15 @@ func set_selection(etat : bool):
 	self.modulate = Color(1.2, 1.2, 1.2) if est_selectionne else Color(1, 1, 1)
 
 func aller_vers(cible : Vector2):
+	if est_gardien_camp:
+		return
 	cible_attaque = null
 	agent_navigation.target_position = cible
 
 func attaquer_cible(cible : Node2D):
+	if est_gardien_camp and is_instance_valid(cible):
+		if cible.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
+			return
 	cible_attaque = cible
 	if is_instance_valid(cible):
 		agent_navigation.target_position = cible.global_position
@@ -86,9 +95,15 @@ func _physics_process(_delta):
 			vitesse_unite = stats.vitesse
 			degats_unite = stats.degats
 			multiplicateur_cadence_attaque = 1.0
-			$AnimatedSprite2D.modulate = stats.couleur
+			_appliquer_couleur_unite()
 	
 	if is_instance_valid(cible_attaque):
+		if est_gardien_camp and cible_attaque.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
+			cible_attaque = null
+			timer_attaque.stop()
+			agent_navigation.target_position = position_garde
+			doit_avancer = true
+		
 		agent_navigation.target_position = cible_attaque.global_position
 		
 		if cible_attaque in zone_detection.get_overlapping_bodies():
@@ -105,7 +120,9 @@ func _physics_process(_delta):
 			_rechercher_cible_automatique()
 			timer_recherche = temps_recherche
 
-		if agent_navigation.is_navigation_finished():
+		if est_gardien_camp and global_position.distance_to(position_garde) > 8.0:
+			agent_navigation.target_position = position_garde
+		elif agent_navigation.is_navigation_finished():
 			doit_avancer = false
 			
 	if doit_avancer:
@@ -137,12 +154,14 @@ func _animer_attaque_melee():
 		# Plus de "dash" visuel: l'animation d'attaque gère maintenant le mouvement perçu.
 		var flash = create_tween()
 		flash.tween_property($AnimatedSprite2D, "modulate", Color.RED, 0.1)
-		flash.tween_property($AnimatedSprite2D, "modulate", stats.couleur if stats else Color.WHITE, 0.1)
+		flash.tween_property($AnimatedSprite2D, "modulate", _couleur_unite(), 0.1)
 
 func _rechercher_cible_automatique():
 	var cibles = zone_detection.get_overlapping_bodies().filter(func(c):
 		return c != self and c.has_method("recevoir_degats") and not c.is_in_group("camps") and c.get("equipe") != null and c.get("equipe") != equipe
 	)
+	if est_gardien_camp:
+		cibles = cibles.filter(func(c): return c.global_position.distance_to(position_garde) <= rayon_defense_gardien)
 	
 	if cibles.size() > 0:
 		cibles.sort_custom(func(a, b):
@@ -169,7 +188,7 @@ func mettre_a_jour_animation():
 	else:
 		sprite.play("idle_" + dernier_regard)
 
-func recevoir_degats(montant : int, auteur : Node2D = null, auteur_equipe : int = -1):
+func recevoir_degats(montant : int, auteur = null, auteur_equipe : int = -1):
 	if est_en_train_de_mourir:
 		return
 
@@ -402,7 +421,7 @@ func lancer_sort():
 		var obj = res.collider
 		if obj and obj.is_in_group(groupe):
 			if stats.type_unite == 3 and obj.has_method("recevoir_boost"):
-				obj.recevoir_boost(stats.duree_sort)
+				obj.recevoir_boost(stats.duree_sort + 10.0)
 			elif stats.type_unite == 4 and "hp_actuels" in obj and "hp_max" in obj:
 				obj.hp_actuels = min(obj.hp_max, obj.hp_actuels + 50)
 				if obj.has_node("ProgressBar"):
@@ -414,8 +433,26 @@ func recevoir_boost(duree: float):
 	vitesse_unite = stats.vitesse * 1.25
 	degats_unite = int(round(stats.degats * 1.25))
 	multiplicateur_cadence_attaque = 1.25
-	$AnimatedSprite2D.modulate = Color(1.5, 1.5, 0.5)
+	_appliquer_couleur_unite()
 
 func _cadence_attaque_actuelle() -> float:
 	var cadence_base = stats.cadence_attaque if stats and "cadence_attaque" in stats else 1.0
 	return cadence_base * multiplicateur_cadence_attaque
+
+func _couleur_unite() -> Color:
+	if boost_actif:
+		return Color(1.0, 0.95, 0.25)
+	if equipe == Proprietaire.ENNEMI:
+		return Color(1.0, 0.2, 0.2)
+	return Color.WHITE
+
+func _appliquer_couleur_unite():
+	if has_node("AnimatedSprite2D"):
+		$AnimatedSprite2D.modulate = _couleur_unite()
+
+func configurer_mode_gardien(position_ancre: Vector2, rayon_defense: float = 260.0, rayon_poursuite: float = 320.0):
+	est_gardien_camp = true
+	position_garde = position_ancre
+	rayon_defense_gardien = rayon_defense
+	rayon_poursuite_gardien = rayon_poursuite
+	agent_navigation.target_position = position_garde
