@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_stats")
 type_unite = 2
-nom = "Lourd"
+nom = "Heavy"
 prix = 150
 hp_max = 300
 vitesse = 90.0

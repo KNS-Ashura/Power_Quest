@@ -62,9 +62,9 @@ text = "Infanterie (50G)"
 layout_mode = 2
 text = "Range (80G)"
 
-[node name="BtnLourd" type="Button" parent="Control/Panel/GridContainer" unique_id=399910550]
+[node name="BtnHeavy" type="Button" parent="Control/Panel/GridContainer" unique_id=399910550]
 layout_mode = 2
-text = "Lourd (150G)"
+text = "Heavy (150G)"
 
 [node name="BtnSupport" type="Button" parent="Control/Panel/GridContainer" unique_id=400000001]
 layout_mode = 2
@@ -96,7 +96,7 @@ text = "File vide"
 
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnInf" to="." method="_on_btn_inf_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnArc" to="." method="_on_btn_arc_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnLourd" to="." method="_on_btn_lourd_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnHeavy" to="." method="_on_btn_lourd_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnSupport" to="." method="_on_btn_support_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]
