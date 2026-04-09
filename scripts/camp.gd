@@ -107,7 +107,6 @@ func _invoquer_gardien():
 	get_parent().add_child(nouveau_gardien)
 	nouveau_gardien.global_position = spawn_position
 	nouveau_gardien.mort_par_tueur.connect(_on_gardien_tue)
-	print("Gardien spawn à :", nouveau_gardien.global_position)
 	gardien = nouveau_gardien
 
 func _on_gardien_tue(tueur : Node2D, tueur_equipe : int = -1):
@@ -173,12 +172,6 @@ func terminer_production():
 		
 	get_parent().add_child(soldat)
 	soldat.global_position = spawn_position
-	print("Soldat spawn à :", soldat.global_position)
-	
-	print("Camp :", global_position)
-	print("Point apparition :", point_apparition.global_position)
-	print("Parent :", get_parent().name)
-	
 	if file_production.size() > 0:
 		temps_total_unite_actuelle = catalogue_unites[file_production[0]].temps_fabrication
 		temps_restant = temps_total_unite_actuelle
