@@ -9,6 +9,8 @@ var gardien : Node2D = null
 
 const SCENE_BASE_SOLDAT = preload("res://scenes/personnages/player/soldat.tscn")
 const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie.tscn")
+const SCENE_RANGE = preload("res://scenes/personnages/range/range.tscn")
+const SCENE_HEALER = preload("res://scenes/personnages/healer/healer.tscn")
 const SCENE_GARDIEN = preload("res://scenes/personnages/guardian/gardien.tscn")
 var stats_infanterie = preload("res://scripts/resources/infanterie.tres")
 var stats_archer = preload("res://scripts/resources/archer.tres")
@@ -128,14 +130,23 @@ func demander_production(id : int = 0):
 			temps_total_unite_actuelle = data.temps_fabrication
 			temps_restant = temps_total_unite_actuelle
 
-func _scene_pour_unite(stat: UniteStats) -> PackedScene:
+func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
+	if unite_id == 1:
+		return SCENE_RANGE
+	if unite_id == 4:
+		return SCENE_HEALER
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
 		return SCENE_INFANTERIE
+	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
+		return SCENE_RANGE
+	if stat.type_unite == UniteStats.TypeUnite.HEAL:
+		return SCENE_HEALER
 	return SCENE_BASE_SOLDAT
 
 func terminer_production():
-	var stat = catalogue_unites[file_production.pop_front()]
-	var soldat = _scene_pour_unite(stat).instantiate()
+	var unite_id = file_production.pop_front()
+	var stat = catalogue_unites[unite_id]
+	var soldat = _scene_pour_unite(stat, unite_id).instantiate()
 	soldat.stats = stat
 	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	soldat.equipe = equipe

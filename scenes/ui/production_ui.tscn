@@ -60,7 +60,7 @@ text = "Infanterie (50G)"
 
 [node name="BtnArc" type="Button" parent="Control/Panel/GridContainer" unique_id=294927998]
 layout_mode = 2
-text = "Archer (80G)"
+text = "Range (80G)"
 
 [node name="BtnLourd" type="Button" parent="Control/Panel/GridContainer" unique_id=399910550]
 layout_mode = 2
