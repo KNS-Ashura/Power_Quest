@@ -211,6 +211,25 @@ function rpcJoinMatchByLabel(ctx, logger, nk, payload) {
   return JSON.stringify({ match_id: match.matchId });
 }
 
+function rpcFindPublicMatch(ctx, logger, nk, payload) {
+  var matches = nk.matchList(20, true, "PUBLIC", 0, MAX_PLAYERS - 1, "");
+  if (matches && matches.length > 0) {
+    logger.info("Salon public trouvé: " + matches[0].matchId);
+    return JSON.stringify({ match_id: matches[0].matchId, created: false });
+  }
+
+  var matchId;
+  try {
+    matchId = nk.matchCreate(MODULE_NAME, { label: "PUBLIC" });
+  } catch (e) {
+    logger.error("Erreur création public: " + e.message);
+    throw new Error("Impossible de créer un salon public.");
+  }
+
+  logger.info("Salon public créé: " + matchId);
+  return JSON.stringify({ match_id: matchId, created: true });
+}
+
 function InitModule(ctx, logger, nk, initializer) {
   initializer.registerMatch(MODULE_NAME, {
     matchInit: matchInit,
@@ -224,6 +243,7 @@ function InitModule(ctx, logger, nk, initializer) {
 
   initializer.registerRpc("create_private_match", rpcCreatePrivateMatch);
   initializer.registerRpc("join_match_by_label", rpcJoinMatchByLabel);
+  initializer.registerRpc("find_public_match", rpcFindPublicMatch);
 
   logger.info("Module Power Quest prêt et chargé avec succès !");
 }
