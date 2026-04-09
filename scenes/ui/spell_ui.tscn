@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://buceavab1b56w"]
+
+[ext_resource type="Script" uid="uid://d2qfhkd6apipo" path="res://scripts/spell_ui.gd" id="1_spell_ui"]
+
+[node name="SpellUI" type="CanvasLayer" unique_id=873144193]
+script = ExtResource("1_spell_ui")
+
+[node name="Control" type="Control" parent="." unique_id=675796739]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="Control" unique_id=1628954632]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_left = 0.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -160.0
+offset_right = 300.0
+offset_bottom = -110.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel" unique_id=1843075608]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -130.0
+offset_top = -15.0
+offset_right = 130.0
+offset_bottom = 15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="BtnHeal" type="Button" parent="Control/Panel/HBoxContainer" unique_id=1859602538]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Heal"
+
+[node name="BtnBoost" type="Button" parent="Control/Panel/HBoxContainer" unique_id=1780866597]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Boost"
+
+[connection signal="pressed" from="Control/Panel/HBoxContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
+[connection signal="pressed" from="Control/Panel/HBoxContainer/BtnBoost" to="." method="_on_btn_boost_pressed"]

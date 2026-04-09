@@ -26,6 +26,7 @@ var timer_recherche : float = 0.0
 var cooldown_actuel_sort : float = 0.0
 var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
+var multiplicateur_cadence_attaque: float = 1.0
 var est_en_train_de_mourir : bool = false
 
 func _ready():
@@ -84,6 +85,7 @@ func _physics_process(_delta):
 			boost_actif = false
 			vitesse_unite = stats.vitesse
 			degats_unite = stats.degats
+			multiplicateur_cadence_attaque = 1.0
 			$AnimatedSprite2D.modulate = stats.couleur
 	
 	if is_instance_valid(cible_attaque):
@@ -92,7 +94,7 @@ func _physics_process(_delta):
 		if cible_attaque in zone_detection.get_overlapping_bodies():
 			doit_avancer = false
 			if timer_attaque.is_stopped():
-				var cadence = stats.cadence_attaque if stats and "cadence_attaque" in stats else 1.0
+				var cadence = _cadence_attaque_actuelle()
 				timer_attaque.start(1.0 / cadence)
 		else:
 			timer_attaque.stop()
@@ -409,6 +411,11 @@ func lancer_sort():
 func recevoir_boost(duree: float):
 	boost_actif = true
 	temps_restant_boost = duree
-	vitesse_unite = stats.vitesse * 1.5
-	degats_unite = int(stats.degats * 1.5)
+	vitesse_unite = stats.vitesse * 1.25
+	degats_unite = int(round(stats.degats * 1.25))
+	multiplicateur_cadence_attaque = 1.25
 	$AnimatedSprite2D.modulate = Color(1.5, 1.5, 0.5)
+
+func _cadence_attaque_actuelle() -> float:
+	var cadence_base = stats.cadence_attaque if stats and "cadence_attaque" in stats else 1.0
+	return cadence_base * multiplicateur_cadence_attaque
