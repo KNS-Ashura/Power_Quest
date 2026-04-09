@@ -11,6 +11,7 @@ const SCENE_BASE_SOLDAT = preload("res://scenes/personnages/player/soldat.tscn")
 const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie.tscn")
 const SCENE_RANGE = preload("res://scenes/personnages/range/range.tscn")
 const SCENE_HEAVY = preload("res://scenes/personnages/heavy/heavy.tscn")
+const SCENE_SUPPORT = preload("res://scenes/personnages/support/support.tscn")
 const SCENE_HEALER = preload("res://scenes/personnages/healer/healer.tscn")
 const SCENE_GARDIEN = preload("res://scenes/personnages/guardian/gardien.tscn")
 var stats_infanterie = preload("res://scripts/resources/infanterie.tres")
@@ -136,6 +137,8 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 		return SCENE_RANGE
 	if unite_id == 2:
 		return SCENE_HEAVY
+	if unite_id == 3:
+		return SCENE_SUPPORT
 	if unite_id == 4:
 		return SCENE_HEALER
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
@@ -144,6 +147,8 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 		return SCENE_RANGE
 	if stat.type_unite == UniteStats.TypeUnite.LOURD:
 		return SCENE_HEAVY
+	if stat.type_unite == UniteStats.TypeUnite.SUPPORT:
+		return SCENE_SUPPORT
 	if stat.type_unite == UniteStats.TypeUnite.HEAL:
 		return SCENE_HEALER
 	return SCENE_BASE_SOLDAT
