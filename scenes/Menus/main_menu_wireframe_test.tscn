@@ -1,0 +1,499 @@
+[gd_scene format=3 uid="uid://bvof8xrniskvo"]
+
+[ext_resource type="Script" uid="uid://dk0g5dj8wwfov" path="res://scripts/MainMenuWireframeTest.gd" id="1_5w2s8"]
+
+[node name="MainMenuWireframeTest" type="Control" unique_id=117196739]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_5w2s8")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1668109932]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.08, 0.09, 1)
+
+[node name="ZoneA_PlayerInfo" type="PanelContainer" parent="." unique_id=145978128]
+z_index = 20
+custom_minimum_size = Vector2(360, 340)
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 360.0
+
+[node name="Margin" type="MarginContainer" parent="ZoneA_PlayerInfo" unique_id=1880386843]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ZoneA_PlayerInfo/Margin" unique_id=788652339]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="ZoneA_PlayerInfo/Margin/VBox" unique_id=2020278304]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AvatarPlaceholder" type="Button" parent="ZoneA_PlayerInfo/Margin/VBox/Header" unique_id=1746246073]
+custom_minimum_size = Vector2(90, 90)
+layout_mode = 2
+text = "Profil"
+
+[node name="ProfileTexts" type="VBoxContainer" parent="ZoneA_PlayerInfo/Margin/VBox/Header" unique_id=959081243]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Username" type="Button" parent="ZoneA_PlayerInfo/Margin/VBox/Header/ProfileTexts" unique_id=1879102258]
+layout_mode = 2
+text = "Nom d'utilisateur"
+flat = true
+
+[node name="CurrentLevel" type="Label" parent="ZoneA_PlayerInfo/Margin/VBox/Header/ProfileTexts" unique_id=1740488251]
+layout_mode = 2
+text = "Niveau actuel : 12"
+
+[node name="XpBar" type="ProgressBar" parent="ZoneA_PlayerInfo/Margin/VBox" unique_id=184592769]
+layout_mode = 2
+value = 42.0
+show_percentage = false
+
+[node name="Button_ViewFullProfile" type="Button" parent="ZoneA_PlayerInfo/Margin/VBox" unique_id=237073272]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Voir le Profil Complet"
+
+[node name="Button_ManageAccount" type="Button" parent="ZoneA_PlayerInfo/Margin/VBox" unique_id=679872072]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Gerer le Compte / Connexion"
+
+[node name="ZoneB_CenterMenu" type="CenterContainer" parent="." unique_id=209050618]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ZoneB_CenterMenu" unique_id=462327400]
+custom_minimum_size = Vector2(980, 540)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="ZoneB_CenterMenu/Panel" unique_id=1050130031]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Columns" type="HBoxContainer" parent="ZoneB_CenterMenu/Panel/Margin" unique_id=1355720632]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Column_Multiplayer" type="PanelContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns" unique_id=517242552]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer" unique_id=1879627271]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer/Margin" unique_id=1820248376]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer/Margin/VBox" unique_id=493029115]
+layout_mode = 2
+text = "Multijoueur"
+
+[node name="Description" type="Label" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer/Margin/VBox" unique_id=132800954]
+layout_mode = 2
+text = "Trouvez rapidement des adversaires en ligne."
+autowrap_mode = 3
+
+[node name="Button_QuickMatchmaking" type="Button" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer/Margin/VBox" unique_id=1978761070]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Matchmaking Rapide (1v1, 2v2...)"
+
+[node name="Button_Ranked" type="Button" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_Multiplayer/Margin/VBox" unique_id=698456097]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Parties Classees"
+
+[node name="Column_CustomCommunity" type="PanelContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns" unique_id=592427457]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity" unique_id=164961612]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity/Margin" unique_id=1384500741]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity/Margin/VBox" unique_id=989983342]
+layout_mode = 2
+text = "Partie Personnalisee"
+
+[node name="Description" type="Label" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity/Margin/VBox" unique_id=947674501]
+layout_mode = 2
+text = "Creez vos propres regles ou jouez avec des amis."
+autowrap_mode = 3
+
+[node name="Button_CreateGame" type="Button" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity/Margin/VBox" unique_id=1449996584]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Creer une Partie"
+
+[node name="Button_JoinGame" type="Button" parent="ZoneB_CenterMenu/Panel/Margin/Columns/Column_CustomCommunity/Margin/VBox" unique_id=305496167]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Rejoindre une Partie"
+
+[node name="ZoneC_BottomToolbar" type="PanelContainer" parent="." unique_id=72884930]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -72.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Margin" type="MarginContainer" parent="ZoneC_BottomToolbar" unique_id=7637588]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="ZoneC_BottomToolbar/Margin" unique_id=1060723125]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Button_Social" type="Button" parent="ZoneC_BottomToolbar/Margin/HBox" unique_id=1739372527]
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+text = "Liste d'Amis / Social"
+
+[node name="Button_Settings" type="Button" parent="ZoneC_BottomToolbar/Margin/HBox" unique_id=971450036]
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+text = "Parametres du Jeu"
+
+[node name="Spacer" type="Control" parent="ZoneC_BottomToolbar/Margin/HBox" unique_id=599686504]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GameVersion" type="Label" parent="ZoneC_BottomToolbar/Margin/HBox" unique_id=295257957]
+layout_mode = 2
+text = "v1.2.3"
+
+[node name="Button_Quit" type="Button" parent="ZoneC_BottomToolbar/Margin/HBox" unique_id=1597228849]
+custom_minimum_size = Vector2(170, 48)
+layout_mode = 2
+text = "Quitter le Jeu"
+
+[node name="SettingsOverlay" type="ColorRect" parent="." unique_id=155000001]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.45)
+
+[node name="SettingsPopup" type="PanelContainer" parent="." unique_id=155000002]
+visible = false
+z_index = 50
+custom_minimum_size = Vector2(700, 460)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -230.0
+offset_right = 350.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="SettingsPopup" unique_id=155000003]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="SettingsPopup/Margin" unique_id=155000004]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000005]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="SettingsPopup/Margin/VBox/Header" unique_id=155000006]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Parametres du Jeu"
+
+[node name="CloseButton" type="Button" parent="SettingsPopup/Margin/VBox/Header" unique_id=155000007]
+custom_minimum_size = Vector2(110, 36)
+layout_mode = 2
+text = "Fermer"
+
+[node name="RowBrightness" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000008]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="SettingsPopup/Margin/VBox/RowBrightness" unique_id=155000009]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Luminosite"
+
+[node name="BrightnessSlider" type="HSlider" parent="SettingsPopup/Margin/VBox/RowBrightness" unique_id=155000010]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+
+[node name="RowMaster" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000011]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="SettingsPopup/Margin/VBox/RowMaster" unique_id=155000012]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Volume Principal"
+
+[node name="MasterSlider" type="HSlider" parent="SettingsPopup/Margin/VBox/RowMaster" unique_id=155000013]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 75.0
+
+[node name="RowMusic" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000014]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="SettingsPopup/Margin/VBox/RowMusic" unique_id=155000015]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Volume Musique"
+
+[node name="MusicSlider" type="HSlider" parent="SettingsPopup/Margin/VBox/RowMusic" unique_id=155000016]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 65.0
+
+[node name="RowSfx" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000017]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="SettingsPopup/Margin/VBox/RowSfx" unique_id=155000018]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Volume Effets Sonores (SFX)"
+
+[node name="SfxSlider" type="HSlider" parent="SettingsPopup/Margin/VBox/RowSfx" unique_id=155000019]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 70.0
+
+[node name="RowLanguage" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=155000020]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="SettingsPopup/Margin/VBox/RowLanguage" unique_id=155000021]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Langue du Texte"
+
+[node name="LanguageSelect" type="OptionButton" parent="SettingsPopup/Margin/VBox/RowLanguage" unique_id=155000022]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+popup/item_0/text = "Francais"
+popup/item_0/id = 1
+popup/item_1/text = "Anglais"
+popup/item_1/id = 2
+
+[node name="ApplyButton" type="Button" parent="SettingsPopup/Margin/VBox" unique_id=155000023]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Appliquer"
+
+[node name="MultiplayerOverlay" type="ColorRect" parent="." unique_id=155000024]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.45)
+
+[node name="MultiplayerPopup" type="PanelContainer" parent="." unique_id=155000025]
+visible = false
+z_index = 60
+custom_minimum_size = Vector2(620, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -180.0
+offset_right = 310.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="MultiplayerPopup" unique_id=155000026]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="MultiplayerPopup/Margin" unique_id=155000027]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="MultiplayerPopup/Margin/VBox" unique_id=155000028]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MultiplayerPopup/Margin/VBox/Header" unique_id=155000029]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Multijoueur - Code de partie"
+
+[node name="CloseButton" type="Button" parent="MultiplayerPopup/Margin/VBox/Header" unique_id=155000030]
+custom_minimum_size = Vector2(110, 36)
+layout_mode = 2
+text = "Fermer"
+
+[node name="CodeRow" type="HBoxContainer" parent="MultiplayerPopup/Margin/VBox" unique_id=155000031]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CodeLabel" type="Label" parent="MultiplayerPopup/Margin/VBox/CodeRow" unique_id=155000032]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "Code du salon"
+
+[node name="CodeInput" type="LineEdit" parent="MultiplayerPopup/Margin/VBox/CodeRow" unique_id=155000033]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: AB12CD"
+max_length = 6
+
+[node name="CodeCreatedRow" type="HBoxContainer" parent="MultiplayerPopup/Margin/VBox" unique_id=155000034]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CodeCreatedLabel" type="Label" parent="MultiplayerPopup/Margin/VBox/CodeCreatedRow" unique_id=155000035]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "Code genere"
+
+[node name="CodeValue" type="Label" parent="MultiplayerPopup/Margin/VBox/CodeCreatedRow" unique_id=155000036]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "------"
+
+[node name="Status" type="Label" parent="MultiplayerPopup/Margin/VBox" unique_id=155000037]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Creez un salon prive ou rejoignez un code."
+autowrap_mode = 3
+
+[node name="ActionsRow" type="HBoxContainer" parent="MultiplayerPopup/Margin/VBox" unique_id=155000038]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CreateCodeButton" type="Button" parent="MultiplayerPopup/Margin/VBox/ActionsRow" unique_id=155000039]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Creer une partie (code)"
+
+[node name="JoinCodeButton" type="Button" parent="MultiplayerPopup/Margin/VBox/ActionsRow" unique_id=155000040]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rejoindre par code"
+
+[node name="RoomPanel" type="PanelContainer" parent="MultiplayerPopup/Margin/VBox" unique_id=155000041]
+visible = false
+layout_mode = 2
+
+[node name="RoomMargin" type="MarginContainer" parent="MultiplayerPopup/Margin/VBox/RoomPanel" unique_id=155000042]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="RoomVBox" type="VBoxContainer" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin" unique_id=155000043]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RoomTitle" type="Label" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox" unique_id=155000044]
+layout_mode = 2
+text = "Salon en cours"
+
+[node name="RoomCode" type="Label" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox" unique_id=155000045]
+layout_mode = 2
+text = "Code: ------"
+
+[node name="RoomPlayers" type="ItemList" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox" unique_id=155000046]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+
+[node name="RoomActions" type="HBoxContainer" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox" unique_id=155000047]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CopyCodeButton" type="Button" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox/RoomActions" unique_id=155000048]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copier le code"
+
+[node name="StartGameButton" type="Button" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox/RoomActions" unique_id=155000049]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lancer la partie"
+
+[node name="LeaveRoomButton" type="Button" parent="MultiplayerPopup/Margin/VBox/RoomPanel/RoomMargin/RoomVBox/RoomActions" unique_id=155000050]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Quitter le salon"

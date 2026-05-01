@@ -1,0 +1,166 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AccountManagementMenu.gd" id="1_hv2d8"]
+
+[node name="AccountManagementMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hv2d8")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(860, 640)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/Header"]
+custom_minimum_size = Vector2(120, 42)
+layout_mode = 2
+text = "Retour"
+
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Header"]
+layout_mode = 2
+text = "Gestion du Compte"
+
+[node name="UserInfo" type="HBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UserLabel" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Header/UserInfo"]
+layout_mode = 2
+text = "Utilisateur :"
+
+[node name="UserValue" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Header/UserInfo"]
+layout_mode = 2
+text = "Non connecte"
+
+[node name="Body" type="HBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="SectionEmail" type="PanelContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EmailMargin" type="MarginContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="EmailVBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail/EmailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail/EmailMargin/EmailVBox"]
+layout_mode = 2
+text = "Email"
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail/EmailMargin/EmailVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+placeholder_text = "nouvel.email@exemple.com"
+
+[node name="SaveEmailButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail/EmailMargin/EmailVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Enregistrer l'email"
+
+[node name="SectionPassword" type="PanelContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PasswordMargin" type="MarginContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="PasswordVBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox"]
+layout_mode = 2
+text = "Mot de passe"
+
+[node name="CurrentPasswordInput" type="LineEdit" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+secret = true
+placeholder_text = "Mot de passe actuel"
+
+[node name="NewPasswordInput" type="LineEdit" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+secret = true
+placeholder_text = "Nouveau mot de passe"
+
+[node name="ConfirmPasswordInput" type="LineEdit" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+secret = true
+placeholder_text = "Confirmer le nouveau mot de passe"
+
+[node name="SavePasswordButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Enregistrer le mot de passe"
+
+[node name="Footer" type="VBoxContainer" parent="CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Status" type="Label" parent="CenterContainer/PanelContainer/Margin/VBox/Footer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="LogoutButton" type="Button" parent="CenterContainer/PanelContainer/Margin/VBox/Footer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Se deconnecter"
+
+[connection signal="pressed" from="CenterContainer/PanelContainer/Margin/VBox/Header/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/Margin/VBox/Body/SectionEmail/EmailMargin/EmailVBox/SaveEmailButton" to="." method="_on_save_email_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/Margin/VBox/Body/SectionPassword/PasswordMargin/PasswordVBox/SavePasswordButton" to="." method="_on_save_password_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/Margin/VBox/Footer/LogoutButton" to="." method="_on_logout_pressed"]

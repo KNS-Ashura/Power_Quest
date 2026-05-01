@@ -27,6 +27,9 @@ func _on_reflexion():
 	_gerer_militaires()
 
 func _recuperer_mes_camps() -> Array:
+	# En solo, l'IA contrôle l'équipe 1. En multi, l'IA est inactive (joueur humain).
+	if ServerConnection.has_valid_session():
+		return []
 	return get_tree().get_nodes_in_group("camps").filter(func(c): return c.get("equipe") == 1)
 
 func _gerer_production(mes_camps : Array):

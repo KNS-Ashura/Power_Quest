@@ -1,0 +1,368 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/PlayerProfileWireframe.gd" id="1_s0y7h"]
+
+[node name="PlayerProfileWireframe" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_s0y7h")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.08, 0.09, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1200, 760)
+layout_mode = 2
+
+[node name="MainMargin" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="RootVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderRow" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Button_Back" type="Button" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow"]
+custom_minimum_size = Vector2(110, 42)
+layout_mode = 2
+text = "Retour"
+
+[node name="HeaderContent" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HeaderMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="AvatarLarge" type="ColorRect" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin/HeaderHBox"]
+custom_minimum_size = Vector2(110, 110)
+layout_mode = 2
+color = Color(0.2, 0.2, 0.22, 1)
+
+[node name="IdentityVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Username" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin/HeaderHBox/IdentityVBox"]
+layout_mode = 2
+text = "NomUtilisateur123"
+
+[node name="RankTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin/HeaderHBox/IdentityVBox"]
+layout_mode = 2
+text = "Capitaine - Or II"
+
+[node name="RankIconPlaceholder" type="ColorRect" parent="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/HeaderContent/HeaderMargin/HeaderHBox"]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+color = Color(0.25, 0.25, 0.25, 1)
+
+[node name="TabsPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TabsMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="TabContainer" type="TabContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin"]
+layout_mode = 2
+current_tab = 0
+
+[node name="Resume" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ProgressionPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume"]
+layout_mode = 2
+
+[node name="ProgressionMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ProgressionVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ProgressionTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin/ProgressionVBox"]
+layout_mode = 2
+text = "Progression"
+
+[node name="CurrentLevel" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin/ProgressionVBox"]
+layout_mode = 2
+text = "Niveau actuel : 27"
+
+[node name="XpBarDetailed" type="ProgressBar" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin/ProgressionVBox"]
+layout_mode = 2
+max_value = 20000.0
+value = 15400.0
+show_percentage = false
+
+[node name="XpText" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin/ProgressionVBox"]
+layout_mode = 2
+text = "15 400 / 20 000 XP"
+
+[node name="NextUnlock" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/ProgressionPanel/ProgressionMargin/ProgressionVBox"]
+layout_mode = 2
+text = "Prochain deblocage : Nouvelle icone d'unite"
+
+[node name="KeyStatsPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume"]
+layout_mode = 2
+
+[node name="KeyStatsMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="KeyStatsVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="KeyStatsTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin/KeyStatsVBox"]
+layout_mode = 2
+text = "Performances cles"
+
+[node name="TotalGames" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin/KeyStatsVBox"]
+layout_mode = 2
+text = "Total parties jouees : 328"
+
+[node name="WinLossRatio" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin/KeyStatsVBox"]
+layout_mode = 2
+text = "Ratio victoires/defaites : 58 %"
+
+[node name="DisconnectRate" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin/KeyStatsVBox"]
+layout_mode = 2
+text = "Taux de deconnexion : 1.2 %"
+
+[node name="TotalPlaytime" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/Resume/KeyStatsPanel/KeyStatsMargin/KeyStatsVBox"]
+layout_mode = 2
+text = "Temps de jeu total : 184 h"
+
+[node name="StatistiquesDetaillees" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="CombatEconomyPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees"]
+layout_mode = 2
+
+[node name="CombatEconomyMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="CombatEconomyVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CombatEconomyTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin/CombatEconomyVBox"]
+layout_mode = 2
+text = "Combat & Economie (moyennes par partie)"
+
+[node name="EnemyUnitsDestroyed" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin/CombatEconomyVBox"]
+layout_mode = 2
+text = "Unites ennemies detruites : 74"
+
+[node name="AlliedUnitsLost" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin/CombatEconomyVBox"]
+layout_mode = 2
+text = "Unites alliees perdues : 49"
+
+[node name="ResourcesGathered" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin/CombatEconomyVBox"]
+layout_mode = 2
+text = "Ressources recoltees : 12 300"
+
+[node name="BuildingsBuiltDestroyed" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/CombatEconomyPanel/CombatEconomyMargin/CombatEconomyVBox"]
+layout_mode = 2
+text = "Batiments construits/detruits : 18 / 6"
+
+[node name="PreferencesPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees"]
+layout_mode = 2
+
+[node name="PreferencesMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="PreferencesVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel/PreferencesMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PreferencesTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel/PreferencesMargin/PreferencesVBox"]
+layout_mode = 2
+text = "Preferences de jeu"
+
+[node name="MostPlayedFaction" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel/PreferencesMargin/PreferencesVBox"]
+layout_mode = 2
+text = "Faction la plus jouee : Sentinelles"
+
+[node name="MostPlayedMap" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel/PreferencesMargin/PreferencesVBox"]
+layout_mode = 2
+text = "Carte la plus jouee : Vallee Perdue"
+
+[node name="PreferredMode" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/StatistiquesDetaillees/PreferencesPanel/PreferencesMargin/PreferencesVBox"]
+layout_mode = 2
+text = "Mode prefere : Classe 1v1"
+
+[node name="HistoriqueDesParties" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HistoryInfo" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties"]
+layout_mode = 2
+text = "Dernieres parties jouees"
+
+[node name="HistoryScroll" type="ScrollContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HistoryList" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="MatchRow1" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList"]
+layout_mode = 2
+
+[node name="RowMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="RowVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Result" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.8, 0.2, 1)
+text = "Victoire"
+
+[node name="Meta" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox"]
+layout_mode = 2
+text = "Classe 1v1 | Vallee Perdue | 24 min 15 s | 2026-04-09 21:42"
+
+[node name="Opponents" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox"]
+layout_mode = 2
+text = "Adversaire(s) : @Rival_A (cliquable)"
+
+[node name="Actions" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Button_ViewDetails" type="Button" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox/Actions"]
+custom_minimum_size = Vector2(140, 34)
+layout_mode = 2
+text = "Voir les Details"
+
+[node name="Button_DownloadReplay" type="Button" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow1/RowMargin/RowVBox/Actions"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "Telecharger le Replay"
+
+[node name="MatchRow2" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList"]
+layout_mode = 2
+
+[node name="RowMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="RowVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Result" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.2, 0.2, 1)
+text = "Defaite"
+
+[node name="Meta" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox"]
+layout_mode = 2
+text = "Classe 2v2 | Steppes de Fer | 31 min 03 s | 2026-04-08 19:10"
+
+[node name="Opponents" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox"]
+layout_mode = 2
+text = "Adversaire(s) : @Team_Zeta (cliquable)"
+
+[node name="Actions" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Button_ViewDetails" type="Button" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox/Actions"]
+custom_minimum_size = Vector2(140, 34)
+layout_mode = 2
+text = "Voir les Details"
+
+[node name="Button_DownloadReplay" type="Button" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HistoriqueDesParties/HistoryScroll/HistoryList/MatchRow2/RowMargin/RowVBox/Actions"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "Telecharger le Replay"
+
+[node name="HautsFaits" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AchievementsInfo" type="Label" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HautsFaits"]
+layout_mode = 2
+text = "Version epuree et factuelle"
+
+[node name="AchievementsList" type="ItemList" parent="CenterContainer/MainPanel/MainMargin/RootVBox/TabsPanel/TabsMargin/TabContainer/HautsFaits"]
+layout_mode = 2
+size_flags_vertical = 3
+item_count = 5
+item_0/text = "Premier sang - 1ere victoire en ligne"
+item_1/text = "Stratege - 100 parties jouees"
+item_2/text = "Economiste - 500 000 ressources recoltees"
+item_3/text = "Tenace - 50 victoires classees"
+item_4/text = "Veteran - 100 heures de jeu"
+
+[connection signal="pressed" from="CenterContainer/MainPanel/MainMargin/RootVBox/HeaderRow/Button_Back" to="." method="_on_button_back_pressed"]

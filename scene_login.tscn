@@ -2,202 +2,152 @@
 
 [ext_resource type="Script" uid="uid://1y3h2bc3lalj" path="res://scripts/Nakama_multi/LoginScreen.gd" id="1_m0rjf"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m0rjf"]
-bg_color = Color(0.08627451, 0.09803922, 0.17254902, 1)
-corner_detail = 10
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wlj4p"]
-content_margin_left = 10.0
-bg_color = Color(0.05882353, 0.06666667, 0.11764706, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.1764706, 0.19607843, 0.3529412, 1)
-corner_detail = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jfjcl"]
-content_margin_left = 10.0
-bg_color = Color(0.05882353, 0.06666667, 0.11764706, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.1764706, 0.19607843, 0.3529412, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-corner_detail = 5
-expand_margin_left = 10.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q3vya"]
-content_margin_left = 10.0
-bg_color = Color(0.05882353, 0.06666667, 0.11764706, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.1764706, 0.19607843, 0.3529412, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-corner_detail = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i1gj8"]
-bg_color = Color(0, 0.65882355, 0.9098039, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aknrp"]
-content_margin_left = 10.0
-bg_color = Color(0.05882353, 0.06666667, 0.11764706, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_elb8g"]
-content_margin_left = 10.0
-bg_color = Color(0.05882353, 0.06666667, 0.11764706, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rsthb"]
-bg_color = Color(0, 0.65882355, 0.9098039, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
 [node name="Scene_login" type="Control" unique_id=1870547968]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_m0rjf")
 
-[node name="Panel" type="Panel" parent="." unique_id=431374615]
+[node name="Background" type="ColorRect" parent="." unique_id=431374615]
 layout_mode = 0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_m0rjf")
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.13, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=587471631]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=587471631]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 400.0
-offset_top = 200.0
-offset_right = 823.0
-offset_bottom = 491.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer" unique_id=729437865]
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer" unique_id=1870547999]
+custom_minimum_size = Vector2(940, 560)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer" unique_id=729437800]
+layout_mode = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 30
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer" unique_id=729437865]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 8
-theme_override_constants/separation = 60
+theme_override_constants/separation = 40
 alignment = 1
 
-[node name="VBoxInscription" type="VBoxContainer" parent="Panel/MarginContainer/HBoxContainer" unique_id=209093525]
+[node name="VBoxInscription" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer" unique_id=209093525]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 14
 
-[node name="Label_Inscription_titre" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1828460579]
+[node name="Label_Inscription_titre" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1828460579]
 layout_mode = 2
-text = "Inscription de con"
+text = "Inscription"
 
-[node name="Label_Email" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1906782573]
+[node name="Label_Inscription_help" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1828460580]
 layout_mode = 2
-text = "Titre"
+text = "Creer un nouveau compte"
 
-[node name="LineEdit_Email" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1063142460]
-unique_name_in_owner = true
+[node name="Label_Email" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1906782573]
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_wlj4p")
 text = "Email"
 
-[node name="Label_password" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1347235948]
+[node name="LineEdit_Email" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1063142460]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+placeholder_text = "Email"
+
+[node name="Label_password" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=1347235948]
 layout_mode = 2
 text = "Password"
 
-[node name="LineEdit_Password" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=2097209960]
+[node name="LineEdit_Password" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=2097209960]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_jfjcl")
-text = "Password"
+placeholder_text = "Password"
+secret = true
 
-[node name="LineEdit_Username" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=126964682]
-unique_name_in_owner = true
+[node name="Label_Username" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=126964683]
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_q3vya")
+text = "Username"
 
-[node name="Label_Status" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=776616798]
+[node name="LineEdit_Username" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=126964682]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-text = "affichage erreur"
+placeholder_text = "Username"
 
-[node name="Button_login" type="Button" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=2098512709]
+[node name="Label_Status" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=776616798]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_i1gj8")
+autowrap_mode = 3
+
+[node name="Button_login" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription" unique_id=2098512709]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
 text = "S'inscrire"
 
-[node name="VSeparator" type="VSeparator" parent="Panel/MarginContainer/HBoxContainer/VBoxInscription" unique_id=594646581]
+[node name="VSeparator" type="VSeparator" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer" unique_id=594646581]
 layout_mode = 2
 
-[node name="VBoxConnexion" type="VBoxContainer" parent="Panel/MarginContainer/HBoxContainer" unique_id=1399263238]
+[node name="VBoxConnexion" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer" unique_id=1399263238]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 14
 
-[node name="Label_Connexion_titre" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1907410544]
+[node name="Label_Connexion_titre" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1907410544]
 layout_mode = 2
-text = "Connexion de con aussi tiens"
+text = "Connexion"
 
-[node name="Label_Email_Login" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1695764232]
+[node name="Label_Connexion_help" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1907410545]
 layout_mode = 2
-text = "Email login :"
+text = "Acceder a votre compte"
 
-[node name="LineEdit_Email_Login" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=607254975]
+[node name="Label_Email_Login" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1695764232]
+layout_mode = 2
+text = "Email"
+
+[node name="LineEdit_Email_Login" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=607254975]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_aknrp")
+placeholder_text = "Email"
 
-[node name="Label_Password_Login" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1003836754]
+[node name="Label_Password_Login" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1003836754]
 layout_mode = 2
-text = "Password :"
+text = "Password"
 
-[node name="LineEdit_Password_Login" type="LineEdit" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=823226790]
+[node name="LineEdit_Password_Login" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=823226790]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_elb8g")
+placeholder_text = "Password"
+secret = true
 
-[node name="Label_Status_login" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=356421933]
+[node name="Label_Status_login" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=356421933]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-text = "affichage erreur"
+autowrap_mode = 3
 
-[node name="Button_connexion" type="Button" parent="Panel/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1131587829]
+[node name="Button_connexion" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion" unique_id=1131587829]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_rsthb")
 text = "Se connecter"
 
-[node name="Control" type="Control" parent="." unique_id=505226793]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[connection signal="pressed" from="Panel/MarginContainer/HBoxContainer/VBoxInscription/Button_login" to="." method="_on_button_login_pressed"]
-[connection signal="pressed" from="Panel/MarginContainer/HBoxContainer/VBoxConnexion/Button_connexion" to="." method="_on_button_connexion_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxInscription/Button_login" to="." method="_on_button_login_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxConnexion/Button_connexion" to="." method="_on_button_connexion_pressed"]

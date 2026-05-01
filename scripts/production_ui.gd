@@ -22,7 +22,7 @@ func _on_batiment_change(bat):
 
 	current_batiment = bat
 	
-	if current_batiment and current_batiment.get("equipe") == 0:
+	if current_batiment and current_batiment.get("equipe") == ServerConnection.local_side:
 		panel.show()
 		_update_queue_display(0, 0)
 		if not current_batiment.production_maj.is_connected(_update_queue_display):

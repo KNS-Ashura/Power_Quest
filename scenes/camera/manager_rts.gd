@@ -91,7 +91,7 @@ func _unhandled_input(event):
 			var obj = res.collider
 			if obj and obj.has_method("recevoir_degats") and not obj.is_in_group("camps"):
 				var eq = obj.get("equipe")
-				if eq != null and eq != 0:
+				if eq != null and eq != ServerConnection.local_side:
 					cible = obj
 					break
 				
@@ -104,7 +104,7 @@ func _unhandled_input(event):
 			for i in range(nb):
 				var offset = Vector2(
 					(i % int(cols)) * espace - (cols - 1) * espace / 2.0,
-					(i / int(cols)) * espace - (ceil(float(nb) / cols) - 1) * espace / 2.0
+					(float(i) / int(cols)) * espace - (ceil(float(nb) / cols) - 1) * espace / 2.0
 				)
 				selection[i].aller_vers(dest + offset)
 
@@ -112,7 +112,7 @@ func selectionner_unites():
 	var zone = Rect2(boite_selection.global_position, boite_selection.size)
 	for soldat in get_tree().get_nodes_in_group("soldats"):
 		if soldat.has_method("set_selection"):
-			soldat.set_selection(soldat.get("equipe") == 0 and zone.has_point(soldat.global_position))
+			soldat.set_selection(soldat.get("equipe") == ServerConnection.local_side and zone.has_point(soldat.global_position))
 
 func _gerer_clic_batiment():
 	var requete = PhysicsPointQueryParameters2D.new()

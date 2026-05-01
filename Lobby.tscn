@@ -4,44 +4,82 @@
 
 [node name="Lobby" type="Control" unique_id=773446534]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_gv8if")
 
-[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1080027066]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Background" type="ColorRect" parent="." unique_id=1080027000]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.13, 1)
 
-[node name="PanelContainer" type="Panel" parent="CenterContainer" unique_id=531496740]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1080027066]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer" unique_id=531496740]
+custom_minimum_size = Vector2(640, 760)
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer" unique_id=1580189034]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 26
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer" unique_id=1593601727]
 layout_mode = 2
+theme_override_constants/separation = 14
 
-[node name="Label (CODE DU SALON)" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1162486231]
+[node name="Label_Title" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1162486231]
 layout_mode = 2
+text = "Lobby"
+horizontal_alignment = 1
+
+[node name="Label_Help" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1162486233]
+layout_mode = 2
+text = "Creez un salon ou rejoignez-en un avec un code."
+horizontal_alignment = 1
+
+[node name="Label_CodeTitre" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1162486232]
+layout_mode = 2
+text = "Code du salon"
 
 [node name="Label_CodeRecu" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=513164891]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 text = "------"
+horizontal_alignment = 1
 
 [node name="Label_Status_Lobby" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=352860502]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+autowrap_mode = 3
 
 [node name="Button_creer" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=919069620]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
-text = "CRÉER UN SALON"
+text = "Creer un salon"
 
 [node name="Button_copy" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=977941213]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "Copier le code"
 
@@ -51,27 +89,35 @@ layout_mode = 2
 
 [node name="LineEdit_SaisieCode" type="LineEdit" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=222776552]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 placeholder_text = "Entrer code pour rejoindre"
 
 [node name="Button_join" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=902906732]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 text = "Rejoindre"
 
+[node name="Button_find_public" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1200901201]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Chercher une partie publique"
+
 [node name="ItemList_Joueurs" type="ItemList" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1966269686]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 
 [node name="Button_start" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1656801707]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "LANCER"
+text = "Lancer la partie"
 
 [connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_creer" to="." method="_on_button_creer_pressed"]
 [connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_copy" to="." method="_on_button_copy_pressed"]
 [connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_join_pressed"]
-[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_copy_pressed"]
-[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_start_pressed"]
-[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_join" to="." method="_on_button_create_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_find_public" to="." method="_on_button_find_public_pressed"]
 [connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Button_start" to="." method="_on_button_start_pressed"]

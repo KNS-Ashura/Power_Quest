@@ -1,0 +1,247 @@
+[gd_scene format=3 uid="uid://csai4kj1kd3k2"]
+
+[ext_resource type="Script" uid="uid://dtd4sl8yu6fob" path="res://scenes/Menus/menu1.gd" id="1_lda8a"]
+
+[node name="Menu1" type="Control" unique_id=809992720]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lda8a")
+
+[node name="Background" type="ColorRect" parent="." unique_id=547005533]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.13, 0.16, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=148100100]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainMenuWrapper" type="MarginContainer" parent="CenterContainer" unique_id=362298100]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 24
+
+[node name="MainMenu" type="VBoxContainer" parent="CenterContainer/MainMenuWrapper" unique_id=362298166]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Titre_du_jeu" type="Label" parent="CenterContainer/MainMenuWrapper/MainMenu" unique_id=1612615104]
+layout_mode = 2
+text = "Power Quest"
+horizontal_alignment = 1
+
+[node name="SousTitre" type="Label" parent="CenterContainer/MainMenuWrapper/MainMenu" unique_id=1612615105]
+layout_mode = 2
+text = "Choisissez une action pour commencer"
+horizontal_alignment = 1
+
+[node name="BoutonPlay" type="Button" parent="CenterContainer/MainMenuWrapper/MainMenu" unique_id=1505195738]
+custom_minimum_size = Vector2(300, 52)
+layout_mode = 2
+text = "Jouer maintenant"
+
+[node name="BottomActions" type="MarginContainer" parent="." unique_id=188334000]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -84.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BottomActions" unique_id=1378996369]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Spacer" type="Control" parent="BottomActions/HBoxContainer" unique_id=1809424171]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SettingsButton" type="Button" parent="BottomActions/HBoxContainer" unique_id=1533060626]
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+text = "Parametres"
+
+[node name="LeaderBoard" type="Button" parent="BottomActions/HBoxContainer" unique_id=1386436705]
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+text = "Classement"
+
+[node name="CloseOverlay" type="Button" parent="." unique_id=1909943816]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="PopupCenter" type="CenterContainer" parent="." unique_id=194102200]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PopupStack" type="VBoxContainer" parent="PopupCenter" unique_id=194110100]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MenuLeaderboard" type="PanelContainer" parent="PopupCenter/PopupStack" unique_id=1946199051]
+visible = false
+custom_minimum_size = Vector2(420, 300)
+layout_mode = 2
+
+[node name="LeaderboardMargin" type="MarginContainer" parent="PopupCenter/PopupStack/MenuLeaderboard" unique_id=194120299]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="LeaderboardContent" type="VBoxContainer" parent="PopupCenter/PopupStack/MenuLeaderboard/LeaderboardMargin" unique_id=194120300]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="PopupCenter/PopupStack/MenuLeaderboard/LeaderboardMargin/LeaderboardContent" unique_id=194120301]
+layout_mode = 2
+text = "Classement"
+horizontal_alignment = 1
+
+[node name="Info" type="Label" parent="PopupCenter/PopupStack/MenuLeaderboard/LeaderboardMargin/LeaderboardContent" unique_id=194120302]
+layout_mode = 2
+text = "Aucune donnee pour l'instant."
+horizontal_alignment = 1
+
+[node name="MenuSettings" type="PanelContainer" parent="PopupCenter/PopupStack" unique_id=75534834]
+visible = false
+custom_minimum_size = Vector2(620, 420)
+layout_mode = 2
+
+[node name="SettingsMargin" type="MarginContainer" parent="PopupCenter/PopupStack/MenuSettings" unique_id=447239089]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin" unique_id=447239090]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=153110100]
+layout_mode = 2
+text = "Parametres"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=153110101]
+layout_mode = 2
+text = "Reglez les options principales du jeu."
+autowrap_mode = 3
+
+[node name="HBoxContainer_brightness" type="HBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1641461201]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_brightness" unique_id=1905183501]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+text = "Luminosite"
+
+[node name="BrightnessSlider" type="HSlider" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_brightness" unique_id=1625398601]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+
+[node name="HBoxContainer_master" type="HBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1641461202]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_master" unique_id=1905183502]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+text = "Volume Principal"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_master" unique_id=1625398602]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 75.0
+
+[node name="HBoxContainer_music" type="HBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1641461203]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_music" unique_id=1905183503]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+text = "Volume Musique"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_music" unique_id=1625398603]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 60.0
+
+[node name="HBoxContainer_sfx" type="HBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1641461204]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_sfx" unique_id=1905183504]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+text = "Volume Effets Sonores (SFX)"
+
+[node name="SfxVolumeSlider" type="HSlider" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_sfx" unique_id=1625398604]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 70.0
+
+[node name="HBoxContainer_lang" type="HBoxContainer" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1641461276]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LabelLangue" type="Label" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_lang" unique_id=1905183510]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+text = "Langue du Texte"
+
+[node name="LangSelector" type="OptionButton" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer/HBoxContainer_lang" unique_id=1625398625]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+popup/item_0/text = "Francais"
+popup/item_0/id = 1
+popup/item_1/text = "Anglais"
+popup/item_1/id = 2
+
+[node name="Apply" type="Button" parent="PopupCenter/PopupStack/MenuSettings/SettingsMargin/VBoxContainer" unique_id=1090372872]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Appliquer"
+
+[connection signal="pressed" from="BottomActions/HBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="BottomActions/HBoxContainer/LeaderBoard" to="." method="_on_leaderboard_button_pressed"]
+[connection signal="pressed" from="CloseOverlay" to="." method="_on_close_overlay_pressed"]

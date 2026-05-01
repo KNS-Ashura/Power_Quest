@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="2proj"
-run/main_scene="uid://co2b4fmnyusb2"
+run/main_scene="res://scenes/Menus/main_menu_wireframe_test.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
@@ -25,17 +25,21 @@ GameManager="*res://scripts/game_manager.gd"
 IAManager="*res://scripts/ia_manager.gd"
 Nakama="*uid://dp22oh0b7cnqv"
 ServerConnection="*uid://c4hadsfv1ymsd"
+Sound="*res://scripts/sound.gd"
 AuthManager="*uid://xgn0kshb78lt"
 LobbyManager="*uid://prj0r0soy7df"
+NetworkAuthority="*res://scripts/Nakama_multi/NetworkAuthority.gd"
+GameplayMpBridge="*res://scripts/Nakama_multi/GameplayMpBridge.gd"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
-window/size/window_width_override=1280
-window/size/window_height_override=720
-window/stretch/mode="viewport"
-window/stretch/aspect="keep_height"
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 window/stretch/scale_mode="integer"
 
 [editor]
