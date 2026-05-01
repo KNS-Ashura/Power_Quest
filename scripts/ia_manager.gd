@@ -45,7 +45,7 @@ func _gerer_production(mes_camps : Array):
 				or_ia -= data.prix
 				camp.file_production.append(unite_choisie)
 				if camp.file_production.size() == 1:
-					camp.temps_total_unite_actuelle = data.temps_fabrication
+					camp.temps_total_unite_actuelle = camp.temps_fabrication_unite(unite_choisie) if camp.has_method("temps_fabrication_unite") else data.temps_fabrication
 					camp.temps_restant = camp.temps_total_unite_actuelle
 
 func _gerer_militaires():

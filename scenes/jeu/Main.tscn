@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://cjncnq5yit72b"]
 
 [ext_resource type="TileSet" uid="uid://b7brpmlj7c3ix" path="res://Tilesets/game_tile_set.tres" id="1_j8wkn"]
-[ext_resource type="PackedScene" uid="uid://2rsxqtas1p5d" path="res://scenes/camp/camp_1_map_3/camp1_map3_joueurV.tscn" id="2_4iars"]
+[ext_resource type="PackedScene" path="res://scenes/camp/camp_nv1.tscn" id="2_4iars"]
 [ext_resource type="PackedScene" uid="uid://ybntlc6fwopw" path="res://scenes/camera/manager_rts.tscn" id="3_in3gv"]
 [ext_resource type="PackedScene" uid="uid://cui68p4q4p4m" path="res://scenes/ui/production_ui.tscn" id="5_in3gv"]
 [ext_resource type="PackedScene" path="res://scenes/ui/spell_ui.tscn" id="6_spell"]
