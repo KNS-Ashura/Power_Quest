@@ -79,7 +79,7 @@ shape = SubResource("RectangleShape2D_8p3q1")
 debug_color = Color(0, 0.6, 0.69803923, 0)
 
 [node name="Marker2D" type="Marker2D" parent="." unique_id=581900003]
-position = Vector2(1, 64)
+position = Vector2(1, 88)
 
 [node name="Label" type="Label" parent="." unique_id=734940941]
 offset_left = -41.0

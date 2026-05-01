@@ -2,7 +2,6 @@ extends Area2D
 
 var revenu_par_seconde : int = 10
 
-const SCENE_SOLDAT = preload("res://scenes/personnages/player/soldat.tscn")
 const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie.tscn")
 
 @onready var camp_menu = $HUDLayer/CampMenu
@@ -72,8 +71,7 @@ func _on_timer_entrainement_timeout():
 	if file_attente.size() > 0:
 		var id_troupe_terminee = file_attente.pop_front()
 		var troupe = troupes_data[id_troupe_terminee]
-		var scene_unite = SCENE_INFANTERIE if id_troupe_terminee == 0 else SCENE_SOLDAT
-		var nouveau_soldat = scene_unite.instantiate()
+		var nouveau_soldat = SCENE_INFANTERIE.instantiate()
 		var decalage = Vector2(randf_range(-10, 10), randf_range(-10, 10))
 		nouveau_soldat.global_position = point_apparition.global_position + decalage
 		get_parent().add_child(nouveau_soldat)

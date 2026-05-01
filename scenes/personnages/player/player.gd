@@ -57,7 +57,6 @@ func _ready():
 	agent_navigation.target_position = global_position
 	timer_attaque.timeout.connect(_on_timer_attaque_timeout)
 	_configurer_animations_mort()
-	_configurer_animations_attaque()
 
 func set_selection(etat : bool):
 	est_selectionne = etat
@@ -333,72 +332,6 @@ func _configurer_animations_mort():
 		for i in range(cols):
 			var a := AtlasTexture.new()
 			a.atlas = death_tex
-			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
-			frames.add_frame(anim_name, a)
-
-func _configurer_animations_attaque():
-	if not has_node("AnimatedSprite2D"):
-		return
-
-	var sprite: AnimatedSprite2D = $AnimatedSprite2D
-	var frames = sprite.sprite_frames
-	if frames == null:
-		return
-	if not frames.has_animation("run_f") or frames.get_frame_count("run_f") == 0:
-		return
-
-	var run_frame = frames.get_frame_texture("run_f", 0)
-	if not (run_frame is AtlasTexture):
-		return
-
-	var atlas_run: AtlasTexture = run_frame
-	if atlas_run.atlas == null:
-		return
-
-	var base_path := atlas_run.atlas.resource_path
-	if base_path == "":
-		return
-
-	var attack_path := base_path.get_base_dir() + "/attack.png"
-	if not ResourceLoader.exists(attack_path):
-		return
-
-	var attack_tex = load(attack_path)
-	if not (attack_tex is Texture2D):
-		return
-
-	var frame_size := atlas_run.region.size
-	if frame_size.x <= 0 or frame_size.y <= 0:
-		return
-
-	var cols := int(floor(float(attack_tex.get_width()) / frame_size.x))
-	var rows := int(floor(float(attack_tex.get_height()) / frame_size.y))
-	if cols <= 0 or rows <= 0:
-		return
-
-	var directions: Dictionary = {
-		"f": 0, # 1ere ligne = front
-		"b": 1, # 2eme ligne = back
-		"l": 2, # 3eme ligne = gauche
-		"r": 3  # 4eme ligne = droite
-	}
-	var speed := frames.get_animation_speed("run_f")
-
-	for d in directions.keys():
-		var row: int = int(directions[d])
-		if row >= rows:
-			continue
-
-		var anim_name: String = "attack_" + d
-		if frames.has_animation(anim_name):
-			frames.remove_animation(anim_name)
-		frames.add_animation(anim_name)
-		frames.set_animation_loop(anim_name, false)
-		frames.set_animation_speed(anim_name, speed)
-
-		for i in range(cols):
-			var a := AtlasTexture.new()
-			a.atlas = attack_tex
 			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 			frames.add_frame(anim_name, a)
 
