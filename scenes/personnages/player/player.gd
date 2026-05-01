@@ -97,15 +97,16 @@ func _physics_process(_delta):
 			_appliquer_couleur_unite()
 	
 	if is_instance_valid(cible_attaque):
-		if est_gardien_camp and cible_attaque.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
+		var cible_valide := cible_attaque
+		if est_gardien_camp and cible_valide.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
 			cible_attaque = null
 			timer_attaque.stop()
 			agent_navigation.target_position = position_garde
 			doit_avancer = true
-		
-		agent_navigation.target_position = cible_attaque.global_position
-		
-		if cible_attaque in zone_detection.get_overlapping_bodies():
+		else:
+			agent_navigation.target_position = cible_valide.global_position
+
+		if is_instance_valid(cible_attaque) and cible_attaque in zone_detection.get_overlapping_bodies():
 			doit_avancer = false
 			if timer_attaque.is_stopped():
 				var cadence = _cadence_attaque_actuelle()

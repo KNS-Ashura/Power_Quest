@@ -49,7 +49,9 @@ func _gerer_production(mes_camps : Array):
 					camp.temps_restant = camp.temps_total_unite_actuelle
 
 func _gerer_militaires():
-	var troupes = get_tree().get_nodes_in_group("ennemis")
+	var troupes = get_tree().get_nodes_in_group("ennemis").filter(
+		func(t): return is_instance_valid(t) and t is Node2D
+	)
 	if troupes.is_empty(): return
 	
 	match profil_actuel:
@@ -66,10 +68,13 @@ func _gerer_militaires():
 					var potentiels = get_tree().get_nodes_in_group("camps").filter(func(ca): return ca.get("equipe") in [0, 2])
 					if not potentiels.is_empty():
 						var cible = potentiels.pick_random()
-						if is_instance_valid(cible.gardien): t.attaquer_cible(cible.gardien)
+						if t.has_method("attaquer_cible") and is_instance_valid(cible.gardien):
+							t.attaquer_cible(cible.gardien)
 
 func _trouver_camp(pos: Vector2, id_eq: int) -> Node2D:
-	var c = get_tree().get_nodes_in_group("camps").filter(func(ca): return ca.get("equipe") == id_eq)
+	var c = get_tree().get_nodes_in_group("camps").filter(
+		func(ca): return is_instance_valid(ca) and ca.get("equipe") == id_eq and ca is Node2D
+	)
 	if c.is_empty(): return null
 	c.sort_custom(func(a,b): return a.global_position.distance_to(pos) < b.global_position.distance_to(pos))
 	return c[0]
