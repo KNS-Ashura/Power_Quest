@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 0
+nom = "Infantry III"
+prix = 80
+hp_max = 165
+vitesse = 170.0
+degats = 16
+portee = 50.0
+temps_fabrication = 4.0
+est_a_distance = false
+couleur = Color(0.25, 0.9, 0.3, 1)

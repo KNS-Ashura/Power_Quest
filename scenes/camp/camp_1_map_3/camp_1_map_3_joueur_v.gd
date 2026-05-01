@@ -2,7 +2,7 @@ extends Area2D
 
 var revenu_par_seconde : int = 10
 
-const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie.tscn")
+const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infanterie-1.tscn")
 
 @onready var camp_menu = $HUDLayer/CampMenu
 @onready var label_argent = $HUDLayer/LabelArgent

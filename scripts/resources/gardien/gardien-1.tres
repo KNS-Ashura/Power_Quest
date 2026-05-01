@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 2
+nom = "Gardien I"
+prix = 0
+hp_max = 350
+vitesse = 95.0
+degats = 16
+portee = 50.0
+temps_fabrication = 1.0
+est_a_distance = false
+couleur = Color(0.9, 0.9, 0.9, 1)
