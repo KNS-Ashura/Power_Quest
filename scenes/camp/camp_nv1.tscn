@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dk45n6obyu64n"]
 
 [ext_resource type="Texture2D" uid="uid://b7ulmbgkkhwtx" path="res://assets/objects/Objects_animated.png" id="1_tex"]
-[ext_resource type="Script" path="res://scripts/camp_nv1.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp_nv1.gd" id="2_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]
 atlas = ExtResource("1_tex")
@@ -53,43 +53,34 @@ animations = [{
 "speed": 11.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_x2pli"]
-size = Vector2(90, 106)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
+radius = 25.0
+height = 88.0
 
 [node name="camp" type="StaticBody2D" unique_id=1255783347]
 script = ExtResource("2_script")
 equipe = 0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1028446195]
-position = Vector2(79, 80)
 rotation = -0.00797035
 sprite_frames = SubResource("SpriteFrames_pwn8b")
 animation = &"animation_camp_V"
 frame_progress = 0.0070738103
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
-position = Vector2(80, 78)
-shape = SubResource("RectangleShape2D_x2pli")
+position = Vector2(0, 1)
+shape = SubResource("CapsuleShape2D_q06s1")
 debug_color = Color(0, 0.6, 0.69803923, 0)
 
 [node name="Timer" type="Timer" parent="." unique_id=1702314306]
 autostart = true
 
 [node name="Marker2D" type="Marker2D" parent="." unique_id=592443713]
-position = Vector2(79, 88)
-
-[node name="ColorRect" type="ColorRect" parent="." unique_id=818952952]
-offset_left = 37.0
-offset_top = 28.0
-offset_right = 126.0
-offset_bottom = 128.0
-mouse_filter = 2
-color = Color(0.1, 0.4, 0.8, 0.3)
 
 [node name="Label" type="Label" parent="." unique_id=1269375851]
-offset_left = 39.0
-offset_top = 9.0
-offset_right = 119.0
-offset_bottom = 32.0
+offset_left = -40.0
+offset_top = -80.0
+offset_right = 40.0
+offset_bottom = -57.0
 text = "ALLIE"
 horizontal_alignment = 1

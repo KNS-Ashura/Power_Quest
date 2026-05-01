@@ -17,9 +17,17 @@ const SCENES_INFANTERIE = {
 	3: preload("res://scenes/personnages/infantry/infantry-3.tscn")
 }
 const SCENE_RANGE = preload("res://scenes/personnages/range/range-1.tscn")
-const SCENE_HEAVY = preload("res://scenes/personnages/heavy/heavy-1.tscn")
+const SCENES_HEAVY = {
+	1: preload("res://scenes/personnages/heavy/heavy-1.tscn"),
+	2: preload("res://scenes/personnages/heavy/heavy-2.tscn"),
+	3: preload("res://scenes/personnages/heavy/heavy-3.tscn")
+}
 const SCENE_SUPPORT = preload("res://scenes/personnages/support/support-1.tscn")
-const SCENE_HEALER = preload("res://scenes/personnages/healer/healer-1.tscn")
+const SCENES_HEALER = {
+	1: preload("res://scenes/personnages/healer/healer-1.tscn"),
+	2: preload("res://scenes/personnages/healer/healer-2.tscn"),
+	3: preload("res://scenes/personnages/healer/healer-3.tscn")
+}
 const SCENES_ANTI_ARMOR = {
 	1: preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn"),
 	2: preload("res://scenes/personnages/anti_armor/anti_armor-2.tscn"),
@@ -30,15 +38,28 @@ const SCENES_GARDIEN = {
 	2: preload("res://scenes/personnages/guardian/gardien-2.tscn"),
 	3: preload("res://scenes/personnages/guardian/gardien-3.tscn")
 }
+const SCENES_CAMP_VISUEL_PATHS = {
+	1: "res://scenes/camp/camp_nv1.tscn",
+	2: "res://scenes/camp/camp_nv2.tscn",
+	3: "res://scenes/camp/camp_nv3.tscn"
+}
 var stats_infanterie_par_niveau = {
 	1: preload("res://scripts/resources/infantry/infantry-1.tres"),
 	2: preload("res://scripts/resources/infantry/infantry-2.tres"),
 	3: preload("res://scripts/resources/infantry/infantry-3.tres")
 }
 var stats_archer = preload("res://scripts/resources/archer.tres")
-var stats_lourd = preload("res://scripts/resources/lourd.tres")
+var stats_lourd_par_niveau = {
+	1: preload("res://scripts/resources/heavy/heavy-1.tres"),
+	2: preload("res://scripts/resources/heavy/heavy-2.tres"),
+	3: preload("res://scripts/resources/heavy/heavy-3.tres")
+}
 var stats_support = preload("res://scripts/resources/support.tres")
-var stats_heal = preload("res://scripts/resources/heal.tres")
+var stats_heal_par_niveau = {
+	1: preload("res://scripts/resources/healer/healer-1.tres"),
+	2: preload("res://scripts/resources/healer/healer-2.tres"),
+	3: preload("res://scripts/resources/healer/healer-3.tres")
+}
 var stats_anti_armor_par_niveau = {
 	1: preload("res://scripts/resources/anti_armor/anti_armor-1.tres"),
 	2: preload("res://scripts/resources/anti_armor/anti_armor-2.tres"),
@@ -69,6 +90,7 @@ signal camp_upgrade(nouveau_niveau)
 func _ready():
 	_appliquer_configuration_niveau()
 	_rafraichir_catalogue_unites()
+	_appliquer_visuel_niveau()
 	add_to_group("camps")
 	_mettre_a_jour_groupes_et_visuels()
 	
@@ -87,8 +109,8 @@ func _ready():
 
 func _rafraichir_catalogue_unites():
 	catalogue_unites = {
-		0: _stats_infanterie_niveau(), 1: stats_archer, 2: stats_lourd, 3: stats_support,
-		4: stats_heal, 5: _stats_anti_armor_niveau(), 6: stats_mortar
+		0: _stats_infanterie_niveau(), 1: stats_archer, 2: _stats_lourd_niveau(), 3: stats_support,
+		4: _stats_heal_niveau(), 5: _stats_anti_armor_niveau(), 6: stats_mortar
 	}
 
 func _stats_pour_niveau(stats_par_niveau: Dictionary) -> UniteStats:
@@ -107,6 +129,12 @@ func _stats_infanterie_niveau() -> UniteStats:
 func _stats_anti_armor_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_anti_armor_par_niveau)
 
+func _stats_lourd_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_lourd_par_niveau)
+
+func _stats_heal_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_heal_par_niveau)
+
 func _stats_gardien_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_gardien_par_niveau)
 
@@ -116,8 +144,45 @@ func _scene_infanterie_niveau() -> PackedScene:
 func _scene_anti_armor_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_ANTI_ARMOR)
 
+func _scene_heavy_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_HEAVY)
+
+func _scene_healer_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_HEALER)
+
 func _scene_gardien_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_GARDIEN)
+
+func _appliquer_visuel_niveau():
+	var sprite_base := get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if sprite_base:
+		sprite_base.play("animation_camp_V")
+
+	# Nettoie d'abord les overlays précédents.
+	for n in ["AnimatedSprite2D2", "AnimatedSprite2D3"]:
+		var old_node = get_node_or_null(n)
+		if old_node:
+			old_node.queue_free()
+
+	var template_path: String = SCENES_CAMP_VISUEL_PATHS.get(niveau_camp, SCENES_CAMP_VISUEL_PATHS[1])
+	var template_res = load(template_path)
+	if not (template_res is PackedScene):
+		return
+	var template_scene: PackedScene = template_res
+	var template_root = template_scene.instantiate()
+	if not is_instance_valid(template_root):
+		return
+
+	for n in ["AnimatedSprite2D2", "AnimatedSprite2D3"]:
+		var source_node = template_root.get_node_or_null(n)
+		if source_node == null:
+			continue
+		var clone = source_node.duplicate()
+		clone.name = n
+		add_child(clone)
+		if sprite_base:
+			move_child(clone, sprite_base.get_index())
+	template_root.free()
 
 func _appliquer_configuration_niveau():
 	match niveau_camp:
@@ -177,8 +242,12 @@ func _invoquer_gardien():
 	elif equipe == Proprietaire.ENNEMI:
 		if nouveau_gardien.is_in_group("soldats"): nouveau_gardien.remove_from_group("soldats")
 		nouveau_gardien.add_to_group("ennemis")
-		
-	get_parent().add_child(nouveau_gardien)
+
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		nouveau_gardien.queue_free()
+		return
+	parent_node.add_child(nouveau_gardien)
 	nouveau_gardien.global_position = spawn_position
 	if nouveau_gardien.has_method("configurer_mode_gardien"):
 		nouveau_gardien.configurer_mode_gardien(spawn_position, 260.0, 320.0)
@@ -186,10 +255,16 @@ func _invoquer_gardien():
 	gardien = nouveau_gardien
 
 func _position_spawn_gardien() -> Vector2:
-	var base = point_apparition.global_position if point_apparition else (global_position + Vector2(0, 90))
+	var base = point_apparition.global_position if is_instance_valid(point_apparition) else (global_position + Vector2(0, 90))
 	# Force un minimum vertical pour eviter un gardien qui spawn trop haut.
 	base.y = max(base.y, global_position.y + 90.0)
-	return base + Vector2(randf_range(-14, 14), randf_range(8, 20))
+	return base + Vector2(randf_range(-28, 28), randf_range(30, 52))
+
+func _position_spawn_unite() -> Vector2:
+	var base = point_apparition.global_position if is_instance_valid(point_apparition) else (global_position + Vector2(0, 90))
+	# Spawn plus bas (devant le camp) avec une dispersion laterale visible.
+	base.y = max(base.y, global_position.y + 90.0)
+	return base + Vector2(randf_range(-42, 42), randf_range(36, 64))
 
 func _on_gardien_tue(tueur : Node2D, tueur_equipe : int = -1):
 	if tueur_equipe != -1 and tueur_equipe != equipe: _etre_capture_par_equipe(tueur_equipe)
@@ -218,11 +293,11 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if unite_id == 1:
 		return SCENE_RANGE
 	if unite_id == 2:
-		return SCENE_HEAVY
+		return _scene_heavy_niveau()
 	if unite_id == 3:
 		return SCENE_SUPPORT
 	if unite_id == 4:
-		return SCENE_HEALER
+		return _scene_healer_niveau()
 	if unite_id == 5:
 		return _scene_anti_armor_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
@@ -230,11 +305,11 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
 		return SCENE_RANGE
 	if stat.type_unite == UniteStats.TypeUnite.LOURD:
-		return SCENE_HEAVY
+		return _scene_heavy_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.SUPPORT:
 		return SCENE_SUPPORT
 	if stat.type_unite == UniteStats.TypeUnite.HEAL:
-		return SCENE_HEALER
+		return _scene_healer_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ANTI_ARMOR:
 		return _scene_anti_armor_niveau()
 	return _scene_infanterie_niveau()
@@ -253,15 +328,19 @@ func terminer_production():
 			production_maj.emit(0, 0)
 		return
 	soldat.stats = stat
-	var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-10, 10), randf_range(-10, 10))
+	var spawn_position = _position_spawn_unite()
 	soldat.equipe = equipe
 	
 	if equipe == Proprietaire.JOUEUR: soldat.add_to_group("soldats")
 	else:
 		if soldat.is_in_group("soldats"): soldat.remove_from_group("soldats")
 		soldat.add_to_group("ennemis")
-		
-	get_parent().add_child(soldat)
+
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		soldat.queue_free()
+		return
+	parent_node.add_child(soldat)
 	soldat.global_position = spawn_position
 	if file_production.size() > 0:
 		temps_total_unite_actuelle = _temps_fabrication_pour(catalogue_unites[file_production[0]])
@@ -296,6 +375,7 @@ func ameliorer_camp() -> bool:
 	niveau_camp += 1
 	_appliquer_configuration_niveau()
 	_rafraichir_catalogue_unites()
+	_appliquer_visuel_niveau()
 	camp_upgrade.emit(niveau_camp)
 
 	if is_instance_valid(timer_ia_production):
@@ -329,18 +409,53 @@ func _etre_capture(auteur : Node2D, auteur_equipe : int = -1):
 	_mettre_a_jour_groupes_et_visuels()
 
 func _mettre_a_jour_groupes_et_visuels():
+	var color_rect = get_node_or_null("ColorRect") as ColorRect
+	var label_node = get_node_or_null("Label") as Label
+
+	# Si les noeuds UI ont ete supprimes des prefabs joueur, on les recree
+	# uniquement pour les camps ennemis/neutres.
+	if equipe != Proprietaire.JOUEUR:
+		if color_rect == null:
+			color_rect = ColorRect.new()
+			color_rect.name = "ColorRect"
+			color_rect.offset_left = -64.0
+			color_rect.offset_top = -52.0
+			color_rect.offset_right = 64.0
+			color_rect.offset_bottom = 48.0
+			color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			add_child(color_rect)
+		if label_node == null:
+			label_node = Label.new()
+			label_node.name = "Label"
+			label_node.offset_left = -40.0
+			label_node.offset_top = -80.0
+			label_node.offset_right = 40.0
+			label_node.offset_bottom = -57.0
+			label_node.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			add_child(label_node)
+
 	if is_in_group("ennemis"): remove_from_group("ennemis")
 	match equipe:
 		Proprietaire.JOUEUR:
-			$ColorRect.color = Color(0.1, 0.4, 0.8, 0.3)
-			$Label.text = "ALLIE"
+			if color_rect:
+				color_rect.visible = false
+			if label_node:
+				label_node.visible = false
 		Proprietaire.ENNEMI:
 			add_to_group("ennemis")
-			$ColorRect.color = Color(0.8, 0.1, 0.1, 0.3)
-			$Label.text = "ENNEMI"
+			if color_rect:
+				color_rect.visible = true
+				color_rect.color = Color(0.8, 0.1, 0.1, 0.3)
+			if label_node:
+				label_node.visible = true
+				label_node.text = "ENNEMI"
 		Proprietaire.NEUTRE:
-			$ColorRect.color = Color(0.5, 0.5, 0.5, 0.3)
-			$Label.text = "NEUTRE"
+			if color_rect:
+				color_rect.visible = true
+				color_rect.color = Color(0.5, 0.5, 0.5, 0.3)
+			if label_node:
+				label_node.visible = true
+				label_node.text = "NEUTRE"
 	queue_redraw()
 
 func _draw(): pass
@@ -350,6 +465,10 @@ func recevoir_renforts(quantite : int):
 	for i in range(quantite):
 		var s = _scene_pour_unite(stats_infanterie).instantiate()
 		s.stats = stats_infanterie
-		var spawn_position = (point_apparition.global_position if point_apparition else global_position) + Vector2(randf_range(-20, 20), randf_range(-20, 20))
-		get_parent().add_child(s)
+		var spawn_position = _position_spawn_unite()
+		var parent_node = get_parent()
+		if not is_instance_valid(parent_node):
+			s.queue_free()
+			return
+		parent_node.add_child(s)
 		s.global_position = spawn_position
