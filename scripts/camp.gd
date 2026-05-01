@@ -6,28 +6,52 @@ enum Proprietaire { JOUEUR, ENNEMI, NEUTRE }
 @export var hp_max : int = 500
 @export_range(1, 3, 1) var niveau_camp : int = 1
 @export var multiplicateur_temps_production : float = 1.0
+@export var cout_upgrade_niveau_2 : int = 200
+@export var cout_upgrade_niveau_3 : int = 350
 var hp_actuels : int = hp_max
 var gardien : Node2D = null
 
-const SCENE_INFANTERIE = preload("res://scenes/personnages/infantry/infantry-2.tscn")
+const SCENES_INFANTERIE = {
+	1: preload("res://scenes/personnages/infantry/infantry-1.tscn"),
+	2: preload("res://scenes/personnages/infantry/infantry-2.tscn"),
+	3: preload("res://scenes/personnages/infantry/infantry-3.tscn")
+}
 const SCENE_RANGE = preload("res://scenes/personnages/range/range-1.tscn")
 const SCENE_HEAVY = preload("res://scenes/personnages/heavy/heavy-1.tscn")
 const SCENE_SUPPORT = preload("res://scenes/personnages/support/support-1.tscn")
 const SCENE_HEALER = preload("res://scenes/personnages/healer/healer-1.tscn")
-const SCENE_ANTI_ARMOR = preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn")
-const SCENE_GARDIEN = preload("res://scenes/personnages/guardian/gardien-1.tscn")
-var stats_infanterie = preload("res://scripts/resources/infanterie.tres")
+const SCENES_ANTI_ARMOR = {
+	1: preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn"),
+	2: preload("res://scenes/personnages/anti_armor/anti_armor-2.tscn"),
+	3: preload("res://scenes/personnages/anti_armor/anti_armor-3.tscn")
+}
+const SCENES_GARDIEN = {
+	1: preload("res://scenes/personnages/guardian/gardien-1.tscn"),
+	2: preload("res://scenes/personnages/guardian/gardien-2.tscn"),
+	3: preload("res://scenes/personnages/guardian/gardien-3.tscn")
+}
+var stats_infanterie_par_niveau = {
+	1: preload("res://scripts/resources/infantry/infantry-1.tres"),
+	2: preload("res://scripts/resources/infantry/infantry-2.tres"),
+	3: preload("res://scripts/resources/infantry/infantry-3.tres")
+}
 var stats_archer = preload("res://scripts/resources/archer.tres")
 var stats_lourd = preload("res://scripts/resources/lourd.tres")
 var stats_support = preload("res://scripts/resources/support.tres")
 var stats_heal = preload("res://scripts/resources/heal.tres")
-var stats_anti_armor = preload("res://scripts/resources/anti_armor.tres")
+var stats_anti_armor_par_niveau = {
+	1: preload("res://scripts/resources/anti_armor/anti_armor-1.tres"),
+	2: preload("res://scripts/resources/anti_armor/anti_armor-2.tres"),
+	3: preload("res://scripts/resources/anti_armor/anti_armor-3.tres")
+}
+var stats_gardien_par_niveau = {
+	1: preload("res://scripts/resources/gardien/gardien-1.tres"),
+	2: preload("res://scripts/resources/gardien/gardien-2.tres"),
+	3: preload("res://scripts/resources/gardien/gardien-3.tres")
+}
 var stats_mortar = preload("res://scripts/resources/mortar.tres")
 
-var catalogue_unites = {
-	0: stats_infanterie, 1: stats_archer, 2: stats_lourd, 3: stats_support,
-	4: stats_heal, 5: stats_anti_armor, 6: stats_mortar
-}
+var catalogue_unites = {}
 
 var file_production : Array = []
 var temps_restant : float = 0.0
@@ -40,9 +64,11 @@ var timer_ia_production : Timer = null
 @export var frequence_ia : float = 15.0
 
 signal production_maj(file_taille, progression)
+signal camp_upgrade(nouveau_niveau)
 
 func _ready():
 	_appliquer_configuration_niveau()
+	_rafraichir_catalogue_unites()
 	add_to_group("camps")
 	_mettre_a_jour_groupes_et_visuels()
 	
@@ -58,6 +84,40 @@ func _ready():
 	timer_ia_production.wait_time = frequence_ia
 	timer_ia_production.timeout.connect(_on_timer_ia_timeout)
 	timer_ia_production.start()
+
+func _rafraichir_catalogue_unites():
+	catalogue_unites = {
+		0: _stats_infanterie_niveau(), 1: stats_archer, 2: stats_lourd, 3: stats_support,
+		4: stats_heal, 5: _stats_anti_armor_niveau(), 6: stats_mortar
+	}
+
+func _stats_pour_niveau(stats_par_niveau: Dictionary) -> UniteStats:
+	if stats_par_niveau.has(niveau_camp):
+		return stats_par_niveau[niveau_camp]
+	return stats_par_niveau[1]
+
+func _scene_pour_niveau(scenes_par_niveau: Dictionary) -> PackedScene:
+	if scenes_par_niveau.has(niveau_camp):
+		return scenes_par_niveau[niveau_camp]
+	return scenes_par_niveau[1]
+
+func _stats_infanterie_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_infanterie_par_niveau)
+
+func _stats_anti_armor_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_anti_armor_par_niveau)
+
+func _stats_gardien_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_gardien_par_niveau)
+
+func _scene_infanterie_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_INFANTERIE)
+
+func _scene_anti_armor_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_ANTI_ARMOR)
+
+func _scene_gardien_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_GARDIEN)
 
 func _appliquer_configuration_niveau():
 	match niveau_camp:
@@ -103,12 +163,12 @@ func _process(delta):
 
 func _invoquer_gardien():
 	if is_instance_valid(gardien): return
-	var nouveau_gardien = SCENE_GARDIEN.instantiate()
+	var nouveau_gardien = _scene_gardien_niveau().instantiate()
 	if not ("stats" in nouveau_gardien):
 		push_warning("Scene gardien invalide: la racine doit contenir la propriete 'stats'.")
 		nouveau_gardien.queue_free()
 		return
-	nouveau_gardien.stats = stats_lourd if equipe == Proprietaire.NEUTRE else stats_infanterie
+	nouveau_gardien.stats = _stats_gardien_niveau()
 
 	var spawn_position = _position_spawn_gardien()
 	nouveau_gardien.equipe = equipe
@@ -164,9 +224,9 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if unite_id == 4:
 		return SCENE_HEALER
 	if unite_id == 5:
-		return SCENE_ANTI_ARMOR
+		return _scene_anti_armor_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
-		return SCENE_INFANTERIE
+		return _scene_infanterie_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
 		return SCENE_RANGE
 	if stat.type_unite == UniteStats.TypeUnite.LOURD:
@@ -176,8 +236,8 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if stat.type_unite == UniteStats.TypeUnite.HEAL:
 		return SCENE_HEALER
 	if stat.type_unite == UniteStats.TypeUnite.ANTI_ARMOR:
-		return SCENE_ANTI_ARMOR
-	return SCENE_INFANTERIE
+		return _scene_anti_armor_niveau()
+	return _scene_infanterie_niveau()
 
 func terminer_production():
 	var unite_id = file_production.pop_front()
@@ -210,6 +270,48 @@ func terminer_production():
 		production_maj.emit(0, 0)
 
 func _on_timer_ia_timeout(): pass
+
+func cout_upgrade_prochain_niveau() -> int:
+	match niveau_camp:
+		1:
+			return cout_upgrade_niveau_2
+		2:
+			return cout_upgrade_niveau_3
+		_:
+			return -1
+
+func peut_ameliorer() -> bool:
+	return equipe == Proprietaire.JOUEUR and niveau_camp < 3
+
+func ameliorer_camp() -> bool:
+	if not peut_ameliorer():
+		return false
+
+	var cout = cout_upgrade_prochain_niveau()
+	if cout <= 0:
+		return false
+	if not Economie.retrancher_argent(cout):
+		return false
+
+	niveau_camp += 1
+	_appliquer_configuration_niveau()
+	_rafraichir_catalogue_unites()
+	camp_upgrade.emit(niveau_camp)
+
+	if is_instance_valid(timer_ia_production):
+		timer_ia_production.wait_time = frequence_ia
+
+	if file_production.size() > 0:
+		temps_total_unite_actuelle = _temps_fabrication_pour(catalogue_unites[file_production[0]])
+		temps_restant = min(temps_restant, temps_total_unite_actuelle)
+		production_maj.emit(file_production.size(), 1.0 - (temps_restant / temps_total_unite_actuelle))
+
+	# Le gardien actuel est remplacé pour appliquer la scène/stats du nouveau niveau.
+	if is_instance_valid(gardien):
+		gardien.queue_free()
+		gardien = null
+
+	return true
 
 func set_selection(etat : bool):
 	modulate = Color(1.5, 1.5, 1.5) if etat else Color(1, 1, 1)
@@ -244,6 +346,7 @@ func _mettre_a_jour_groupes_et_visuels():
 func _draw(): pass
 
 func recevoir_renforts(quantite : int):
+	var stats_infanterie = _stats_infanterie_niveau()
 	for i in range(quantite):
 		var s = _scene_pour_unite(stats_infanterie).instantiate()
 		s.stats = stats_infanterie

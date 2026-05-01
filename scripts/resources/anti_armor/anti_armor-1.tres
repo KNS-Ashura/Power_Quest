@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+type_unite = 5
+nom = "Anti Armor I"
+prix = 90
+hp_max = 90
+vitesse = 160.0
+degats = 8
+portee = 45.0
+temps_fabrication = 7.0
+est_a_distance = false
+couleur = Color(0.8, 0.4, 0.1, 1)

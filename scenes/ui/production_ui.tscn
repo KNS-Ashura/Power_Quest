@@ -82,6 +82,10 @@ text = "Anti-Armor (90G)"
 layout_mode = 2
 text = "Mortier (200G)"
 
+[node name="BtnUpgrade" type="Button" parent="Control/Panel/GridContainer" unique_id=400000005]
+layout_mode = 2
+text = "Upgrade Camp"
+
 [node name="LabelQueue" type="Label" parent="Control/Panel" unique_id=1765385264]
 layout_mode = 1
 anchors_preset = 4
@@ -94,6 +98,18 @@ offset_bottom = 11.5
 grow_vertical = 2
 text = "File vide"
 
+[node name="LabelNiveau" type="Label" parent="Control/Panel" unique_id=1765385265]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 130.0
+offset_top = -11.5
+offset_right = 270.0
+offset_bottom = 11.5
+grow_vertical = 2
+text = "Niveau camp : 1"
+
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnInf" to="." method="_on_btn_inf_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnArc" to="." method="_on_btn_arc_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnHeavy" to="." method="_on_btn_lourd_pressed"]
@@ -101,3 +117,4 @@ text = "File vide"
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnMortar" to="." method="_on_btn_mortar_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer/BtnUpgrade" to="." method="_on_btn_upgrade_pressed"]
