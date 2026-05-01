@@ -318,7 +318,7 @@ func _configurer_animations_mort():
 	}
 	var speed := frames.get_animation_speed("run_f")
 
-	for d: String in directions.keys():
+	for d in directions.keys():
 		var row: int = int(directions[d])
 		if row >= rows:
 			continue
@@ -384,7 +384,7 @@ func _configurer_animations_attaque():
 	}
 	var speed := frames.get_animation_speed("run_f")
 
-	for d: String in directions.keys():
+	for d in directions.keys():
 		var row: int = int(directions[d])
 		if row >= rows:
 			continue
