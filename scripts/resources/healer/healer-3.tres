@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UniteStats" format=3 uid="uid://b2yp01em6vhuu"]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" uid="uid://bp66fhu00e2ui" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
@@ -8,11 +8,8 @@ type_unite = 4
 nom = "Healer III"
 prix = 140
 hp_max = 130
-vitesse = 150.0
 degats = 0
-portee = 0.0
+portee = 160.0
 temps_fabrication = 6.5
-est_a_distance = false
 couleur = Color(0.3, 1, 0.8, 1)
 cooldown_sort = 16.0
-duree_sort = 0.0

@@ -4,13 +4,13 @@
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 2
-nom = "Gardien III"
-prix = 0
-hp_max = 900
-vitesse = 115.0
-degats = 36
-portee = 60.0
-temps_fabrication = 1.0
-est_a_distance = false
-couleur = Color(1, 1, 1, 1)
+type_unite = 1
+nom = "Range II"
+prix = 95
+hp_max = 105
+vitesse = 138.0
+degats = 11
+portee = 205.0
+temps_fabrication = 5.4
+est_a_distance = true
+couleur = Color(0.25, 0.6, 1, 1)
