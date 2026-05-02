@@ -12,8 +12,7 @@ var hp_actuels : int = 100
 var vitesse_unite : float = 150.0
 var degats_unite : int = 10
 var est_selectionne : bool = false
-
-const SCENE_PROJECTILE = preload("res://scenes/objets/projectile.tscn")
+const SCENE_RANGE_PROJECTILE_LOOP = preload("res://scenes/personnages/range/range-loop-projectile.tscn")
 
 @onready var agent_navigation = $NavigationAgent2D
 var cible_attaque : Node2D = null
@@ -137,12 +136,13 @@ func _physics_process(_delta):
 func _on_timer_attaque_timeout():
 	if is_instance_valid(cible_attaque):
 		_jouer_animation_attaque(cible_attaque)
-		if stats and stats.est_a_distance:
-			var proj = SCENE_PROJECTILE.instantiate()
-			get_parent().add_child(proj)
-			proj.position = global_position
-			proj.lancer(cible_attaque, degats_unite, self)
-		elif cible_attaque.has_method("recevoir_degats"):
+		if _est_healer():
+			_appliquer_soin_cible(cible_attaque)
+			return
+		if _est_range():
+			_tirer_projectile_range(cible_attaque)
+			return
+		if cible_attaque.has_method("recevoir_degats"):
 			cible_attaque.recevoir_degats(degats_unite, self)
 			_animer_attaque_melee()
 	else:
@@ -157,6 +157,23 @@ func _animer_attaque_melee():
 		flash.tween_property($AnimatedSprite2D, "modulate", _couleur_unite(), 0.1)
 
 func _rechercher_cible_automatique():
+	if _est_healer():
+		var allies = zone_detection.get_overlapping_bodies().filter(func(c):
+			return c != self and c.get("equipe") != null and c.get("equipe") == equipe and not c.is_in_group("camps") and "hp_actuels" in c and "hp_max" in c and c.hp_actuels < c.hp_max
+		)
+		if est_gardien_camp:
+			allies = allies.filter(func(c): return c.global_position.distance_to(position_garde) <= rayon_defense_gardien)
+		if allies.size() > 0:
+			allies.sort_custom(func(a, b):
+				var ratio_a = float(a.hp_actuels) / max(1.0, float(a.hp_max))
+				var ratio_b = float(b.hp_actuels) / max(1.0, float(b.hp_max))
+				if ratio_a != ratio_b:
+					return ratio_a < ratio_b
+				return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
+			)
+			attaquer_cible(allies[0])
+		return
+
 	var cibles = zone_detection.get_overlapping_bodies().filter(func(c):
 		return c != self and c.has_method("recevoir_degats") and not c.is_in_group("camps") and c.get("equipe") != null and c.get("equipe") != equipe
 	)
@@ -171,6 +188,43 @@ func _rechercher_cible_automatique():
 			return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
 		)
 		attaquer_cible(cibles[0])
+
+func _est_healer() -> bool:
+	return stats != null and stats.type_unite == UniteStats.TypeUnite.HEAL
+
+func _est_range() -> bool:
+	return stats != null and stats.type_unite == UniteStats.TypeUnite.ARCHER
+
+func _tirer_projectile_range(cible: Node2D):
+	if not is_instance_valid(cible):
+		timer_attaque.stop()
+		return
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var proj = SCENE_RANGE_PROJECTILE_LOOP.instantiate()
+	parent_node.add_child(proj)
+	proj.global_position = global_position
+	if proj.has_method("lancer"):
+		proj.lancer(cible, degats_unite, self)
+
+func _appliquer_soin_cible(cible: Node2D):
+	if not is_instance_valid(cible):
+		timer_attaque.stop()
+		cible_attaque = null
+		return
+	if not ("hp_actuels" in cible and "hp_max" in cible):
+		return
+	if cible.get("equipe") == null or cible.equipe != equipe:
+		return
+	if cible.hp_actuels >= cible.hp_max:
+		cible_attaque = null
+		return
+
+	var soin = int(max(10.0, float(hp_max) * 0.12))
+	cible.hp_actuels = min(cible.hp_max, cible.hp_actuels + soin)
+	if cible.has_node("ProgressBar"):
+		cible.get_node("ProgressBar").value = cible.hp_actuels
 
 func mettre_a_jour_animation():
 	if not has_node("AnimatedSprite2D"):

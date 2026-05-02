@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UniteStats" format=3 uid="uid://das2nsxibcowp"]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" uid="uid://bp66fhu00e2ui" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
@@ -10,9 +10,7 @@ prix = 120
 hp_max = 105
 vitesse = 145.0
 degats = 0
-portee = 0.0
+portee = 140.0
 temps_fabrication = 7.2
-est_a_distance = false
 couleur = Color(0.25, 0.95, 0.75, 1)
 cooldown_sort = 18.0
-duree_sort = 0.0

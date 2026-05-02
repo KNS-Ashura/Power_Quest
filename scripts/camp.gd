@@ -16,7 +16,11 @@ const SCENES_INFANTERIE = {
 	2: preload("res://scenes/personnages/infantry/infantry-2.tscn"),
 	3: preload("res://scenes/personnages/infantry/infantry-3.tscn")
 }
-const SCENE_RANGE = preload("res://scenes/personnages/range/range-1.tscn")
+const SCENES_RANGE = {
+	1: preload("res://scenes/personnages/range/range-1.tscn"),
+	2: preload("res://scenes/personnages/range/range-2.tscn"),
+	3: preload("res://scenes/personnages/range/range-3.tscn")
+}
 const SCENES_HEAVY = {
 	1: preload("res://scenes/personnages/heavy/heavy-1.tscn"),
 	2: preload("res://scenes/personnages/heavy/heavy-2.tscn"),
@@ -28,6 +32,7 @@ const SCENES_HEALER = {
 	2: preload("res://scenes/personnages/healer/healer-2.tscn"),
 	3: preload("res://scenes/personnages/healer/healer-3.tscn")
 }
+const SCENE_MORTAR = preload("res://scenes/personnages/mortar/mortar-1.tscn")
 const SCENES_ANTI_ARMOR = {
 	1: preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn"),
 	2: preload("res://scenes/personnages/anti_armor/anti_armor-2.tscn"),
@@ -48,7 +53,11 @@ var stats_infanterie_par_niveau = {
 	2: preload("res://scripts/resources/infantry/infantry-2.tres"),
 	3: preload("res://scripts/resources/infantry/infantry-3.tres")
 }
-var stats_archer = preload("res://scripts/resources/archer.tres")
+var stats_archer_par_niveau = {
+	1: preload("res://scripts/resources/range/range-1.tres"),
+	2: preload("res://scripts/resources/range/range-2.tres"),
+	3: preload("res://scripts/resources/range/range-3.tres")
+}
 var stats_lourd_par_niveau = {
 	1: preload("res://scripts/resources/heavy/heavy-1.tres"),
 	2: preload("res://scripts/resources/heavy/heavy-2.tres"),
@@ -109,7 +118,7 @@ func _ready():
 
 func _rafraichir_catalogue_unites():
 	catalogue_unites = {
-		0: _stats_infanterie_niveau(), 1: stats_archer, 2: _stats_lourd_niveau(), 3: stats_support,
+		0: _stats_infanterie_niveau(), 1: _stats_range_niveau(), 2: _stats_lourd_niveau(), 3: stats_support,
 		4: _stats_heal_niveau(), 5: _stats_anti_armor_niveau(), 6: stats_mortar
 	}
 
@@ -129,6 +138,9 @@ func _stats_infanterie_niveau() -> UniteStats:
 func _stats_anti_armor_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_anti_armor_par_niveau)
 
+func _stats_range_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_archer_par_niveau)
+
 func _stats_lourd_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_lourd_par_niveau)
 
@@ -140,6 +152,9 @@ func _stats_gardien_niveau() -> UniteStats:
 
 func _scene_infanterie_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_INFANTERIE)
+
+func _scene_range_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_RANGE)
 
 func _scene_anti_armor_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_ANTI_ARMOR)
@@ -291,7 +306,7 @@ func demander_production(id : int = 0):
 
 func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if unite_id == 1:
-		return SCENE_RANGE
+		return _scene_range_niveau()
 	if unite_id == 2:
 		return _scene_heavy_niveau()
 	if unite_id == 3:
@@ -300,10 +315,12 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 		return _scene_healer_niveau()
 	if unite_id == 5:
 		return _scene_anti_armor_niveau()
+	if unite_id == 6:
+		return SCENE_MORTAR
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
 		return _scene_infanterie_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
-		return SCENE_RANGE
+		return _scene_range_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.LOURD:
 		return _scene_heavy_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.SUPPORT:
@@ -312,6 +329,8 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 		return _scene_healer_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ANTI_ARMOR:
 		return _scene_anti_armor_niveau()
+	if stat.type_unite == UniteStats.TypeUnite.MORTAR:
+		return SCENE_MORTAR
 	return _scene_infanterie_niveau()
 
 func terminer_production():

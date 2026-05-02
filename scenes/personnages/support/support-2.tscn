@@ -351,12 +351,10 @@ corner_radius_bottom_left = 2
 script = ExtResource("1_player_gd")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1384377072]
-position = Vector2(1, -11)
 sprite_frames = SubResource("SpriteFrames_support")
 animation = &"run_l"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=489419685]
-position = Vector2(0, -11)
 shape = SubResource("CircleShape2D_body")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=715779153]
