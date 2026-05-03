@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bqhmax5eocokn"]
+[gd_scene format=3 uid="uid://bsdrauvpg1v5g"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_2wbgd"]
 [ext_resource type="Texture2D" uid="uid://b24ry2w236n4o" path="res://assets/character/mortar/Slime/attack.png" id="2_pmwsu"]

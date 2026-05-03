@@ -264,19 +264,19 @@ region = Rect2(192, 64, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3n2o5"]
 atlas = ExtResource("2_f08yo")
-region = Rect2(0, 64, 64, 64)
+region = Rect2(0, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_o6ur5"]
 atlas = ExtResource("2_f08yo")
-region = Rect2(64, 64, 64, 64)
+region = Rect2(64, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3t8og"]
 atlas = ExtResource("2_f08yo")
-region = Rect2(128, 64, 64, 64)
+region = Rect2(128, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_k8om8"]
 atlas = ExtResource("2_f08yo")
-region = Rect2(192, 64, 64, 64)
+region = Rect2(192, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cs44u"]
 atlas = ExtResource("2_f08yo")
@@ -871,7 +871,7 @@ script = ExtResource("1_dyhcn")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=885986411]
 position = Vector2(1, -11)
 sprite_frames = SubResource("SpriteFrames_gackv")
-animation = &"run_l"
+animation = &"idle_f"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1980998485]
 position = Vector2(0, -11)

@@ -26,13 +26,21 @@ const SCENES_HEAVY = {
 	2: preload("res://scenes/personnages/heavy/heavy-2.tscn"),
 	3: preload("res://scenes/personnages/heavy/heavy-3.tscn")
 }
-const SCENE_SUPPORT = preload("res://scenes/personnages/support/support-1.tscn")
+const SCENES_SUPPORT = {
+	1: preload("res://scenes/personnages/support/support-1.tscn"),
+	2: preload("res://scenes/personnages/support/support-2.tscn"),
+	3: preload("res://scenes/personnages/support/support-3.tscn")
+}
 const SCENES_HEALER = {
 	1: preload("res://scenes/personnages/healer/healer-1.tscn"),
 	2: preload("res://scenes/personnages/healer/healer-2.tscn"),
 	3: preload("res://scenes/personnages/healer/healer-3.tscn")
 }
-const SCENE_MORTAR = preload("res://scenes/personnages/mortar/mortar-1.tscn")
+const SCENES_MORTAR = {
+	1: preload("res://scenes/personnages/mortar/mortar-1.tscn"),
+	2: preload("res://scenes/personnages/mortar/mortar-2.tscn"),
+	3: preload("res://scenes/personnages/mortar/mortar-3.tscn")
+}
 const SCENES_ANTI_ARMOR = {
 	1: preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn"),
 	2: preload("res://scenes/personnages/anti_armor/anti_armor-2.tscn"),
@@ -63,7 +71,11 @@ var stats_lourd_par_niveau = {
 	2: preload("res://scripts/resources/heavy/heavy-2.tres"),
 	3: preload("res://scripts/resources/heavy/heavy-3.tres")
 }
-var stats_support = preload("res://scripts/resources/support.tres")
+var stats_support_par_niveau = {
+	1: preload("res://scripts/resources/support/support-1.tres"),
+	2: preload("res://scripts/resources/support/support-2.tres"),
+	3: preload("res://scripts/resources/support/support-3.tres")
+}
 var stats_heal_par_niveau = {
 	1: preload("res://scripts/resources/healer/healer-1.tres"),
 	2: preload("res://scripts/resources/healer/healer-2.tres"),
@@ -79,7 +91,11 @@ var stats_gardien_par_niveau = {
 	2: preload("res://scripts/resources/gardien/gardien-2.tres"),
 	3: preload("res://scripts/resources/gardien/gardien-3.tres")
 }
-var stats_mortar = preload("res://scripts/resources/mortar.tres")
+var stats_mortar_par_niveau = {
+	1: preload("res://scripts/resources/mortar/mortar-1.tres"),
+	2: preload("res://scripts/resources/mortar/mortar-2.tres"),
+	3: preload("res://scripts/resources/mortar/mortar-3.tres")
+}
 
 var catalogue_unites = {}
 
@@ -118,8 +134,8 @@ func _ready():
 
 func _rafraichir_catalogue_unites():
 	catalogue_unites = {
-		0: _stats_infanterie_niveau(), 1: _stats_range_niveau(), 2: _stats_lourd_niveau(), 3: stats_support,
-		4: _stats_heal_niveau(), 5: _stats_anti_armor_niveau(), 6: stats_mortar
+		0: _stats_infanterie_niveau(), 1: _stats_range_niveau(), 2: _stats_lourd_niveau(), 3: _stats_support_niveau(),
+		4: _stats_heal_niveau(), 5: _stats_anti_armor_niveau(), 6: _stats_mortar_niveau()
 	}
 
 func _stats_pour_niveau(stats_par_niveau: Dictionary) -> UniteStats:
@@ -144,11 +160,17 @@ func _stats_range_niveau() -> UniteStats:
 func _stats_lourd_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_lourd_par_niveau)
 
+func _stats_support_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_support_par_niveau)
+
 func _stats_heal_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_heal_par_niveau)
 
 func _stats_gardien_niveau() -> UniteStats:
 	return _stats_pour_niveau(stats_gardien_par_niveau)
+
+func _stats_mortar_niveau() -> UniteStats:
+	return _stats_pour_niveau(stats_mortar_par_niveau)
 
 func _scene_infanterie_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_INFANTERIE)
@@ -162,11 +184,17 @@ func _scene_anti_armor_niveau() -> PackedScene:
 func _scene_heavy_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_HEAVY)
 
+func _scene_support_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_SUPPORT)
+
 func _scene_healer_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_HEALER)
 
 func _scene_gardien_niveau() -> PackedScene:
 	return _scene_pour_niveau(SCENES_GARDIEN)
+
+func _scene_mortar_niveau() -> PackedScene:
+	return _scene_pour_niveau(SCENES_MORTAR)
 
 func _appliquer_visuel_niveau():
 	var sprite_base := get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
@@ -197,6 +225,10 @@ func _appliquer_visuel_niveau():
 		add_child(clone)
 		if sprite_base:
 			move_child(clone, sprite_base.get_index())
+		if clone is AnimatedSprite2D:
+			var s: AnimatedSprite2D = clone
+			if s.sprite_frames and s.animation != StringName("") and s.sprite_frames.has_animation(s.animation):
+				s.play(s.animation)
 	template_root.free()
 
 func _appliquer_configuration_niveau():
@@ -310,13 +342,13 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if unite_id == 2:
 		return _scene_heavy_niveau()
 	if unite_id == 3:
-		return SCENE_SUPPORT
+		return _scene_support_niveau()
 	if unite_id == 4:
 		return _scene_healer_niveau()
 	if unite_id == 5:
 		return _scene_anti_armor_niveau()
 	if unite_id == 6:
-		return SCENE_MORTAR
+		return _scene_mortar_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
 		return _scene_infanterie_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
@@ -324,13 +356,13 @@ func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
 	if stat.type_unite == UniteStats.TypeUnite.LOURD:
 		return _scene_heavy_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.SUPPORT:
-		return SCENE_SUPPORT
+		return _scene_support_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.HEAL:
 		return _scene_healer_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.ANTI_ARMOR:
 		return _scene_anti_armor_niveau()
 	if stat.type_unite == UniteStats.TypeUnite.MORTAR:
-		return SCENE_MORTAR
+		return _scene_mortar_niveau()
 	return _scene_infanterie_niveau()
 
 func terminer_production():

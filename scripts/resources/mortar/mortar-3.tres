@@ -4,15 +4,13 @@
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 4
-nom = "Heal"
-prix = 100
-hp_max = 80
-vitesse = 140.0
-degats = 0
-portee = 0.0
-temps_fabrication = 8.0
-est_a_distance = false
-couleur = Color(0.2, 0.9, 0.7, 1)
-cooldown_sort = 20.0
-duree_sort = 0.0
+type_unite = 6
+nom = "Mortar III"
+prix = 290
+hp_max = 105
+vitesse = 96.0
+degats = 66
+portee = 300.0
+temps_fabrication = 11.0
+est_a_distance = true
+couleur = Color(0.33, 0.33, 0.33, 1)

@@ -13,6 +13,12 @@ var vitesse_unite : float = 150.0
 var degats_unite : int = 10
 var est_selectionne : bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("res://scenes/personnages/range/range-loop-projectile.tscn")
+const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
+const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
+const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 
 @onready var agent_navigation = $NavigationAgent2D
 var cible_attaque : Node2D = null
@@ -27,6 +33,7 @@ var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
 var multiplicateur_cadence_attaque: float = 1.0
 var est_en_train_de_mourir : bool = false
+var cycle_explosion_mortar : int = 0
 var est_gardien_camp: bool = false
 var position_garde: Vector2 = Vector2.ZERO
 var rayon_defense_gardien: float = 260.0
@@ -108,8 +115,13 @@ func _physics_process(_delta):
 		if is_instance_valid(cible_attaque) and cible_attaque in zone_detection.get_overlapping_bodies():
 			doit_avancer = false
 			if timer_attaque.is_stopped():
-				var cadence = _cadence_attaque_actuelle()
-				timer_attaque.start(1.0 / cadence)
+				if _est_mortar():
+					# Mortar: tire immédiatement à la première fenêtre de tir, puis applique le cooldown.
+					_tirer_mortar_distance(cible_attaque)
+					timer_attaque.start(_cooldown_mortar_niveau())
+				else:
+					var cadence = _cadence_attaque_actuelle()
+					timer_attaque.start(1.0 / cadence)
 		else:
 			timer_attaque.stop()
 	else:
@@ -135,14 +147,19 @@ func _physics_process(_delta):
 
 func _on_timer_attaque_timeout():
 	if is_instance_valid(cible_attaque):
-		_jouer_animation_attaque(cible_attaque)
 		if _est_healer():
+			_jouer_animation_attaque(cible_attaque)
 			_appliquer_soin_cible(cible_attaque)
 			return
+		if _est_mortar():
+			_tirer_mortar_distance(cible_attaque)
+			return
 		if _est_range():
+			_jouer_animation_attaque(cible_attaque)
 			_tirer_projectile_range(cible_attaque)
 			return
 		if cible_attaque.has_method("recevoir_degats"):
+			_jouer_animation_attaque(cible_attaque)
 			cible_attaque.recevoir_degats(degats_unite, self)
 			_animer_attaque_melee()
 	else:
@@ -152,9 +169,10 @@ func _on_timer_attaque_timeout():
 func _animer_attaque_melee():
 	if is_instance_valid(cible_attaque):
 		# Plus de "dash" visuel: l'animation d'attaque gère maintenant le mouvement perçu.
-		var flash = create_tween()
-		flash.tween_property($AnimatedSprite2D, "modulate", Color.RED, 0.1)
-		flash.tween_property($AnimatedSprite2D, "modulate", _couleur_unite(), 0.1)
+		for sprite in _sprites_animes_unite():
+			var flash = create_tween()
+			flash.tween_property(sprite, "modulate", Color.RED, 0.1)
+			flash.tween_property(sprite, "modulate", _couleur_unite(), 0.1)
 
 func _rechercher_cible_automatique():
 	if _est_healer():
@@ -195,6 +213,9 @@ func _est_healer() -> bool:
 func _est_range() -> bool:
 	return stats != null and stats.type_unite == UniteStats.TypeUnite.ARCHER
 
+func _est_mortar() -> bool:
+	return stats != null and stats.type_unite == UniteStats.TypeUnite.MORTAR
+
 func _tirer_projectile_range(cible: Node2D):
 	if not is_instance_valid(cible):
 		timer_attaque.stop()
@@ -207,6 +228,106 @@ func _tirer_projectile_range(cible: Node2D):
 	proj.global_position = global_position
 	if proj.has_method("lancer"):
 		proj.lancer(cible, degats_unite, self)
+
+func _niveau_mortar() -> int:
+	if stats == null:
+		return 1
+	var nom_lower := String(stats.nom).to_lower()
+	if nom_lower.find("iii") != -1 or nom_lower.find(" 3") != -1:
+		return 3
+	if nom_lower.find("ii") != -1 or nom_lower.find(" 2") != -1:
+		return 2
+	return 1
+
+func _cooldown_mortar_niveau() -> float:
+	var niveau := _niveau_mortar()
+	if niveau >= 3:
+		return MORTAR_ATTACK_COOLDOWN_NIVEAU_3
+	if niveau == 2:
+		return MORTAR_ATTACK_COOLDOWN_NIVEAU_2
+	return MORTAR_ATTACK_COOLDOWN_NIVEAU_1
+
+func _tirer_mortar_distance(cible: Node2D):
+	if not is_instance_valid(cible):
+		timer_attaque.stop()
+		cible_attaque = null
+		return
+	var position_impact := cible.global_position
+	var explosion = _prochaine_explosion_mortar()
+	_spawn_mortar_explosion_vfx(explosion["scene"], position_impact)
+	_appliquer_degats_zone(position_impact, explosion["rayon"], explosion["degats"])
+
+func _prochaine_explosion_mortar() -> Dictionary:
+	var base = {
+		"scene": SCENE_MORTAR_EXPLOSION_BASE,
+		"rayon": 84.0,
+		"degats": degats_unite
+	}
+	var poison = {
+		"scene": SCENE_MORTAR_EXPLOSION_POISON,
+		"rayon": 96.0,
+		"degats": int(round(float(degats_unite) * 0.65))
+	}
+	var feu = {
+		"scene": SCENE_MORTAR_EXPLOSION_FEU,
+		"rayon": 110.0,
+		"degats": int(round(float(degats_unite) * 0.85))
+	}
+
+	var niveau := _niveau_mortar()
+	var sequence: Array = [base]
+	if niveau == 2:
+		sequence = [base, poison]
+	elif niveau >= 3:
+		sequence = [base, poison, feu]
+
+	var index = cycle_explosion_mortar % sequence.size()
+	cycle_explosion_mortar += 1
+	return sequence[index]
+
+func _spawn_mortar_explosion_vfx(scene: PackedScene, position_world: Vector2):
+	if scene == null:
+		return
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var vfx = scene.instantiate()
+	parent_node.add_child(vfx)
+	vfx.global_position = position_world
+	if vfx.is_in_group("soldats"):
+		vfx.remove_from_group("soldats")
+	var sprite := vfx.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if is_instance_valid(sprite):
+		if sprite.sprite_frames and sprite.sprite_frames.has_animation("explosion"):
+			sprite.sprite_frames.set_animation_loop("explosion", false)
+			sprite.play("explosion")
+			sprite.animation_finished.connect(func(): if is_instance_valid(vfx): vfx.queue_free(), CONNECT_ONE_SHOT)
+		else:
+			vfx.queue_free()
+
+func _appliquer_degats_zone(centre: Vector2, rayon: float, degats: int):
+	var requete = PhysicsShapeQueryParameters2D.new()
+	var cercle = CircleShape2D.new()
+	cercle.radius = rayon
+	requete.shape = cercle
+	requete.transform = Transform2D(0, centre)
+	requete.collide_with_areas = false
+	requete.collide_with_bodies = true
+
+	var resultats = get_world_2d().direct_space_state.intersect_shape(requete)
+	for res in resultats:
+		var obj = res.collider
+		if not is_instance_valid(obj):
+			continue
+		if obj == self:
+			continue
+		if not obj.has_method("recevoir_degats"):
+			continue
+		if obj.get("equipe") == null or obj.equipe == equipe:
+			continue
+		if obj.is_in_group("camps"):
+			continue
+		obj.recevoir_degats(degats, self)
 
 func _appliquer_soin_cible(cible: Node2D):
 	if not is_instance_valid(cible):
@@ -238,9 +359,9 @@ func mettre_a_jour_animation():
 	if velocity.length() > 5.0:
 		if abs(velocity.x) > abs(velocity.y): dernier_regard = "r" if velocity.x > 0 else "l"
 		else: dernier_regard = "f" if velocity.y > 0 else "b"
-		sprite.play("run_" + dernier_regard)
+		_jouer_animation_sur_sprites("run_" + dernier_regard)
 	else:
-		sprite.play("idle_" + dernier_regard)
+		_jouer_animation_sur_sprites("idle_" + dernier_regard)
 
 func recevoir_degats(montant : int, auteur = null, auteur_equipe : int = -1):
 	if est_en_train_de_mourir:
@@ -268,6 +389,11 @@ func moteur_de_mort(tueur : Node2D = null, tueur_equipe : int = -1):
 		return
 
 	est_en_train_de_mourir = true
+	if _est_mortar():
+		_jouer_animation_sur_sprites("attack_" + dernier_regard, "idle_" + dernier_regard)
+		_spawn_mortar_explosion_vfx(SCENE_MORTAR_EXPLOSION_BASE, global_position)
+		_appliquer_degats_zone(global_position, 120.0, int(round(float(degats_unite) * 1.15)))
+		await get_tree().create_timer(0.22).timeout
 	mort_par_tueur.emit(tueur, tueur_equipe)
 	velocity = Vector2.ZERO
 	cible_attaque = null
@@ -300,10 +426,10 @@ func _jouer_animation_mort() -> bool:
 	var sprite: AnimatedSprite2D = $AnimatedSprite2D
 	var anim = "death_" + dernier_regard
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
-		sprite.play(anim)
+		_jouer_animation_sur_sprites(anim, "idle_" + dernier_regard)
 		return true
 	elif sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_" + dernier_regard):
-		sprite.play("idle_" + dernier_regard)
+		_jouer_animation_sur_sprites("idle_" + dernier_regard)
 	return false
 
 func _jouer_animation_attaque(cible: Node2D):
@@ -316,13 +442,27 @@ func _jouer_animation_attaque(cible: Node2D):
 	var dir := _direction_depuis_cible(cible.global_position)
 	var anim := "attack_" + dir
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
-		sprite.play(anim)
+		_jouer_animation_sur_sprites(anim)
 
 func _direction_depuis_cible(pos_cible: Vector2) -> String:
 	var delta := pos_cible - global_position
 	if abs(delta.y) >= abs(delta.x):
 		return "b" if delta.y < 0 else "f"
 	return "l" if delta.x < 0 else "r"
+
+func _sprites_animes_unite() -> Array[AnimatedSprite2D]:
+	var sprites: Array[AnimatedSprite2D] = []
+	for child in get_children():
+		if child is AnimatedSprite2D:
+			sprites.append(child as AnimatedSprite2D)
+	return sprites
+
+func _jouer_animation_sur_sprites(anim: String, fallback: String = ""):
+	for sprite in _sprites_animes_unite():
+		if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
+			sprite.play(anim)
+		elif fallback != "" and sprite.sprite_frames and sprite.sprite_frames.has_animation(fallback):
+			sprite.play(fallback)
 
 func _configurer_animations_mort():
 	if not has_node("AnimatedSprite2D"):
@@ -435,8 +575,8 @@ func _couleur_unite() -> Color:
 	return Color.WHITE
 
 func _appliquer_couleur_unite():
-	if has_node("AnimatedSprite2D"):
-		$AnimatedSprite2D.modulate = _couleur_unite()
+	for sprite in _sprites_animes_unite():
+		sprite.modulate = _couleur_unite()
 
 func configurer_mode_gardien(position_ancre: Vector2, rayon_defense: float = 260.0, rayon_poursuite: float = 320.0):
 	est_gardien_camp = true

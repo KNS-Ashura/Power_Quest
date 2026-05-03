@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://bqmmljtibc2uf"]
+[gd_scene format=3 uid="uid://cf5x28jbwes4"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_player_gd"]
-[ext_resource type="Texture2D" uid="uid://dqr42yvf0t7sl" path="res://assets/character/support/Unarmed_Run_without_shadow.png" id="2_run"]
-[ext_resource type="Texture2D" uid="uid://11xqddqviyn6" path="res://assets/character/support/Unarmed_Idle_without_shadow.png" id="3_idle"]
+[ext_resource type="Texture2D" uid="uid://cyfrx5imwwqhv" path="res://assets/character/support/nv2/run.png" id="2_run"]
+[ext_resource type="Texture2D" uid="uid://cqev6pjayu38h" path="res://assets/character/support/nv2/idle.png" id="3_idle"]
 
 [sub_resource type="AtlasTexture" id="idle_l0"]
 atlas = ExtResource("3_idle")
@@ -352,7 +352,7 @@ script = ExtResource("1_player_gd")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1384377072]
 sprite_frames = SubResource("SpriteFrames_support")
-animation = &"run_l"
+animation = &"idle_b"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=489419685]
 shape = SubResource("CircleShape2D_body")

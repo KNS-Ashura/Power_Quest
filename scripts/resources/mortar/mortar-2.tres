@@ -5,14 +5,12 @@
 [resource]
 script = ExtResource("1_stats")
 type_unite = 6
-nom = "Mortier"
-prix = 200
-hp_max = 60
-vitesse = 80.0
-degats = 40
-portee = 250.0
-temps_fabrication = 15.0
+nom = "Mortar II"
+prix = 240
+hp_max = 80
+vitesse = 88.0
+degats = 52
+portee = 275.0
+temps_fabrication = 13.0
 est_a_distance = true
-couleur = Color(0.2, 0.2, 0.2, 1)
-cooldown_sort = 0.0
-duree_sort = 0.0
+couleur = Color(0.26, 0.26, 0.26, 1)

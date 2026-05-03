@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bglp8r0vv28yh"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_player"]
-[ext_resource type="Texture2D" uid="uid://b24ry2w236n4o" path="res://assets/character/mortar/nv1/attack.png" id="2_2ohhl"]
-[ext_resource type="Texture2D" uid="uid://bvmkw62nofhjm" path="res://assets/character/mortar/nv1/death.png" id="3_74st4"]
-[ext_resource type="Texture2D" uid="uid://16agjkx7rqqp" path="res://assets/character/mortar/nv1/idle.png" id="4_ufx68"]
-[ext_resource type="Texture2D" uid="uid://bvtiuyb8scbdl" path="res://assets/character/mortar/nv1/run.png" id="5_snqa4"]
+[ext_resource type="Texture2D" uid="uid://b24ry2w236n4o" path="res://assets/character/mortar/Slime/attack.png" id="2_2ohhl"]
+[ext_resource type="Texture2D" uid="uid://bvmkw62nofhjm" path="res://assets/character/mortar/Slime/death.png" id="3_74st4"]
+[ext_resource type="Texture2D" uid="uid://16agjkx7rqqp" path="res://assets/character/mortar/Slime/idle.png" id="4_ufx68"]
+[ext_resource type="Texture2D" uid="uid://bvtiuyb8scbdl" path="res://assets/character/mortar/Slime/run.png" id="5_snqa4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_f1pyu"]
 atlas = ExtResource("2_2ohhl")
@@ -1009,12 +1009,12 @@ corner_radius_bottom_left = 2
 script = ExtResource("1_player")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=344944897]
-scale = Vector2(2.21875, 2.078125)
+position = Vector2(-1.6155871e-27, 1.6155871e-27)
+scale = Vector2(0.953125, 0.9140625)
 sprite_frames = SubResource("SpriteFrames_mortar")
-animation = &"death_r"
+animation = &"attack_l"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=26674820]
-position = Vector2(1, 0)
 shape = SubResource("CircleShape2D_body")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1769733496]
@@ -1022,7 +1022,6 @@ shape = SubResource("CircleShape2D_body")
 [node name="ZoneDetection" type="Area2D" parent="." unique_id=5608720]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ZoneDetection" unique_id=931354429]
-position = Vector2(1, 0)
 shape = SubResource("CircleShape2D_atk")
 debug_color = Color(0.8, 0, 0, 0.15)
 

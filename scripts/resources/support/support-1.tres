@@ -4,15 +4,15 @@
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 5
-nom = "Anti Armor"
-prix = 90
-hp_max = 90
-vitesse = 160.0
-degats = 8
-portee = 45.0
-temps_fabrication = 7.0
+type_unite = 3
+nom = "Support I"
+prix = 100
+hp_max = 120
+vitesse = 140.0
+degats = 5
+portee = 40.0
+temps_fabrication = 8.0
 est_a_distance = false
-couleur = Color(0.8, 0.4, 0.1, 1)
-cooldown_sort = 0.0
-duree_sort = 0.0
+couleur = Color(0.9, 0.7, 0.2, 1)
+cooldown_sort = 15.0
+duree_sort = 5.0
