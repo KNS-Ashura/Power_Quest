@@ -1,10 +1,10 @@
 [gd_scene format=4 uid="uid://cjncnq5yit72b"]
 
 [ext_resource type="TileSet" uid="uid://b7brpmlj7c3ix" path="res://Tilesets/game_tile_set.tres" id="1_j8wkn"]
-[ext_resource type="PackedScene" path="res://scenes/camp/camp_nv1.tscn" id="2_4iars"]
+[ext_resource type="PackedScene" uid="uid://dk45n6obyu64n" path="res://scenes/camp/camp_nv1.tscn" id="2_4iars"]
 [ext_resource type="PackedScene" uid="uid://ybntlc6fwopw" path="res://scenes/camera/manager_rts.tscn" id="3_in3gv"]
 [ext_resource type="PackedScene" uid="uid://cui68p4q4p4m" path="res://scenes/ui/production_ui.tscn" id="5_in3gv"]
-[ext_resource type="PackedScene" path="res://scenes/ui/spell_ui.tscn" id="6_spell"]
+[ext_resource type="PackedScene" uid="uid://buceavab1b56w" path="res://scenes/ui/spell_ui.tscn" id="6_spell"]
 
 [sub_resource type="GDScript" id="GDScript_5uvft"]
 
@@ -54,7 +54,8 @@ position = Vector2(-2, -2)
 navigation_polygon = SubResource("NavigationPolygon_j8wkn")
 
 [node name="ProductionUI" parent="." unique_id=692410953 instance=ExtResource("5_in3gv")]
-[node name="SpellUI" parent="." instance=ExtResource("6_spell")]
+
+[node name="SpellUI" parent="." unique_id=1755883466 instance=ExtResource("6_spell")]
 
 [node name="Camp map 1" type="Node2D" parent="." unique_id=339686177]
 position = Vector2(-699, -345)
