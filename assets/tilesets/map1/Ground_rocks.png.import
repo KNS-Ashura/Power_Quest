@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://q3unqtihmrow"
-path="res://.godot/imported/water_coasts.png-0fbd49ae99b687f8328f7967c96777d5.ctex"
+uid="uid://f34xcdenr6ds"
+path="res://.godot/imported/Ground_rocks.png-ee619bf9d965a51732a4be82c8408cf2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/water_coasts.png"
-dest_files=["res://.godot/imported/water_coasts.png-0fbd49ae99b687f8328f7967c96777d5.ctex"]
+source_file="res://assets/tilesets/map1/Ground_rocks.png"
+dest_files=["res://.godot/imported/Ground_rocks.png-ee619bf9d965a51732a4be82c8408cf2.ctex"]
 
 [params]
 

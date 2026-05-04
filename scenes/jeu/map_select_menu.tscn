@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://pbx12gcara03"]
+
+[ext_resource type="Script" path="res://scenes/jeu/map_select_menu.gd" id="1_script"]
+
+[node name="MapSelectMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.08, 0.12, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/VBox"]
+layout_mode = 2
+text = "Test — choisir la map"
+horizontal_alignment = 1
+
+[node name="BtnMap1" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Map 1 (Undead-Land)"
+
+[node name="BtnMap2" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Map 2 (Cave-Land)"
+
+[connection signal="pressed" from="Center/VBox/BtnMap1" to="." method="_on_map_1_pressed"]
+[connection signal="pressed" from="Center/VBox/BtnMap2" to="." method="_on_map_2_pressed"]
