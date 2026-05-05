@@ -1,0 +1,14 @@
+[gd_resource type="TileSet" format=3 uid="uid://dpfn3y52ooswy"]
+
+[resource]
+terrain_set_0/mode = 0
+terrain_set_0/terrain_0/name = "Chemin"
+terrain_set_0/terrain_0/color = Color(0.5879223, 0.12342199, 0.37647024, 1)
+terrain_set_0/terrain_1/name = "ground2"
+terrain_set_0/terrain_1/color = Color(0.5, 0.4375, 0.25, 1)
+terrain_set_0/terrain_2/name = "ground1"
+terrain_set_0/terrain_2/color = Color(0.46875, 0.5, 0.25, 1)
+terrain_set_0/terrain_3/name = "groundcoast2"
+terrain_set_0/terrain_3/color = Color(0.375, 0.5, 0.25, 1)
+terrain_set_0/terrain_4/name = "groundcoast1"
+terrain_set_0/terrain_4/color = Color(0.28125, 0.5, 0.25, 1)

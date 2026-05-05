@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" format=3 uid="uid://bp1jq3mgl2s6s"]
+[gd_resource type="TileSet" format=3 uid="uid://cyyprh4nrhan3"]
 
 [ext_resource type="Texture2D" uid="uid://cd6tqqvobruep" path="res://assets/tilesets/map1/water_detilazation_v2.png" id="1_m70i2"]
 [ext_resource type="Texture2D" uid="uid://f34xcdenr6ds" path="res://assets/tilesets/map1/Ground_rocks.png" id="2_cbdxd"]
