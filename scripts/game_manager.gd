@@ -14,6 +14,13 @@ func _ready():
 	timer_global.start()
 	call_deferred("_assigner_camps_initial")
 
+func initialiser_partie():
+	fin_de_partie = false
+	if not timer_global.is_stopped():
+		timer_global.stop()
+	timer_global.start()
+	_assigner_camps_initial()
+
 func _assigner_camps_initial():
 	var tous_les_camps = get_tree().get_nodes_in_group("camps")
 	if tous_les_camps.size() < 2: return
