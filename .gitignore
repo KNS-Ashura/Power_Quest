@@ -17,3 +17,6 @@ data_*/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local archives (too large for GitHub)
+*.zip
