@@ -13,6 +13,13 @@ func _ready():
 	timer_reflexion.start()
 	GameManager.timer_global.timeout.connect(_on_cycle_global)
 
+func initialiser_partie():
+	or_ia = 200
+	if is_instance_valid(timer_reflexion):
+		if not timer_reflexion.is_stopped():
+			timer_reflexion.stop()
+		timer_reflexion.start()
+
 func _on_cycle_global():
 	or_ia += GameManager.bonus_or
 	for camp in _recuperer_mes_camps():

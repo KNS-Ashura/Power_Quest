@@ -10,12 +10,18 @@ var current_batiment = null
 
 func _ready():
 	panel.hide()
-	var manager = get_tree().get_first_node_in_group("manager_rts")
-	if manager:
-		manager.batiment_selectionne_change.connect(_on_batiment_change)
+	_connect_manager_signal()
+	# La scene peut instancier ProductionUI avant ManagerRts.
+	# On retente au frame suivant pour eviter une UI non connectee.
+	call_deferred("_connect_manager_signal")
 	
 	Economie.argent_modifie.connect(_on_argent_modifie)
 	_on_argent_modifie(Economie.argent)
+
+func _connect_manager_signal():
+	var manager = get_tree().get_first_node_in_group("manager_rts")
+	if manager and not manager.batiment_selectionne_change.is_connected(_on_batiment_change):
+		manager.batiment_selectionne_change.connect(_on_batiment_change)
 
 func _on_batiment_change(bat):
 	Sound.play_menu2()

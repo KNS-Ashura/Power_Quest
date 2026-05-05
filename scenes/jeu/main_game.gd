@@ -20,3 +20,5 @@ func _ready() -> void:
 	# garantir des camps ennemis/alliés sur la map choisie.
 	if GameManager.has_method("initialiser_partie"):
 		GameManager.initialiser_partie()
+	if IAManager.has_method("initialiser_partie"):
+		IAManager.initialiser_partie()
