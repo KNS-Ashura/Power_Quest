@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://boc475n83yvau"
-path="res://.godot/imported/Objects_animated.png-e641f19fc9e8138eede8c8194748a5b8.ctex"
+uid="uid://c3mfy3tdqfg26"
+path="res://.godot/imported/duckweed.png-69c7c0cdab783104c70550244ffb806c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Swamp-Desert-Map/Desert/Objects_animated.png"
-dest_files=["res://.godot/imported/Objects_animated.png-e641f19fc9e8138eede8c8194748a5b8.ctex"]
+source_file="res://assets/tilesets/Swamp/duckweed.png"
+dest_files=["res://.godot/imported/duckweed.png-69c7c0cdab783104c70550244ffb806c.ctex"]
 
 [params]
 

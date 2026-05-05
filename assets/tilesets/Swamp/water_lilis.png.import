@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://85wcsx71p6cp"
-path="res://.godot/imported/Water_coasts.png-40ba88b4ebb8f5fa348372c826766d6c.ctex"
+uid="uid://cfy4xmymga8g"
+path="res://.godot/imported/water_lilis.png-d41608d0792505355e5af0d5973d884d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Swamp-Desert-Map/Desert/Water_coasts.png"
-dest_files=["res://.godot/imported/Water_coasts.png-40ba88b4ebb8f5fa348372c826766d6c.ctex"]
+source_file="res://assets/tilesets/Swamp/water_lilis.png"
+dest_files=["res://.godot/imported/water_lilis.png-d41608d0792505355e5af0d5973d884d.ctex"]
 
 [params]
 

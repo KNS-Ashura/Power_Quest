@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i3i1qbxser7j"
-path="res://.godot/imported/details.png-95bd956e3c9fe73c679ad9b85f8c797f.ctex"
+uid="uid://v2fx4l8mlgab"
+path="res://.godot/imported/ground_grass.png-10137c918b0bbe5a1568a6bb92389dd5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Swamp-Desert-Map/Desert/details.png"
-dest_files=["res://.godot/imported/details.png-95bd956e3c9fe73c679ad9b85f8c797f.ctex"]
+source_file="res://assets/tilesets/Swamp/ground_grass.png"
+dest_files=["res://.godot/imported/ground_grass.png-10137c918b0bbe5a1568a6bb92389dd5.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfxu0dixs77go"
-path="res://.godot/imported/Objects_trees.png-c5ad71c18aeea36007532b2572786296.ctex"
+uid="uid://bfqdyd8ogf35s"
+path="res://.godot/imported/Objects.png-75a86c95200a22e47ea1b09aca733e55.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Swamp-Desert-Map/Desert/Objects_trees.png"
-dest_files=["res://.godot/imported/Objects_trees.png-c5ad71c18aeea36007532b2572786296.ctex"]
+source_file="res://assets/tilesets/Swamp/Objects.png"
+dest_files=["res://.godot/imported/Objects.png-75a86c95200a22e47ea1b09aca733e55.ctex"]
 
 [params]
 

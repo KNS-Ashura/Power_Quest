@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://hrpjpdilqcdy"
-path="res://.godot/imported/water_detilazation_v2.png-5340565571445d92241b2c3f1426ed60.ctex"
+uid="uid://boc475n83yvau"
+path="res://.godot/imported/Objects_animated.png-6485776d72af4fc472bf970f4895d0c2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Swamp-Desert-Map/Desert/water_detilazation_v2.png"
-dest_files=["res://.godot/imported/water_detilazation_v2.png-5340565571445d92241b2c3f1426ed60.ctex"]
+source_file="res://assets/tilesets/Desert/Objects_animated.png"
+dest_files=["res://.godot/imported/Objects_animated.png-6485776d72af4fc472bf970f4895d0c2.ctex"]
 
 [params]
 
