@@ -8,6 +8,8 @@ enum Proprietaire { JOUEUR, ENNEMI, NEUTRE }
 @export var multiplicateur_temps_production : float = 1.0
 @export var cout_upgrade_niveau_2 : int = 200
 @export var cout_upgrade_niveau_3 : int = 350
+@export var utiliser_overlays_visuels_niveau : bool = true
+@export var variante_visuelle_camp : String = "map1"
 var hp_actuels : int = hp_max
 var gardien : Node2D = null
 
@@ -52,9 +54,21 @@ const SCENES_GARDIEN = {
 	3: preload("res://scenes/personnages/guardian/gardien-3.tscn")
 }
 const SCENES_CAMP_VISUEL_PATHS = {
-	1: "res://scenes/camp/camp_nv1.tscn",
-	2: "res://scenes/camp/camp_nv2.tscn",
-	3: "res://scenes/camp/camp_nv3.tscn"
+	1: "res://scenes/camp/map1/camp_nv1.tscn",
+	2: "res://scenes/camp/map1/camp_nv2.tscn",
+	3: "res://scenes/camp/map1/camp_nv3.tscn"
+}
+const SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE = {
+	"map1": {
+		1: "res://scenes/camp/map1/camp_nv1.tscn",
+		2: "res://scenes/camp/map1/camp_nv2.tscn",
+		3: "res://scenes/camp/map1/camp_nv3.tscn"
+	},
+	"map2": {
+		1: "res://scenes/camp/map2/camp_nv1_map2.tscn",
+		2: "res://scenes/camp/map2/camp_nv2_map2.tscn",
+		3: "res://scenes/camp/map2/camp_nv3_map2.tscn"
+	}
 }
 var stats_infanterie_par_niveau = {
 	1: preload("res://scripts/resources/infantry/infantry-1.tres"),
@@ -207,7 +221,13 @@ func _appliquer_visuel_niveau():
 		if old_node:
 			old_node.queue_free()
 
-	var template_path: String = SCENES_CAMP_VISUEL_PATHS.get(niveau_camp, SCENES_CAMP_VISUEL_PATHS[1])
+	# Certaines maps (ex: map2) utilisent des prefabs statiques sans overlays map1.
+	if not utiliser_overlays_visuels_niveau:
+		_appliquer_visuel_complet_depuis_template()
+		return
+
+	var paths_par_niveau: Dictionary = SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE.get(variante_visuelle_camp, SCENES_CAMP_VISUEL_PATHS)
+	var template_path: String = paths_par_niveau.get(niveau_camp, paths_par_niveau.get(1, SCENES_CAMP_VISUEL_PATHS[1]))
 	var template_res = load(template_path)
 	if not (template_res is PackedScene):
 		return
@@ -225,6 +245,32 @@ func _appliquer_visuel_niveau():
 		add_child(clone)
 		if sprite_base:
 			move_child(clone, sprite_base.get_index())
+		if clone is AnimatedSprite2D:
+			var s: AnimatedSprite2D = clone
+			if s.sprite_frames and s.animation != StringName("") and s.sprite_frames.has_animation(s.animation):
+				s.play(s.animation)
+	template_root.free()
+
+func _appliquer_visuel_complet_depuis_template():
+	for child in get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			child.queue_free()
+
+	var paths_par_niveau: Dictionary = SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE.get(variante_visuelle_camp, SCENES_CAMP_VISUEL_PATHS)
+	var template_path: String = paths_par_niveau.get(niveau_camp, paths_par_niveau.get(1, SCENES_CAMP_VISUEL_PATHS[1]))
+	var template_res = load(template_path)
+	if not (template_res is PackedScene):
+		return
+
+	var template_root = (template_res as PackedScene).instantiate()
+	if not is_instance_valid(template_root):
+		return
+
+	for source_node in template_root.get_children():
+		if not (source_node is Sprite2D or source_node is AnimatedSprite2D):
+			continue
+		var clone = source_node.duplicate()
+		add_child(clone)
 		if clone is AnimatedSprite2D:
 			var s: AnimatedSprite2D = clone
 			if s.sprite_frames and s.animation != StringName("") and s.sprite_frames.has_animation(s.animation):

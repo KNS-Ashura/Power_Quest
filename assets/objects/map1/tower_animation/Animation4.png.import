@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7ulmbgkkhwtx"
-path="res://.godot/imported/Objects_animated.png-e83da2278aca28888fedf6a8709ef511.ctex"
+uid="uid://bmbla8eeuqqro"
+path="res://.godot/imported/Animation4.png-77dbc0fb78c1f5bcde7511509205cb73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/objects/Objects_animated.png"
-dest_files=["res://.godot/imported/Objects_animated.png-e83da2278aca28888fedf6a8709ef511.ctex"]
+source_file="res://assets/objects/map1/tower_animation/Animation4.png"
+dest_files=["res://.godot/imported/Animation4.png-77dbc0fb78c1f5bcde7511509205cb73.ctex"]
 
 [params]
 

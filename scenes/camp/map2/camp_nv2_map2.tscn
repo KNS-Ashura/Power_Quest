@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://58b4dnqwulfb"]
+
+[ext_resource type="Script" uid="uid://dfrvq33wykm6h" path="res://scripts/camp_nv2.gd" id="1_8jp0v"]
+[ext_resource type="Texture2D" uid="uid://df6ws4ihau231" path="res://assets/objects/map2/Statues_grass_shadow1.png" id="2_8rwwg"]
+[ext_resource type="Texture2D" uid="uid://ndb2v4y7gnt6" path="res://assets/objects/map2/Scarabaeus_house_grass_shadow.png" id="3_vo7qk"]
+[ext_resource type="Texture2D" uid="uid://j782437mmk0g" path="res://assets/objects/map2/Cactus2_grass_shadow2.png" id="4_w4fp1"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
+radius = 25.0
+height = 88.0
+
+[node name="camp" type="StaticBody2D" unique_id=1255783347]
+script = ExtResource("1_8jp0v")
+equipe = 0
+utiliser_overlays_visuels_niveau = false
+variante_visuelle_camp = "map2"
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=46398725]
+position = Vector2(-34, -57)
+texture = ExtResource("2_8rwwg")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=268250062]
+texture = ExtResource("3_vo7qk")
+
+[node name="Sprite2D3" type="Sprite2D" parent="." unique_id=743751881]
+position = Vector2(-47, 31)
+texture = ExtResource("4_w4fp1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
+position = Vector2(0, 1)
+shape = SubResource("CapsuleShape2D_q06s1")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Timer" type="Timer" parent="." unique_id=1702314306]
+autostart = true
+
+[node name="Marker2D" type="Marker2D" parent="." unique_id=592443713]
+
+[node name="Label" type="Label" parent="." unique_id=1269375851]
+offset_left = -40.0
+offset_top = -80.0
+offset_right = 40.0
+offset_bottom = -57.0
+text = "ALLIE"
+horizontal_alignment = 1
