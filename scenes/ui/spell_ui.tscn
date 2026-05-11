@@ -53,5 +53,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Boost"
 
+[node name="BtnMortarSpell" type="Button" parent="Control/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mortar Ult"
+
 [connection signal="pressed" from="Control/Panel/HBoxContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
 [connection signal="pressed" from="Control/Panel/HBoxContainer/BtnBoost" to="." method="_on_btn_boost_pressed"]
+[connection signal="pressed" from="Control/Panel/HBoxContainer/BtnMortarSpell" to="." method="_on_btn_mortar_spell_pressed"]

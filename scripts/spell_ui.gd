@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @onready var btn_heal: Button = $Control/Panel/HBoxContainer/BtnHeal
 @onready var btn_boost: Button = $Control/Panel/HBoxContainer/BtnBoost
+@onready var btn_mortar_spell: Button = $Control/Panel/HBoxContainer/BtnMortarSpell
 
 const RAYON_EFFET_SORT: float = 150.0
 const DUREE_AFFICHAGE_ZONE: float = 0.6
@@ -10,13 +11,17 @@ const COULEUR_HEAL_BORD: Color = Color(0.2, 1.0, 0.2, 1.0)
 const COULEUR_HEAL_FOND: Color = Color(0.2, 1.0, 0.2, 0.2)
 const COULEUR_BOOST_BORD: Color = Color(0.25, 0.55, 1.0, 1.0)
 const COULEUR_BOOST_FOND: Color = Color(0.25, 0.55, 1.0, 0.2)
+const COULEUR_MORTAR_BORD: Color = Color(1.0, 0.55, 0.15, 1.0)
+const COULEUR_MORTAR_FOND: Color = Color(1.0, 0.55, 0.15, 0.2)
 
 var _nb_healers_selectionnes: int = 0
 var _nb_supports_selectionnes: int = 0
+var _nb_mortars_selectionnes: int = 0
 
 func _ready():
 	btn_heal.disabled = true
 	btn_boost.disabled = true
+	btn_mortar_spell.disabled = true
 
 func _process(_delta):
 	_refresh_etat_boutons()
@@ -24,6 +29,7 @@ func _process(_delta):
 func _refresh_etat_boutons():
 	var healers := 0
 	var supports := 0
+	var mortars := 0
 
 	for unite in get_tree().get_nodes_in_group("soldats"):
 		if not unite.get("est_selectionne"):
@@ -38,15 +44,19 @@ func _refresh_etat_boutons():
 				supports += 1
 			4:
 				healers += 1
+			6:
+				mortars += 1
 
-	if healers == _nb_healers_selectionnes and supports == _nb_supports_selectionnes:
+	if healers == _nb_healers_selectionnes and supports == _nb_supports_selectionnes and mortars == _nb_mortars_selectionnes:
 		return
 
 	_nb_healers_selectionnes = healers
 	_nb_supports_selectionnes = supports
+	_nb_mortars_selectionnes = mortars
 
 	btn_heal.disabled = _nb_healers_selectionnes <= 0
 	btn_boost.disabled = _nb_supports_selectionnes <= 0
+	btn_mortar_spell.disabled = _nb_mortars_selectionnes <= 0
 
 func _on_btn_heal_pressed():
 	var healers = _get_unites_selectionnees_par_type(4)
@@ -65,6 +75,15 @@ func _on_btn_boost_pressed():
 		_afficher_zone_effet(support.global_position, RAYON_EFFET_SORT, COULEUR_BOOST_BORD, COULEUR_BOOST_FOND)
 
 	print(str(_nb_supports_selectionnes) + " support(s) selectionne(s), pouvoir Boost active")
+
+func _on_btn_mortar_spell_pressed():
+	var mortars = _get_unites_selectionnees_par_type(6)
+	for mortar in mortars:
+		if mortar.has_method("lancer_sort"):
+			mortar.lancer_sort()
+		_afficher_zone_effet(mortar.global_position, RAYON_EFFET_SORT, COULEUR_MORTAR_BORD, COULEUR_MORTAR_FOND)
+
+	print(str(_nb_mortars_selectionnes) + " mortar(s) selectionne(s), sort Ult active")
 
 func _get_unites_selectionnees_par_type(type_unite: int) -> Array:
 	var resultat: Array = []

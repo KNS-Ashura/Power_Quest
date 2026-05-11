@@ -3809,6 +3809,9 @@ texture = ExtResource("15_cvn4h")
 5:25/0 = 0
 6:25/0 = 0
 7:25/0 = 0
+0:5/0 = 0
+5:9/0 = 0
+4:9/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_oxsmu"]
 texture = ExtResource("16_lc2f2")

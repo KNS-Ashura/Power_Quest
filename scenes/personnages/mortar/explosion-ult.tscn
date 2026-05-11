@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://mysr3oifej1n"]
+
+[ext_resource type="Script" uid="uid://b8og7dh1w0ux5" path="res://scripts/range_projectile_land.gd" id="1_uk1hd"]
+[ext_resource type="Texture2D" uid="uid://r7bmil0f3o88" path="res://assets/character/mortar/explosion/Circle_explosion1.png" id="2_uudvr"]
+[ext_resource type="Texture2D" uid="uid://ecwk3sjfuo46" path="res://assets/character/mortar/explosion/Circle_explosion2.png" id="3_pdj6i"]
+[ext_resource type="Texture2D" uid="uid://cmiaasqs4n6hy" path="res://assets/character/mortar/explosion/Circle_explosion3.png" id="4_mr6lh"]
+[ext_resource type="Texture2D" uid="uid://b2g2bc188e6v2" path="res://assets/character/mortar/explosion/Circle_explosion4.png" id="5_jtb6g"]
+[ext_resource type="Texture2D" uid="uid://d205mh7j10wet" path="res://assets/character/mortar/explosion/Circle_explosion5.png" id="6_pibb5"]
+[ext_resource type="Texture2D" uid="uid://bb7usdlgf65ej" path="res://assets/character/mortar/explosion/Circle_explosion6.png" id="7_m3wsn"]
+[ext_resource type="Texture2D" uid="uid://crlo2hrdmtj58" path="res://assets/character/mortar/explosion/Circle_explosion7.png" id="8_abf0h"]
+[ext_resource type="Texture2D" uid="uid://4uh732drjrso" path="res://assets/character/mortar/explosion/Circle_explosion8.png" id="9_3lon1"]
+[ext_resource type="Texture2D" uid="uid://cd5gwg11lij2p" path="res://assets/character/mortar/explosion/Circle_explosion9.png" id="10_jlwwo"]
+[ext_resource type="Texture2D" uid="uid://b8x87ylsyu3wh" path="res://assets/character/mortar/explosion/Circle_explosion10.png" id="11_xdwdm"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_uudvr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_pdj6i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_mr6lh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_jtb6g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_pibb5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_m3wsn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_abf0h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_3lon1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_jlwwo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_xdwdm")
+}],
+"loop": true,
+"name": &"explosion",
+"speed": 5.0
+}]
+
+[node name="projectile" type="CharacterBody2D" unique_id=137281627 groups=["soldats"]]
+script = ExtResource("1_uk1hd")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1830331399]
+position = Vector2(3.8146973e-06, 0)
+scale = Vector2(1.4453125, 1.359375)
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"explosion"
+frame_progress = 0.5229086
