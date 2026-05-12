@@ -83,7 +83,7 @@ func _on_btn_mortar_spell_pressed():
 			mortar.lancer_sort()
 		_afficher_zone_effet(mortar.global_position, RAYON_EFFET_SORT, COULEUR_MORTAR_BORD, COULEUR_MORTAR_FOND)
 
-	print(str(_nb_mortars_selectionnes) + " mortar(s) selectionne(s), sort Ult active")
+	print(str(_nb_mortars_selectionnes) + " mortar(s) selectionne(s), pouvoir Ult active")
 
 func _get_unites_selectionnees_par_type(type_unite: int) -> Array:
 	var resultat: Array = []

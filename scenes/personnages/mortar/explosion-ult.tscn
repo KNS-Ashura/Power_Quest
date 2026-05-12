@@ -47,7 +47,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"explosion",
-"speed": 5.0
+"speed": 8.0
 }]
 
 [node name="projectile" type="CharacterBody2D" unique_id=137281627 groups=["soldats"]]
@@ -58,4 +58,4 @@ position = Vector2(3.8146973e-06, 0)
 scale = Vector2(1.4453125, 1.359375)
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"explosion"
-frame_progress = 0.5229086
+frame_progress = 0.008894894

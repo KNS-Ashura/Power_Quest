@@ -17,14 +17,10 @@ const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/exp
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_ULT = preload("res://scenes/personnages/mortar/explosion-ult.tscn")
-const SCENE_MORTAR_EXPLOSION_POISON_ULT = preload("res://scenes/personnages/mortar/poison-explosion-ult.tscn")
-const SCENE_MORTAR_EXPLOSION_FEU_ULT = preload("res://scenes/personnages/mortar/fire-explosion-ult.tscn")
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
-const MORTAR_SORT_ECART_LIGNE = 56.0
-const MORTAR_SORT_RAYON_TRIANGLE = 68.0
 
 @onready var agent_navigation = $NavigationAgent2D
 var cible_attaque : Node2D = null
@@ -570,81 +566,40 @@ func lancer_sort():
 					obj.get_node("ProgressBar").value = obj.hp_actuels
 
 func _lancer_sort_mortar_ult() -> bool:
-	var cible_sort = _cible_ennemie_plus_proche_mortar()
-	if not is_instance_valid(cible_sort):
+	var niveau = _niveau_mortar()
+	var nb_cibles = 1
+	if niveau == 2:
+		nb_cibles = 2
+	elif niveau >= 3:
+		nb_cibles = 3
+
+	var cibles = _cibles_ennemies_plus_proches_mortar(nb_cibles)
+	if cibles.is_empty():
 		return false
 
-	var centre = cible_sort.global_position
-	var direction = centre - global_position
-	if direction.length() < 0.001:
-		direction = Vector2.RIGHT
-	else:
-		direction = direction.normalized()
-	var perpendiculaire = Vector2(-direction.y, direction.x)
-
-	var explosions_a_lancer: Array[Dictionary] = []
-	var niveau = _niveau_mortar()
-	var degats_base = int(round(float(degats_unite) * 1.25))
-	var degats_poison = int(round(float(degats_unite) * 0.95))
-	var degats_feu = int(round(float(degats_unite) * 1.1))
-
-	if niveau <= 1:
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_ULT,
-			"position": centre,
-			"rayon": 112.0,
-			"degats": degats_base
-		})
-	elif niveau == 2:
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_ULT,
-			"position": centre - perpendiculaire * (MORTAR_SORT_ECART_LIGNE * 0.5),
-			"rayon": 112.0,
-			"degats": degats_base
-		})
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_POISON_ULT,
-			"position": centre + perpendiculaire * (MORTAR_SORT_ECART_LIGNE * 0.5),
-			"rayon": 118.0,
-			"degats": degats_poison
-		})
-	else:
-		var p1 = centre + direction * MORTAR_SORT_RAYON_TRIANGLE
-		var p2 = centre + ((-direction * 0.5) + (perpendiculaire * 0.8660254)) * MORTAR_SORT_RAYON_TRIANGLE
-		var p3 = centre + ((-direction * 0.5) - (perpendiculaire * 0.8660254)) * MORTAR_SORT_RAYON_TRIANGLE
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_ULT,
-			"position": p1,
-			"rayon": 112.0,
-			"degats": degats_base
-		})
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_POISON_ULT,
-			"position": p2,
-			"rayon": 118.0,
-			"degats": degats_poison
-		})
-		explosions_a_lancer.append({
-			"scene": SCENE_MORTAR_EXPLOSION_FEU_ULT,
-			"position": p3,
-			"rayon": 120.0,
-			"degats": degats_feu
-		})
-
-	for explosion in explosions_a_lancer:
-		_spawn_mortar_explosion_vfx(explosion["scene"], explosion["position"])
-		_appliquer_degats_zone(explosion["position"], explosion["rayon"], explosion["degats"])
-
+	var degats_sort = int(round(float(degats_unite) * 1.2))
+	for cible in cibles:
+		var position_impact = cible.global_position
+		_spawn_mortar_explosion_vfx(SCENE_MORTAR_EXPLOSION_ULT, position_impact)
+		_appliquer_degats_zone(position_impact, 112.0, degats_sort)
 	return true
 
-func _cible_ennemie_plus_proche_mortar() -> Node2D:
+func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
 	var cibles: Array = zone_detection.get_overlapping_bodies().filter(func(c):
 		return c != self and c.has_method("recevoir_degats") and not c.is_in_group("camps") and c.get("equipe") != null and c.get("equipe") != equipe
 	)
 	if cibles.is_empty():
-		return null
-	cibles.sort_custom(func(a, b): return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position))
-	return cibles[0]
+		return []
+
+	cibles.sort_custom(func(a, b):
+		return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
+	)
+
+	var resultat: Array = []
+	var limite = mini(nb_max, cibles.size())
+	for i in range(limite):
+		resultat.append(cibles[i])
+	return resultat
 
 func recevoir_boost(duree: float):
 	boost_actif = true

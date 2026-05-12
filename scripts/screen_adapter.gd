@@ -1,6 +1,6 @@
 extends Node
 
-## Réduit la fenêtre si 1920×1080 dépasse l'écran (ex. portable), puis centre.
+## Réduit la fenêtre si la taille du projet dépasse l'écran (ex. portable), puis centre.
 func _ready() -> void:
 	await get_tree().process_frame
 	var win := get_window()

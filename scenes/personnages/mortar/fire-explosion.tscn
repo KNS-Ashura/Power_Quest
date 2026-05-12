@@ -51,7 +51,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"explosion",
-"speed": 5.0
+"speed": 8.0
 }]
 
 [node name="projectile" type="CharacterBody2D" unique_id=137281627 groups=["soldats"]]
@@ -60,4 +60,5 @@ script = ExtResource("1_player_gd")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1830331399]
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"explosion"
-frame_progress = 0.08668134
+frame = 1
+frame_progress = 0.7868991
