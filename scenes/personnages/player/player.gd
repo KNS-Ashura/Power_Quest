@@ -21,6 +21,11 @@ const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
+## Calque 1 = sol (Nav_ground map 2, nav map 1). Calque 2 = eau (Nav_water map 2).
+const NAV_LAYER_SOL := 1
+const NAV_LAYER_EAU := 2
+
+@export var forcer_navigation_eau: bool = false
 
 @onready var agent_navigation = $NavigationAgent2D
 var cible_attaque : Node2D = null
@@ -59,12 +64,24 @@ func _ready():
 			$ZoneDetection/CollisionShape2D.shape.radius = stats.portee
 			
 		agent_navigation.target_desired_distance = stats.portee - 5.0
-	
+
+	_configurer_calques_navigation()
 	agent_navigation.path_desired_distance = 10.0
 	await get_tree().process_frame
 	agent_navigation.target_position = global_position
 	timer_attaque.timeout.connect(_on_timer_attaque_timeout)
 	_configurer_animations_mort()
+
+func _configurer_calques_navigation() -> void:
+	if not is_instance_valid(agent_navigation):
+		return
+	agent_navigation.navigation_layers = NAV_LAYER_EAU if _est_unite_aquatique() else NAV_LAYER_SOL
+
+func _est_unite_aquatique() -> bool:
+	if forcer_navigation_eau:
+		return true
+	var chemin_scene := scene_file_path
+	return chemin_scene.contains("/Water_") or chemin_scene.contains("/water_")
 
 func set_selection(etat : bool):
 	est_selectionne = etat
