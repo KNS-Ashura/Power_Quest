@@ -837,9 +837,9 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="anti_armor" type="CharacterBody2D" unique_id=81716249 groups=["soldats"]]
+[node name="anti_armor" type="CharacterBody2D" unique_id=81716249 groups=["soldiers"]]
 script = ExtResource("1_player_gd")
-equipe = null
+team = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=200497238]
 position = Vector2(1, -11)

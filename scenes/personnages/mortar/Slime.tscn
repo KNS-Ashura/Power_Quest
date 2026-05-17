@@ -1005,7 +1005,7 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="mortar" type="CharacterBody2D" unique_id=1747397558 groups=["soldats"]]
+[node name="mortar" type="CharacterBody2D" unique_id=1747397558 groups=["soldiers"]]
 script = ExtResource("1_2wbgd")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=344944897]

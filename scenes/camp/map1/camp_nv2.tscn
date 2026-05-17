@@ -191,7 +191,7 @@ height = 88.0
 
 [node name="camp" type="StaticBody2D" unique_id=1255783347]
 script = ExtResource("2_script")
-equipe = 0
+team = 0
 
 [node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=360273576]
 position = Vector2(-41, 3)

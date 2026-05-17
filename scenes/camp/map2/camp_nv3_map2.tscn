@@ -12,7 +12,7 @@ height = 88.0
 
 [node name="camp" type="StaticBody2D" unique_id=1255783347]
 script = ExtResource("1_yjlc7")
-equipe = 0
+team = 0
 utiliser_overlays_visuels_niveau = false
 variante_visuelle_camp = "map2"
 

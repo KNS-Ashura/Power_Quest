@@ -1,4 +1,4 @@
 extends Node
 
-## Choix de map pour la session (1 = Undead-Land, 2 = Cave-Land). Utilisé par le menu de test puis par Main.
+## Active map for this session (1 = Undead-Land, 2 = Cave-Land).
 var active_map_index: int = 1

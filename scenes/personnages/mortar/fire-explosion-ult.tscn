@@ -54,7 +54,7 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="projectile" type="CharacterBody2D" unique_id=137281627 groups=["soldats"]]
+[node name="projectile" type="CharacterBody2D" unique_id=137281627 groups=["soldiers"]]
 script = ExtResource("1_e5hcj")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1830331399]

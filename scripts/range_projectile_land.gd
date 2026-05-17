@@ -2,11 +2,13 @@ extends CharacterBody2D
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
-func _ready():
+
+func _ready() -> void:
 	if is_instance_valid(sprite):
 		sprite.animation_finished.connect(_on_animation_finished)
 
-func jouer_impact(direction: String):
+
+func play_impact(direction: String) -> void:
 	if not is_instance_valid(sprite):
 		queue_free()
 		return
@@ -18,5 +20,6 @@ func jouer_impact(direction: String):
 		anim = "f"
 	sprite.play(anim)
 
-func _on_animation_finished():
+
+func _on_animation_finished() -> void:
 	queue_free()

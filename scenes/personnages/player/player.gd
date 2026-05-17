@@ -1,17 +1,18 @@
 extends CharacterBody2D
 
-signal mort_par_tueur(tueur, tueur_equipe)
+signal killed_by(tueur, tueur_team)
 
-@export var stats : UniteStats
+@export var stats : UnitStats
 
-enum Proprietaire { JOUEUR, ENNEMI, NEUTRE }
-@export var equipe : Proprietaire = Proprietaire.JOUEUR
+enum Owner { JOUEUR, ENNEMI, NEUTRE }
+enum Owner { PLAYER, ENEMY, NEUTRAL }
+@export var team: Owner = Owner.PLAYER
 
 var hp_max : int = 100
-var hp_actuels : int = 100
-var vitesse_unite : float = 150.0
-var degats_unite : int = 10
-var est_selectionne : bool = false
+var current_hp : int = 100
+var unit_speed : float = 150.0
+var unit_damage : int = 10
+var is_selected : bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("res://scenes/personnages/range/range-loop-projectile.tscn")
 const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
@@ -22,13 +23,13 @@ const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
 ## Calque 1 = sol (Nav_ground map 2, nav map 1). Calque 2 = eau (Nav_water map 2).
-const NAV_LAYER_SOL := 1
-const NAV_LAYER_EAU := 2
+const NAV_LAYER_GROUND := 1
+const NAV_LAYER_WATER := 2
 
-@export var forcer_navigation_eau: bool = false
+@export var force_water_navigation: bool = false
 
 @onready var agent_navigation = $NavigationAgent2D
-var cible_attaque : Node2D = null
+var attack_target_node : Node2D = null
 @onready var zone_detection = $ZoneDetection
 @onready var timer_attaque = $TimerAttaque
 
@@ -38,32 +39,32 @@ var timer_recherche : float = 0.0
 var cooldown_actuel_sort : float = 0.0
 var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
-var multiplicateur_cadence_attaque: float = 1.0
-var est_en_train_de_mourir : bool = false
+var attack_rate_multiplier: float = 1.0
+var is_dying : bool = false
 var cycle_explosion_mortar : int = 0
-var est_gardien_camp: bool = false
-var position_garde: Vector2 = Vector2.ZERO
-var rayon_defense_gardien: float = 260.0
-var rayon_poursuite_gardien: float = 320.0
+var is_camp_guardian: bool = false
+var guard_position: Vector2 = Vector2.ZERO
+var guard_defense_radius: float = 260.0
+var guard_chase_radius: float = 320.0
 
 func _ready():
 	if stats:
 		hp_max = stats.hp_max
-		hp_actuels = hp_max
-		vitesse_unite = stats.vitesse
-		degats_unite = stats.degats
+		current_hp = hp_max
+		unit_speed = stats.speed
+		unit_damage = stats.damage
 		_appliquer_couleur_unite()
 		
 		if has_node("ProgressBar"):
 			$ProgressBar.max_value = hp_max
-			$ProgressBar.value = hp_actuels
+			$ProgressBar.value = current_hp
 		
 		var shape = $ZoneDetection/CollisionShape2D.shape
 		if shape is CircleShape2D:
 			$ZoneDetection/CollisionShape2D.shape = shape.duplicate()
-			$ZoneDetection/CollisionShape2D.shape.radius = stats.portee
+			$ZoneDetection/CollisionShape2D.shape.radius = stats.range
 			
-		agent_navigation.target_desired_distance = stats.portee - 5.0
+		agent_navigation.target_desired_distance = stats.range - 5.0
 
 	_configurer_calques_navigation()
 	agent_navigation.path_desired_distance = 10.0
@@ -75,36 +76,36 @@ func _ready():
 func _configurer_calques_navigation() -> void:
 	if not is_instance_valid(agent_navigation):
 		return
-	agent_navigation.navigation_layers = NAV_LAYER_EAU if _est_unite_aquatique() else NAV_LAYER_SOL
+	agent_navigation.navigation_layers = NAV_LAYER_WATER if _is_naval_unit() else NAV_LAYER_GROUND
 
-func _est_unite_aquatique() -> bool:
-	if forcer_navigation_eau:
+func _is_naval_unit() -> bool:
+	if force_water_navigation:
 		return true
 	var chemin_scene := scene_file_path
 	return chemin_scene.contains("/Water_") or chemin_scene.contains("/water_")
 
 func set_selection(etat : bool):
-	est_selectionne = etat
-	self.modulate = Color(1.2, 1.2, 1.2) if est_selectionne else Color(1, 1, 1)
+	is_selected = etat
+	self.modulate = Color(1.2, 1.2, 1.2) if is_selected else Color(1, 1, 1)
 
-func aller_vers(cible : Vector2):
-	if est_gardien_camp:
+func move_to(cible : Vector2):
+	if is_camp_guardian:
 		return
-	cible_attaque = null
+	attack_target_node = null
 	agent_navigation.target_position = cible
 
-func attaquer_cible(cible : Node2D):
-	if est_gardien_camp and is_instance_valid(cible):
-		if cible.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
+func attack_target(cible : Node2D):
+	if is_camp_guardian and is_instance_valid(cible):
+		if cible.global_position.distance_to(guard_position) > guard_chase_radius:
 			return
-	cible_attaque = cible
+	attack_target_node = cible
 	if is_instance_valid(cible):
 		agent_navigation.target_position = cible.global_position
 
 var dernier_regard : String = "f"
 
 func _physics_process(_delta):
-	if est_en_train_de_mourir:
+	if is_dying:
 		return
 
 	var doit_avancer = true
@@ -116,30 +117,30 @@ func _physics_process(_delta):
 		temps_restant_boost -= _delta
 		if temps_restant_boost <= 0:
 			boost_actif = false
-			vitesse_unite = stats.vitesse
-			degats_unite = stats.degats
-			multiplicateur_cadence_attaque = 1.0
+			unit_speed = stats.speed
+			unit_damage = stats.damage
+			attack_rate_multiplier = 1.0
 			_appliquer_couleur_unite()
 	
-	if is_instance_valid(cible_attaque):
-		var cible_valide := cible_attaque
-		if est_gardien_camp and cible_valide.global_position.distance_to(position_garde) > rayon_poursuite_gardien:
-			cible_attaque = null
+	if is_instance_valid(attack_target_node):
+		var cible_valide := attack_target_node
+		if is_camp_guardian and cible_valide.global_position.distance_to(guard_position) > guard_chase_radius:
+			attack_target_node = null
 			timer_attaque.stop()
-			agent_navigation.target_position = position_garde
+			agent_navigation.target_position = guard_position
 			doit_avancer = true
 		else:
 			agent_navigation.target_position = cible_valide.global_position
 
-		if is_instance_valid(cible_attaque) and cible_attaque in zone_detection.get_overlapping_bodies():
+		if is_instance_valid(attack_target_node) and attack_target_node in zone_detection.get_overlapping_bodies():
 			doit_avancer = false
 			if timer_attaque.is_stopped():
 				if _est_mortar():
 					# Mortar: tire immédiatement à la première fenêtre de tir, puis applique le cooldown.
-					_tirer_mortar_distance(cible_attaque)
+					_tirer_mortar_distance(attack_target_node)
 					timer_attaque.start(_cooldown_mortar_niveau())
 				else:
-					var cadence = _cadence_attaque_actuelle()
+					var cadence = _attack_rate_actuelle()
 					timer_attaque.start(1.0 / cadence)
 		else:
 			timer_attaque.stop()
@@ -150,43 +151,43 @@ func _physics_process(_delta):
 			_rechercher_cible_automatique()
 			timer_recherche = temps_recherche
 
-		if est_gardien_camp and global_position.distance_to(position_garde) > 8.0:
-			agent_navigation.target_position = position_garde
+		if is_camp_guardian and global_position.distance_to(guard_position) > 8.0:
+			agent_navigation.target_position = guard_position
 		elif agent_navigation.is_navigation_finished():
 			doit_avancer = false
 			
 	if doit_avancer:
 		var prochain_point = agent_navigation.get_next_path_position()
-		velocity = global_position.direction_to(prochain_point) * vitesse_unite
+		velocity = global_position.direction_to(prochain_point) * unit_speed
 		move_and_slide()
 	else:
 		velocity = Vector2.ZERO
 
-	mettre_a_jour_animation()
+	update_animation()
 
 func _on_timer_attaque_timeout():
-	if is_instance_valid(cible_attaque):
+	if is_instance_valid(attack_target_node):
 		if _est_healer():
-			_jouer_animation_attaque(cible_attaque)
-			_appliquer_soin_cible(cible_attaque)
+			_jouer_animation_attaque(attack_target_node)
+			_appliquer_soin_cible(attack_target_node)
 			return
 		if _est_mortar():
-			_tirer_mortar_distance(cible_attaque)
+			_tirer_mortar_distance(attack_target_node)
 			return
 		if _est_range():
-			_jouer_animation_attaque(cible_attaque)
-			_tirer_projectile_range(cible_attaque)
+			_jouer_animation_attaque(attack_target_node)
+			_tirer_projectile_range(attack_target_node)
 			return
-		if cible_attaque.has_method("recevoir_degats"):
-			_jouer_animation_attaque(cible_attaque)
-			cible_attaque.recevoir_degats(degats_unite, self)
+		if attack_target_node.has_method("take_damage"):
+			_jouer_animation_attaque(attack_target_node)
+			attack_target_node.take_damage(unit_damage, self)
 			_animer_attaque_melee()
 	else:
 		timer_attaque.stop()
-		cible_attaque = null
+		attack_target_node = null
 
 func _animer_attaque_melee():
-	if is_instance_valid(cible_attaque):
+	if is_instance_valid(attack_target_node):
 		# Plus de "dash" visuel: l'animation d'attaque gère maintenant le mouvement perçu.
 		for sprite in _sprites_animes_unite():
 			var flash = create_tween()
@@ -196,26 +197,26 @@ func _animer_attaque_melee():
 func _rechercher_cible_automatique():
 	if _est_healer():
 		var allies = zone_detection.get_overlapping_bodies().filter(func(c):
-			return c != self and c.get("equipe") != null and c.get("equipe") == equipe and not c.is_in_group("camps") and "hp_actuels" in c and "hp_max" in c and c.hp_actuels < c.hp_max
+			return c != self and c.get("team") != null and c.get("team") == team and not c.is_in_group("camps") and "current_hp" in c and "hp_max" in c and c.current_hp < c.hp_max
 		)
-		if est_gardien_camp:
-			allies = allies.filter(func(c): return c.global_position.distance_to(position_garde) <= rayon_defense_gardien)
+		if is_camp_guardian:
+			allies = allies.filter(func(c): return c.global_position.distance_to(guard_position) <= guard_defense_radius)
 		if allies.size() > 0:
 			allies.sort_custom(func(a, b):
-				var ratio_a = float(a.hp_actuels) / max(1.0, float(a.hp_max))
-				var ratio_b = float(b.hp_actuels) / max(1.0, float(b.hp_max))
+				var ratio_a = float(a.current_hp) / max(1.0, float(a.hp_max))
+				var ratio_b = float(b.current_hp) / max(1.0, float(b.hp_max))
 				if ratio_a != ratio_b:
 					return ratio_a < ratio_b
 				return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
 			)
-			attaquer_cible(allies[0])
+			attack_target(allies[0])
 		return
 
 	var cibles = zone_detection.get_overlapping_bodies().filter(func(c):
-		return c != self and c.has_method("recevoir_degats") and not c.is_in_group("camps") and c.get("equipe") != null and c.get("equipe") != equipe
+		return c != self and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != team
 	)
-	if est_gardien_camp:
-		cibles = cibles.filter(func(c): return c.global_position.distance_to(position_garde) <= rayon_defense_gardien)
+	if is_camp_guardian:
+		cibles = cibles.filter(func(c): return c.global_position.distance_to(guard_position) <= guard_defense_radius)
 	
 	if cibles.size() > 0:
 		cibles.sort_custom(func(a, b):
@@ -224,16 +225,16 @@ func _rechercher_cible_automatique():
 			if a_est_soldat != b_est_soldat: return a_est_soldat
 			return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
 		)
-		attaquer_cible(cibles[0])
+		attack_target(cibles[0])
 
 func _est_healer() -> bool:
-	return stats != null and stats.type_unite == UniteStats.TypeUnite.HEAL
+	return stats != null and stats.unit_type == UnitStats.UnitType.HEAL
 
 func _est_range() -> bool:
-	return stats != null and stats.type_unite == UniteStats.TypeUnite.ARCHER
+	return stats != null and stats.unit_type == UnitStats.UnitType.ARCHER
 
 func _est_mortar() -> bool:
-	return stats != null and stats.type_unite == UniteStats.TypeUnite.MORTAR
+	return stats != null and stats.unit_type == UnitStats.UnitType.MORTAR
 
 func _tirer_projectile_range(cible: Node2D):
 	if not is_instance_valid(cible):
@@ -245,13 +246,13 @@ func _tirer_projectile_range(cible: Node2D):
 	var proj = SCENE_RANGE_PROJECTILE_LOOP.instantiate()
 	parent_node.add_child(proj)
 	proj.global_position = global_position
-	if proj.has_method("lancer"):
-		proj.lancer(cible, degats_unite, self)
+	if proj.has_method("launch"):
+		proj.launch(cible, unit_damage, self)
 
 func _niveau_mortar() -> int:
 	if stats == null:
 		return 1
-	var nom_lower := String(stats.nom).to_lower()
+	var nom_lower := String(stats.name).to_lower()
 	if nom_lower.find("iii") != -1 or nom_lower.find(" 3") != -1:
 		return 3
 	if nom_lower.find("ii") != -1 or nom_lower.find(" 2") != -1:
@@ -269,7 +270,7 @@ func _cooldown_mortar_niveau() -> float:
 func _tirer_mortar_distance(cible: Node2D):
 	if not is_instance_valid(cible):
 		timer_attaque.stop()
-		cible_attaque = null
+		attack_target_node = null
 		return
 	var position_impact := cible.global_position
 	var explosion = _prochaine_explosion_mortar()
@@ -280,17 +281,17 @@ func _prochaine_explosion_mortar() -> Dictionary:
 	var base = {
 		"scene": SCENE_MORTAR_EXPLOSION_BASE,
 		"rayon": 84.0,
-		"degats": degats_unite
+		"degats": unit_damage
 	}
 	var poison = {
 		"scene": SCENE_MORTAR_EXPLOSION_POISON,
 		"rayon": 96.0,
-		"degats": int(round(float(degats_unite) * 0.65))
+		"degats": int(round(float(unit_damage) * 0.65))
 	}
 	var feu = {
 		"scene": SCENE_MORTAR_EXPLOSION_FEU,
 		"rayon": 110.0,
-		"degats": int(round(float(degats_unite) * 0.85))
+		"degats": int(round(float(unit_damage) * 0.85))
 	}
 
 	var niveau := _niveau_mortar()
@@ -313,8 +314,8 @@ func _spawn_mortar_explosion_vfx(scene: PackedScene, position_world: Vector2):
 	var vfx = scene.instantiate()
 	parent_node.add_child(vfx)
 	vfx.global_position = position_world
-	if vfx.is_in_group("soldats"):
-		vfx.remove_from_group("soldats")
+	if vfx.is_in_group("soldiers"):
+		vfx.remove_from_group("soldiers")
 	var sprite := vfx.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 	if is_instance_valid(sprite):
 		if sprite.sprite_frames and sprite.sprite_frames.has_animation("explosion"):
@@ -340,33 +341,33 @@ func _appliquer_degats_zone(centre: Vector2, rayon: float, degats: int):
 			continue
 		if obj == self:
 			continue
-		if not obj.has_method("recevoir_degats"):
+		if not obj.has_method("take_damage"):
 			continue
-		if obj.get("equipe") == null or obj.equipe == equipe:
+		if obj.get("team") == null or obj.team == team:
 			continue
 		if obj.is_in_group("camps"):
 			continue
-		obj.recevoir_degats(degats, self)
+		obj.take_damage(degats, self)
 
 func _appliquer_soin_cible(cible: Node2D):
 	if not is_instance_valid(cible):
 		timer_attaque.stop()
-		cible_attaque = null
+		attack_target_node = null
 		return
-	if not ("hp_actuels" in cible and "hp_max" in cible):
+	if not ("current_hp" in cible and "hp_max" in cible):
 		return
-	if cible.get("equipe") == null or cible.equipe != equipe:
+	if cible.get("team") == null or cible.team != team:
 		return
-	if cible.hp_actuels >= cible.hp_max:
-		cible_attaque = null
+	if cible.current_hp >= cible.hp_max:
+		attack_target_node = null
 		return
 
 	var soin = int(max(10.0, float(hp_max) * 0.12))
-	cible.hp_actuels = min(cible.hp_max, cible.hp_actuels + soin)
+	cible.current_hp = min(cible.hp_max, cible.current_hp + soin)
 	if cible.has_node("ProgressBar"):
-		cible.get_node("ProgressBar").value = cible.hp_actuels
+		cible.get_node("ProgressBar").value = cible.current_hp
 
-func mettre_a_jour_animation():
+func update_animation():
 	if not has_node("AnimatedSprite2D"):
 		return
 
@@ -382,40 +383,40 @@ func mettre_a_jour_animation():
 	else:
 		_jouer_animation_sur_sprites("idle_" + dernier_regard)
 
-func recevoir_degats(montant : int, auteur = null, auteur_equipe : int = -1):
-	if est_en_train_de_mourir:
+func take_damage(montant : int, auteur = null, auteur_team : int = -1):
+	if is_dying:
 		return
 
 	var degats_finaux = montant
 	
 	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null:
-		if auteur.stats.type_unite == 5:
-			degats_finaux = degats_finaux * 3 if (stats and stats.type_unite == 2) else int(float(degats_finaux) * 0.5)
+		if auteur.stats.unit_type == 5:
+			degats_finaux = degats_finaux * 3 if (stats and stats.unit_type == 2) else int(float(degats_finaux) * 0.5)
 				
-	hp_actuels -= degats_finaux
+	current_hp -= degats_finaux
 	
 	if has_node("ProgressBar"):
-		$ProgressBar.value = hp_actuels
+		$ProgressBar.value = current_hp
 		
-	if hp_actuels <= 0:
-		var eq = auteur_equipe
-		if eq == -1 and is_instance_valid(auteur) and auteur.get("equipe") != null:
-			eq = auteur.equipe
-		moteur_de_mort(auteur, eq)
+	if current_hp <= 0:
+		var eq = auteur_team
+		if eq == -1 and is_instance_valid(auteur) and auteur.get("team") != null:
+			eq = auteur.team
+		die(auteur, eq)
 
-func moteur_de_mort(tueur : Node2D = null, tueur_equipe : int = -1):
-	if est_en_train_de_mourir:
+func die(tueur : Node2D = null, tueur_team : int = -1):
+	if is_dying:
 		return
 
-	est_en_train_de_mourir = true
+	is_dying = true
 	if _est_mortar():
 		_jouer_animation_sur_sprites("attack_" + dernier_regard, "idle_" + dernier_regard)
 		_spawn_mortar_explosion_vfx(SCENE_MORTAR_EXPLOSION_BASE, global_position)
-		_appliquer_degats_zone(global_position, 120.0, int(round(float(degats_unite) * 1.15)))
+		_appliquer_degats_zone(global_position, 120.0, int(round(float(unit_damage) * 1.15)))
 		await get_tree().create_timer(0.22).timeout
-	mort_par_tueur.emit(tueur, tueur_equipe)
+	killed_by.emit(tueur, tueur_team)
 	velocity = Vector2.ZERO
-	cible_attaque = null
+	attack_target_node = null
 	timer_attaque.stop()
 
 	# Stoppe tout blocage physique/agent dès le début de l'anim de mort.
@@ -549,17 +550,17 @@ func _configurer_animations_mort():
 			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 			frames.add_frame(anim_name, a)
 
-func lancer_sort():
+func cast_spell():
 	if not stats or cooldown_actuel_sort > 0:
 		return
 	if _est_mortar():
-		if _lancer_sort_mortar_ult():
-			var cooldown_sort_mortar = stats.cooldown_sort if stats.cooldown_sort > 0 else MORTAR_SORT_COOLDOWN_DEFAUT
-			cooldown_actuel_sort = cooldown_sort_mortar
+		if _cast_spell_mortar_ult():
+			var spell_cooldown_mortar = stats.spell_cooldown if stats.spell_cooldown > 0 else MORTAR_SORT_COOLDOWN_DEFAUT
+			cooldown_actuel_sort = spell_cooldown_mortar
 		return
-	if stats.cooldown_sort <= 0:
+	if stats.spell_cooldown <= 0:
 		return
-	cooldown_actuel_sort = stats.cooldown_sort
+	cooldown_actuel_sort = stats.spell_cooldown
 	
 	var requete = PhysicsShapeQueryParameters2D.new()
 	var cercle = CircleShape2D.new()
@@ -570,19 +571,19 @@ func lancer_sort():
 	requete.collide_with_bodies = true
 	
 	var resultats = get_world_2d().direct_space_state.intersect_shape(requete)
-	var groupe = "soldats" if equipe == Proprietaire.JOUEUR else "ennemis"
+	var groupe = "soldiers" if team == Owner.PLAYER else "enemies"
 	
 	for res in resultats:
 		var obj = res.collider
 		if obj and obj.is_in_group(groupe):
-			if stats.type_unite == 3 and obj.has_method("recevoir_boost"):
-				obj.recevoir_boost(stats.duree_sort + 10.0)
-			elif stats.type_unite == 4 and "hp_actuels" in obj and "hp_max" in obj:
-				obj.hp_actuels = min(obj.hp_max, obj.hp_actuels + 50)
+			if stats.unit_type == 3 and obj.has_method("receive_boost"):
+				obj.receive_boost(stats.spell_duration + 10.0)
+			elif stats.unit_type == 4 and "current_hp" in obj and "hp_max" in obj:
+				obj.current_hp = min(obj.hp_max, obj.current_hp + 50)
 				if obj.has_node("ProgressBar"):
-					obj.get_node("ProgressBar").value = obj.hp_actuels
+					obj.get_node("ProgressBar").value = obj.current_hp
 
-func _lancer_sort_mortar_ult() -> bool:
+func _cast_spell_mortar_ult() -> bool:
 	var niveau = _niveau_mortar()
 	var nb_cibles = 1
 	if niveau == 2:
@@ -594,7 +595,7 @@ func _lancer_sort_mortar_ult() -> bool:
 	if cibles.is_empty():
 		return false
 
-	var degats_sort = int(round(float(degats_unite) * 1.2))
+	var degats_sort = int(round(float(unit_damage) * 1.2))
 	for cible in cibles:
 		var position_impact = cible.global_position
 		_spawn_mortar_explosion_vfx(SCENE_MORTAR_EXPLOSION_ULT, position_impact)
@@ -603,7 +604,7 @@ func _lancer_sort_mortar_ult() -> bool:
 
 func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
 	var cibles: Array = zone_detection.get_overlapping_bodies().filter(func(c):
-		return c != self and c.has_method("recevoir_degats") and not c.is_in_group("camps") and c.get("equipe") != null and c.get("equipe") != equipe
+		return c != self and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != team
 	)
 	if cibles.is_empty():
 		return []
@@ -618,22 +619,22 @@ func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
 		resultat.append(cibles[i])
 	return resultat
 
-func recevoir_boost(duree: float):
+func receive_boost(duree: float):
 	boost_actif = true
 	temps_restant_boost = duree
-	vitesse_unite = stats.vitesse * 1.25
-	degats_unite = int(round(stats.degats * 1.25))
-	multiplicateur_cadence_attaque = 1.25
+	unit_speed = stats.speed * 1.25
+	unit_damage = int(round(stats.damage * 1.25))
+	attack_rate_multiplier = 1.25
 	_appliquer_couleur_unite()
 
-func _cadence_attaque_actuelle() -> float:
-	var cadence_base = stats.cadence_attaque if stats and "cadence_attaque" in stats else 1.0
-	return cadence_base * multiplicateur_cadence_attaque
+func _attack_rate_actuelle() -> float:
+	var cadence_base = stats.attack_rate if stats and "attack_rate" in stats else 1.0
+	return cadence_base * attack_rate_multiplier
 
 func _couleur_unite() -> Color:
 	if boost_actif:
 		return Color(1.0, 0.95, 0.25)
-	if equipe == Proprietaire.ENNEMI:
+	if team == Owner.ENEMY:
 		return Color(1.0, 0.2, 0.2)
 	return Color.WHITE
 
@@ -641,9 +642,9 @@ func _appliquer_couleur_unite():
 	for sprite in _sprites_animes_unite():
 		sprite.modulate = _couleur_unite()
 
-func configurer_mode_gardien(position_ancre: Vector2, rayon_defense: float = 260.0, rayon_poursuite: float = 320.0):
-	est_gardien_camp = true
-	position_garde = position_ancre
-	rayon_defense_gardien = rayon_defense
-	rayon_poursuite_gardien = rayon_poursuite
-	agent_navigation.target_position = position_garde
+func configure_guardian_mode(position_ancre: Vector2, rayon_defense: float = 260.0, rayon_poursuite: float = 320.0):
+	is_camp_guardian = true
+	guard_position = position_ancre
+	guard_defense_radius = rayon_defense
+	guard_chase_radius = rayon_poursuite
+	agent_navigation.target_position = guard_position

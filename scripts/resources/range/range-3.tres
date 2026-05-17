@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" path="res://scripts/resources/unit_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 1
-nom = "Range III"
-prix = 115
+unit_type = 1
+name = "Range III"
+price = 115
 hp_max = 130
-vitesse = 146.0
-degats = 14
-portee = 230.0
-temps_fabrication = 4.8
-est_a_distance = true
-couleur = Color(0.3, 0.7, 1, 1)
+speed = 146.0
+damage = 14
+range = 230.0
+build_time = 4.8
+is_ranged = true
+color = Color(0.3, 0.7, 1, 1)

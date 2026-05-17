@@ -1,56 +1,61 @@
 extends Area2D
 
-var cible : Node2D = null
-var degats : int = 0
-var vitesse : float = 450.0
-var auteur : Node2D = null
-var equipe_tireur : int = -1
+var target: Node2D = null
+var damage: int = 0
+var speed: float = 450.0
+var shooter: Node2D = null
+var shooter_team: int = -1
 
-func lancer(target : Node2D, p_degats : int, p_auteur : Node2D = null):
-	cible = target
-	degats = p_degats
-	auteur = p_auteur
-	if is_instance_valid(auteur) and auteur.get("equipe") != null:
-		equipe_tireur = auteur.equipe
 
-func _process(delta):
-	if is_instance_valid(cible):
-		var direction = global_position.direction_to(cible.global_position)
-		look_at(cible.global_position)
-		global_position += direction * vitesse * delta
-		
-		if global_position.distance_to(cible.global_position) < 12:
-			_appliquer_degats()
+func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = null) -> void:
+	target = target_node
+	damage = projectile_damage
+	shooter = shooter_node
+	if is_instance_valid(shooter) and shooter.get("team") != null:
+		shooter_team = shooter.team
+
+
+func _process(delta: float) -> void:
+	if is_instance_valid(target):
+		var direction = global_position.direction_to(target.global_position)
+		look_at(target.global_position)
+		global_position += direction * speed * delta
+
+		if global_position.distance_to(target.global_position) < 12:
+			_apply_damage()
 	else:
 		queue_free()
 
-func _on_body_entered(body):
-	if body == cible:
-		_appliquer_degats()
 
-func _appliquer_degats():
-	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null and auteur.stats.type_unite == 6:
-		_explosion_mortier()
+func _on_body_entered(body: Node2D) -> void:
+	if body == target:
+		_apply_damage()
+
+
+func _apply_damage() -> void:
+	if is_instance_valid(shooter) and "stats" in shooter and shooter.stats != null and shooter.stats.unit_type == 6:
+		_mortar_explosion()
 	else:
-		if is_instance_valid(cible) and cible.has_method("recevoir_degats"):
-			cible.recevoir_degats(degats, auteur, equipe_tireur)
+		if is_instance_valid(target) and target.has_method("take_damage"):
+			target.take_damage(damage, shooter, shooter_team)
 	queue_free()
 
-func _explosion_mortier():
-	var rayon_explosion = 100.0
-	var espace = get_world_2d().direct_space_state
-	
-	var requete = PhysicsShapeQueryParameters2D.new()
-	var cercle = CircleShape2D.new()
-	cercle.radius = rayon_explosion
-	requete.shape = cercle
-	requete.transform = Transform2D(0, global_position)
-	requete.collide_with_areas = false
-	requete.collide_with_bodies = true
-	
-	for res in espace.intersect_shape(requete):
+
+func _mortar_explosion() -> void:
+	var explosion_radius = 100.0
+	var space = get_world_2d().direct_space_state
+
+	var query = PhysicsShapeQueryParameters2D.new()
+	var circle = CircleShape2D.new()
+	circle.radius = explosion_radius
+	query.shape = circle
+	query.transform = Transform2D(0, global_position)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+
+	for res in space.intersect_shape(query):
 		var obj = res.collider
-		if obj and obj.has_method("recevoir_degats") and not obj.is_in_group("camps"):
-			if obj.get("equipe") != null and obj.get("equipe") != equipe_tireur:
-				var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / rayon_explosion, 0.0, 1.0))
-				obj.recevoir_degats(int(float(degats) * ratio), auteur, equipe_tireur)
+		if obj and obj.has_method("take_damage") and not obj.is_in_group("camps"):
+			if obj.get("team") != null and obj.get("team") != shooter_team:
+				var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / explosion_radius, 0.0, 1.0))
+				obj.take_damage(int(float(damage) * ratio), shooter, shooter_team)

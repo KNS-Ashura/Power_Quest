@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bxaepch0u0ta"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_dyhcn"]
-[ext_resource type="Texture2D" uid="uid://bs4d7wldrj76g" path="res://assets/character/gardien/nv1/Run.png" id="2_4klc4"]
-[ext_resource type="Texture2D" uid="uid://cy6x4wfb84q0a" path="res://assets/character/gardien/nv1/Attack.png" id="2_xmo7t"]
-[ext_resource type="Texture2D" uid="uid://b5tyfk2dbc0n5" path="res://assets/character/gardien/nv1/Idle.png" id="3_idle"]
-[ext_resource type="Texture2D" uid="uid://bc5bvxw3clnp3" path="res://assets/character/gardien/nv1/Death.png" id="3_j8y88"]
+[ext_resource type="Texture2D" uid="uid://bs4d7wldrj76g" path="res://assets/character/guardian/nv1/Run.png" id="2_4klc4"]
+[ext_resource type="Texture2D" uid="uid://cy6x4wfb84q0a" path="res://assets/character/guardian/nv1/Attack.png" id="2_xmo7t"]
+[ext_resource type="Texture2D" uid="uid://b5tyfk2dbc0n5" path="res://assets/character/guardian/nv1/Idle.png" id="3_idle"]
+[ext_resource type="Texture2D" uid="uid://bc5bvxw3clnp3" path="res://assets/character/guardian/nv1/Death.png" id="3_j8y88"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6iwri"]
 atlas = ExtResource("2_xmo7t")
@@ -1180,9 +1180,9 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="gardien" type="CharacterBody2D" unique_id=1299368703 groups=["soldats"]]
+[node name="guardian" type="CharacterBody2D" unique_id=1299368703 groups=["soldiers"]]
 script = ExtResource("1_dyhcn")
-equipe = null
+team = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=885986411]
 position = Vector2(3.8146973e-06, 0)

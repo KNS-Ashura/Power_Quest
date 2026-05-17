@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" path="res://scripts/resources/unit_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 6
-nom = "Mortar I"
-prix = 200
+unit_type = 6
+name = "Mortar I"
+price = 200
 hp_max = 60
-vitesse = 80.0
-degats = 40
-portee = 250.0
-temps_fabrication = 15.0
-est_a_distance = true
-couleur = Color(0.2, 0.2, 0.2, 1)
+speed = 80.0
+damage = 40
+range = 250.0
+build_time = 15.0
+is_ranged = true
+color = Color(0.2, 0.2, 0.2, 1)

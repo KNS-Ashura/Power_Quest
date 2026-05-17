@@ -1,18 +1,18 @@
-[gd_resource type="Resource" script_class="UniteStats" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/resources/unite_stats.gd" id="1_stats"]
+[ext_resource type="Script" path="res://scripts/resources/unit_stats.gd" id="1_stats"]
 
 [resource]
 script = ExtResource("1_stats")
-type_unite = 3
-nom = "Support II"
-prix = 120
+unit_type = 3
+name = "Support II"
+price = 120
 hp_max = 145
-vitesse = 146.0
-degats = 6
-portee = 45.0
-temps_fabrication = 7.2
-est_a_distance = false
-couleur = Color(0.95, 0.75, 0.25, 1)
+speed = 146.0
+damage = 6
+range = 45.0
+build_time = 7.2
+is_ranged = false
+color = Color(0.95, 0.75, 0.25, 1)
 cooldown_sort = 13.0
 duree_sort = 6.0

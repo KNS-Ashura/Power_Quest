@@ -1,238 +1,95 @@
 extends StaticBody2D
 
-enum Proprietaire { JOUEUR, ENNEMI, NEUTRE }
-@export var equipe : Proprietaire = Proprietaire.NEUTRE
-@export var revenu_par_seconde : int = 5
-@export var hp_max : int = 500
-@export_range(1, 3, 1) var niveau_camp : int = 1
-@export var multiplicateur_temps_production : float = 1.0
-@export var cout_upgrade_niveau_2 : int = 200
-@export var cout_upgrade_niveau_3 : int = 350
-@export var utiliser_overlays_visuels_niveau : bool = true
-@export var variante_visuelle_camp : String = "map1"
-var hp_actuels : int = hp_max
-var gardien : Node2D = null
+const CampCatalogue = preload("res://scripts/camp_catalogue.gd")
 
-const SCENES_INFANTERIE = {
-	1: preload("res://scenes/personnages/infantry/infantry-1.tscn"),
-	2: preload("res://scenes/personnages/infantry/infantry-2.tscn"),
-	3: preload("res://scenes/personnages/infantry/infantry-3.tscn")
-}
-const SCENES_RANGE = {
-	1: preload("res://scenes/personnages/range/range-1.tscn"),
-	2: preload("res://scenes/personnages/range/range-2.tscn"),
-	3: preload("res://scenes/personnages/range/range-3.tscn")
-}
-const SCENES_HEAVY = {
-	1: preload("res://scenes/personnages/heavy/heavy-1.tscn"),
-	2: preload("res://scenes/personnages/heavy/heavy-2.tscn"),
-	3: preload("res://scenes/personnages/heavy/heavy-3.tscn")
-}
-const SCENES_SUPPORT = {
-	1: preload("res://scenes/personnages/support/support-1.tscn"),
-	2: preload("res://scenes/personnages/support/support-2.tscn"),
-	3: preload("res://scenes/personnages/support/support-3.tscn")
-}
-const SCENES_HEALER = {
-	1: preload("res://scenes/personnages/healer/healer-1.tscn"),
-	2: preload("res://scenes/personnages/healer/healer-2.tscn"),
-	3: preload("res://scenes/personnages/healer/healer-3.tscn")
-}
-const SCENES_MORTAR = {
-	1: preload("res://scenes/personnages/mortar/mortar-1.tscn"),
-	2: preload("res://scenes/personnages/mortar/mortar-2.tscn"),
-	3: preload("res://scenes/personnages/mortar/mortar-3.tscn")
-}
-const SCENES_ANTI_ARMOR = {
-	1: preload("res://scenes/personnages/anti_armor/anti_armor-1.tscn"),
-	2: preload("res://scenes/personnages/anti_armor/anti_armor-2.tscn"),
-	3: preload("res://scenes/personnages/anti_armor/anti_armor-3.tscn")
-}
-const SCENES_GARDIEN = {
-	1: preload("res://scenes/personnages/guardian/gardien-1.tscn"),
-	2: preload("res://scenes/personnages/guardian/gardien-2.tscn"),
-	3: preload("res://scenes/personnages/guardian/gardien-3.tscn")
-}
-const SCENES_CAMP_VISUEL_PATHS = {
-	1: "res://scenes/camp/map1/camp_nv1.tscn",
-	2: "res://scenes/camp/map1/camp_nv2.tscn",
-	3: "res://scenes/camp/map1/camp_nv3.tscn"
-}
-const SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE = {
-	"map1": {
-		1: "res://scenes/camp/map1/camp_nv1.tscn",
-		2: "res://scenes/camp/map1/camp_nv2.tscn",
-		3: "res://scenes/camp/map1/camp_nv3.tscn"
-	},
-	"map2": {
-		1: "res://scenes/camp/map2/camp_nv1_map2.tscn",
-		2: "res://scenes/camp/map2/camp_nv2_map2.tscn",
-		3: "res://scenes/camp/map2/camp_nv3_map2.tscn"
-	}
-}
-var stats_infanterie_par_niveau = {
-	1: preload("res://scripts/resources/infantry/infantry-1.tres"),
-	2: preload("res://scripts/resources/infantry/infantry-2.tres"),
-	3: preload("res://scripts/resources/infantry/infantry-3.tres")
-}
-var stats_archer_par_niveau = {
-	1: preload("res://scripts/resources/range/range-1.tres"),
-	2: preload("res://scripts/resources/range/range-2.tres"),
-	3: preload("res://scripts/resources/range/range-3.tres")
-}
-var stats_lourd_par_niveau = {
-	1: preload("res://scripts/resources/heavy/heavy-1.tres"),
-	2: preload("res://scripts/resources/heavy/heavy-2.tres"),
-	3: preload("res://scripts/resources/heavy/heavy-3.tres")
-}
-var stats_support_par_niveau = {
-	1: preload("res://scripts/resources/support/support-1.tres"),
-	2: preload("res://scripts/resources/support/support-2.tres"),
-	3: preload("res://scripts/resources/support/support-3.tres")
-}
-var stats_heal_par_niveau = {
-	1: preload("res://scripts/resources/healer/healer-1.tres"),
-	2: preload("res://scripts/resources/healer/healer-2.tres"),
-	3: preload("res://scripts/resources/healer/healer-3.tres")
-}
-var stats_anti_armor_par_niveau = {
-	1: preload("res://scripts/resources/anti_armor/anti_armor-1.tres"),
-	2: preload("res://scripts/resources/anti_armor/anti_armor-2.tres"),
-	3: preload("res://scripts/resources/anti_armor/anti_armor-3.tres")
-}
-var stats_gardien_par_niveau = {
-	1: preload("res://scripts/resources/gardien/gardien-1.tres"),
-	2: preload("res://scripts/resources/gardien/gardien-2.tres"),
-	3: preload("res://scripts/resources/gardien/gardien-3.tres")
-}
-var stats_mortar_par_niveau = {
-	1: preload("res://scripts/resources/mortar/mortar-1.tres"),
-	2: preload("res://scripts/resources/mortar/mortar-2.tres"),
-	3: preload("res://scripts/resources/mortar/mortar-3.tres")
-}
+enum Owner { PLAYER, ENEMY, NEUTRAL }
+enum SiteType { CAMP, PORT }
 
-var catalogue_unites = {}
+@export var team: Owner = Owner.NEUTRAL
+@export var site_type: SiteType = SiteType.CAMP
+@export var income_per_second: int = 5
+@export var hp_max: int = 500
+@export_range(1, 3, 1) var camp_level: int = 1
+@export var production_time_multiplier: float = 1.0
+@export var upgrade_cost_level_2: int = 200
+@export var upgrade_cost_level_3: int = 350
+@export var use_level_visual_overlays: bool = true
+@export var camp_visual_variant: String = "map1"
 
-var file_production : Array = []
-var temps_restant : float = 0.0
-var temps_total_unite_actuelle : float = 1.0
+var current_hp: int = hp_max
+var guardian: Node2D = null
+var unit_catalog: Dictionary = {}
+var production_queue: Array = []
+var remaining_time: float = 0.0
+var current_unit_total_time: float = 1.0
 
-@onready var point_apparition = $Marker2D
-@onready var timer_revenu = Timer.new()
+@onready var spawn_point = $Marker2D
+var income_timer: Timer
 
-var timer_ia_production : Timer = null
-@export var frequence_ia : float = 15.0
+signal production_updated(queue_size, progress)
+signal camp_upgradedd(new_level)
+signal site_captured(new_team)
 
-signal production_maj(file_taille, progression)
-signal camp_upgrade(nouveau_niveau)
 
-func _ready():
-	_appliquer_configuration_niveau()
-	_rafraichir_catalogue_unites()
-	_appliquer_visuel_niveau()
+func _ready() -> void:
+	_detect_site_type()
+	_apply_level_config()
+	_refresh_unit_catalog()
+	_apply_level_visuals()
 	add_to_group("camps")
-	_mettre_a_jour_groupes_et_visuels()
-	
-	if has_node("AnimatedSprite2D"): $AnimatedSprite2D.play()
-	
-	add_child(timer_revenu)
-	timer_revenu.wait_time = 1.0
-	timer_revenu.timeout.connect(_on_timer_revenu_timeout)
-	timer_revenu.start()
-	
-	timer_ia_production = Timer.new()
-	add_child(timer_ia_production)
-	timer_ia_production.wait_time = frequence_ia
-	timer_ia_production.timeout.connect(_on_timer_ia_timeout)
-	timer_ia_production.start()
+	_update_groups_and_visuals()
 
-func _rafraichir_catalogue_unites():
-	catalogue_unites = {
-		0: _stats_infanterie_niveau(), 1: _stats_range_niveau(), 2: _stats_lourd_niveau(), 3: _stats_support_niveau(),
-		4: _stats_heal_niveau(), 5: _stats_anti_armor_niveau(), 6: _stats_mortar_niveau()
-	}
+	if has_node("AnimatedSprite2D"):
+		$AnimatedSprite2D.play()
 
-func _stats_pour_niveau(stats_par_niveau: Dictionary) -> UniteStats:
-	if stats_par_niveau.has(niveau_camp):
-		return stats_par_niveau[niveau_camp]
-	return stats_par_niveau[1]
+	income_timer = Timer.new()
+	add_child(income_timer)
+	income_timer.wait_time = 1.0
+	income_timer.timeout.connect(_on_income_timer_timeout)
+	income_timer.start()
 
-func _scene_pour_niveau(scenes_par_niveau: Dictionary) -> PackedScene:
-	if scenes_par_niveau.has(niveau_camp):
-		return scenes_par_niveau[niveau_camp]
-	return scenes_par_niveau[1]
 
-func _stats_infanterie_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_infanterie_par_niveau)
+func _detect_site_type() -> void:
+	if site_type == SiteType.PORT:
+		return
+	var n := name.to_lower()
+	if n == "port" or n.begins_with("port"):
+		site_type = SiteType.PORT
 
-func _stats_anti_armor_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_anti_armor_par_niveau)
 
-func _stats_range_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_archer_par_niveau)
+func is_port() -> bool:
+	return site_type == SiteType.PORT
 
-func _stats_lourd_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_lourd_par_niveau)
 
-func _stats_support_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_support_par_niveau)
+func _refresh_unit_catalog() -> void:
+	if is_port():
+		unit_catalog = CampCatalogue.naval_unit_catalog(camp_level)
+	else:
+		unit_catalog = CampCatalogue.land_unit_catalog(camp_level)
 
-func _stats_heal_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_heal_par_niveau)
 
-func _stats_gardien_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_gardien_par_niveau)
-
-func _stats_mortar_niveau() -> UniteStats:
-	return _stats_pour_niveau(stats_mortar_par_niveau)
-
-func _scene_infanterie_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_INFANTERIE)
-
-func _scene_range_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_RANGE)
-
-func _scene_anti_armor_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_ANTI_ARMOR)
-
-func _scene_heavy_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_HEAVY)
-
-func _scene_support_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_SUPPORT)
-
-func _scene_healer_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_HEALER)
-
-func _scene_gardien_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_GARDIEN)
-
-func _scene_mortar_niveau() -> PackedScene:
-	return _scene_pour_niveau(SCENES_MORTAR)
-
-func _appliquer_visuel_niveau():
+func _apply_level_visuals() -> void:
 	var sprite_base := get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 	if sprite_base:
 		sprite_base.play("animation_camp_V")
 
-	# Nettoie d'abord les overlays précédents.
 	for n in ["AnimatedSprite2D2", "AnimatedSprite2D3"]:
 		var old_node = get_node_or_null(n)
 		if old_node:
 			old_node.queue_free()
 
-	# Certaines maps (ex: map2) utilisent des prefabs statiques sans overlays map1.
-	if not utiliser_overlays_visuels_niveau:
-		_appliquer_visuel_complet_depuis_template()
+	if not use_level_visual_overlays:
+		_apply_full_visual_from_template()
 		return
 
-	var paths_par_niveau: Dictionary = SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE.get(variante_visuelle_camp, SCENES_CAMP_VISUEL_PATHS)
-	var template_path: String = paths_par_niveau.get(niveau_camp, paths_par_niveau.get(1, SCENES_CAMP_VISUEL_PATHS[1]))
+	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant)
+	var template_path: String = paths_by_level.get(camp_level, paths_by_level.get(1, ""))
+	if template_path.is_empty():
+		return
 	var template_res = load(template_path)
 	if not (template_res is PackedScene):
 		return
-	var template_scene: PackedScene = template_res
-	var template_root = template_scene.instantiate()
+	var template_root = (template_res as PackedScene).instantiate()
 	if not is_instance_valid(template_root):
 		return
 
@@ -251,13 +108,16 @@ func _appliquer_visuel_niveau():
 				s.play(s.animation)
 	template_root.free()
 
-func _appliquer_visuel_complet_depuis_template():
+
+func _apply_full_visual_from_template() -> void:
 	for child in get_children():
 		if child is Sprite2D or child is AnimatedSprite2D:
 			child.queue_free()
 
-	var paths_par_niveau: Dictionary = SCENES_CAMP_VISUEL_PATHS_PAR_VARIANTE.get(variante_visuelle_camp, SCENES_CAMP_VISUEL_PATHS)
-	var template_path: String = paths_par_niveau.get(niveau_camp, paths_par_niveau.get(1, SCENES_CAMP_VISUEL_PATHS[1]))
+	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant)
+	var template_path: String = paths_by_level.get(camp_level, paths_by_level.get(1, ""))
+	if template_path.is_empty():
+		return
 	var template_res = load(template_path)
 	if not (template_res is PackedScene):
 		return
@@ -277,241 +137,233 @@ func _appliquer_visuel_complet_depuis_template():
 				s.play(s.animation)
 	template_root.free()
 
-func _appliquer_configuration_niveau():
-	match niveau_camp:
-		1:
-			revenu_par_seconde = 5
-			hp_max = 500
-			frequence_ia = 15.0
-			multiplicateur_temps_production = 1.0
+
+func _apply_level_config() -> void:
+	match camp_level:
 		2:
-			revenu_par_seconde = 7
+			income_per_second = 7
 			hp_max = 700
-			frequence_ia = 12.0
-			multiplicateur_temps_production = 0.85
+			production_time_multiplier = 0.85
 		3:
-			revenu_par_seconde = 10
+			income_per_second = 10
 			hp_max = 1000
-			frequence_ia = 9.0
-			multiplicateur_temps_production = 0.7
+			production_time_multiplier = 0.7
 		_:
-			revenu_par_seconde = 5
+			income_per_second = 5
 			hp_max = 500
-			frequence_ia = 15.0
-			multiplicateur_temps_production = 1.0
-	hp_actuels = hp_max
+			production_time_multiplier = 1.0
+	current_hp = hp_max
 
-func temps_fabrication_unite(unite_id: int) -> float:
-	if not catalogue_unites.has(unite_id):
+
+func unit_build_time(unit_id: int) -> float:
+	if not unit_catalog.has(unit_id):
 		return 1.0
-	return _temps_fabrication_pour(catalogue_unites[unite_id])
+	return _build_time_for(unit_catalog[unit_id])
 
-func _temps_fabrication_pour(data: UniteStats) -> float:
-	return max(0.1, data.temps_fabrication * multiplicateur_temps_production)
 
-func _process(delta):
-	if not is_instance_valid(gardien):
-		_invoquer_gardien()
-	
-	if file_production.size() > 0:
-		temps_restant -= delta
-		production_maj.emit(file_production.size(), 1.0 - (temps_restant / temps_total_unite_actuelle))
-		if temps_restant <= 0:
-			terminer_production()
+func _build_time_for(data: UnitStats) -> float:
+	return max(0.1, data.build_time * production_time_multiplier)
 
-func _invoquer_gardien():
-	if is_instance_valid(gardien): return
-	var nouveau_gardien = _scene_gardien_niveau().instantiate()
-	if not ("stats" in nouveau_gardien):
-		push_warning("Scene gardien invalide: la racine doit contenir la propriete 'stats'.")
-		nouveau_gardien.queue_free()
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(guardian):
+		_spawn_guardian()
+
+	if production_queue.size() > 0:
+		remaining_time -= delta
+		production_updated.emit(production_queue.size(), 1.0 - (remaining_time / current_unit_total_time))
+		if remaining_time <= 0:
+			_finish_production()
+
+
+func _spawn_guardian() -> void:
+	if is_instance_valid(guardian):
 		return
-	nouveau_gardien.stats = _stats_gardien_niveau()
+	var new_guardian = CampCatalogue.guardian_scene(camp_level).instantiate()
+	if not ("stats" in new_guardian):
+		push_warning("Invalid guardian scene: root must have 'stats' property.")
+		new_guardian.queue_free()
+		return
+	new_guardian.stats = CampCatalogue.guardian_stats(camp_level)
 
-	var spawn_position = _position_spawn_gardien()
-	nouveau_gardien.equipe = equipe
-	
-	if equipe == Proprietaire.JOUEUR: nouveau_gardien.add_to_group("soldats")
-	elif equipe == Proprietaire.ENNEMI:
-		if nouveau_gardien.is_in_group("soldats"): nouveau_gardien.remove_from_group("soldats")
-		nouveau_gardien.add_to_group("ennemis")
+	var spawn_position = _guardian_spawn_position()
+	new_guardian.team = team
+
+	if team == Owner.PLAYER:
+		new_guardian.add_to_group("soldiers")
+	elif team == Owner.ENEMY:
+		if new_guardian.is_in_group("soldiers"):
+			new_guardian.remove_from_group("soldiers")
+		new_guardian.add_to_group("enemies")
 
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
-		nouveau_gardien.queue_free()
+		new_guardian.queue_free()
 		return
-	parent_node.add_child(nouveau_gardien)
-	nouveau_gardien.global_position = spawn_position
-	if nouveau_gardien.has_method("configurer_mode_gardien"):
-		nouveau_gardien.configurer_mode_gardien(spawn_position, 260.0, 320.0)
-	nouveau_gardien.mort_par_tueur.connect(_on_gardien_tue)
-	gardien = nouveau_gardien
+	parent_node.add_child(new_guardian)
+	new_guardian.global_position = spawn_position
+	if new_guardian.has_method("configure_guardian_mode"):
+		new_guardian.configure_guardian_mode(spawn_position, 260.0, 320.0)
+	new_guardian.killed_by.connect(_on_guardian_killed)
+	guardian = new_guardian
 
-func _position_spawn_gardien() -> Vector2:
-	var base = point_apparition.global_position if is_instance_valid(point_apparition) else (global_position + Vector2(0, 90))
-	# Force un minimum vertical pour eviter un gardien qui spawn trop haut.
+
+func _guardian_spawn_position() -> Vector2:
+	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
 	base.y = max(base.y, global_position.y + 90.0)
 	return base + Vector2(randf_range(-28, 28), randf_range(30, 52))
 
-func _position_spawn_unite() -> Vector2:
-	var base = point_apparition.global_position if is_instance_valid(point_apparition) else (global_position + Vector2(0, 90))
-	# Spawn plus bas (devant le camp) avec une dispersion laterale visible.
+
+func _unit_spawn_position() -> Vector2:
+	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
 	base.y = max(base.y, global_position.y + 90.0)
 	return base + Vector2(randf_range(-42, 42), randf_range(36, 64))
 
-func _on_gardien_tue(tueur : Node2D, tueur_equipe : int = -1):
-	if tueur_equipe != -1 and tueur_equipe != equipe: _etre_capture_par_equipe(tueur_equipe)
-	elif is_instance_valid(tueur) and tueur.get("equipe") != null and tueur.equipe != equipe: _etre_capture_par_equipe(tueur.equipe)
-	else: _etre_capture_par_equipe(Proprietaire.NEUTRE)
 
-func _etre_capture_par_equipe(nouvelle_equipe):
-	equipe = nouvelle_equipe
-	hp_actuels = hp_max
-	file_production.clear()
-	_mettre_a_jour_groupes_et_visuels()
-
-func _on_timer_revenu_timeout():
-	if equipe == Proprietaire.JOUEUR: Economie.ajouter_argent(revenu_par_seconde)
-
-func demander_production(id : int = 0):
-	if equipe != Proprietaire.JOUEUR or not catalogue_unites.has(id): return
-	var data = catalogue_unites[id]
-	if Economie.retrancher_argent(data.prix):
-		file_production.append(id)
-		if file_production.size() == 1:
-			temps_total_unite_actuelle = _temps_fabrication_pour(data)
-			temps_restant = temps_total_unite_actuelle
-
-func _scene_pour_unite(stat: UniteStats, unite_id: int = -1) -> PackedScene:
-	if unite_id == 1:
-		return _scene_range_niveau()
-	if unite_id == 2:
-		return _scene_heavy_niveau()
-	if unite_id == 3:
-		return _scene_support_niveau()
-	if unite_id == 4:
-		return _scene_healer_niveau()
-	if unite_id == 5:
-		return _scene_anti_armor_niveau()
-	if unite_id == 6:
-		return _scene_mortar_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.INFANTERIE:
-		return _scene_infanterie_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.ARCHER:
-		return _scene_range_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.LOURD:
-		return _scene_heavy_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.SUPPORT:
-		return _scene_support_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.HEAL:
-		return _scene_healer_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.ANTI_ARMOR:
-		return _scene_anti_armor_niveau()
-	if stat.type_unite == UniteStats.TypeUnite.MORTAR:
-		return _scene_mortar_niveau()
-	return _scene_infanterie_niveau()
-
-func terminer_production():
-	var unite_id = file_production.pop_front()
-	var stat = catalogue_unites[unite_id]
-	var soldat = _scene_pour_unite(stat, unite_id).instantiate()
-	if not ("stats" in soldat):
-		push_warning("Scene unite invalide pour id %s: la racine doit contenir la propriete 'stats'." % str(unite_id))
-		soldat.queue_free()
-		if file_production.size() > 0:
-			temps_total_unite_actuelle = _temps_fabrication_pour(catalogue_unites[file_production[0]])
-			temps_restant = temps_total_unite_actuelle
-		else:
-			production_maj.emit(0, 0)
-		return
-	soldat.stats = stat
-	var spawn_position = _position_spawn_unite()
-	soldat.equipe = equipe
-	
-	if equipe == Proprietaire.JOUEUR: soldat.add_to_group("soldats")
+func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
+	if killer_team != -1 and killer_team != team:
+		_capture_by_team(killer_team)
+	elif is_instance_valid(killer) and killer.get("team") != null and killer.team != team:
+		_capture_by_team(killer.team)
 	else:
-		if soldat.is_in_group("soldats"): soldat.remove_from_group("soldats")
-		soldat.add_to_group("ennemis")
+		_capture_by_team(Owner.NEUTRAL)
+
+
+func _capture_by_team(new_team: int) -> void:
+	team = new_team
+	current_hp = hp_max
+	production_queue.clear()
+	_update_groups_and_visuals()
+	_notify_capture()
+
+
+func _notify_capture() -> void:
+	site_captured.emit(team)
+	RegionManager.notify_site_changed(self)
+
+
+func _on_income_timer_timeout() -> void:
+	if team == Owner.PLAYER:
+		var bonus: int = RegionManager.bonus_income_for_site(self)
+		Economy.add_gold(income_per_second + bonus)
+
+
+func request_production(id: int = 0) -> void:
+	if team != Owner.PLAYER or not unit_catalog.has(id):
+		return
+	var data = unit_catalog[id]
+	if Economy.spend_gold(data.price):
+		production_queue.append(id)
+		if production_queue.size() == 1:
+			current_unit_total_time = _build_time_for(data)
+			remaining_time = current_unit_total_time
+
+
+func _finish_production() -> void:
+	var unit_id = production_queue.pop_front()
+	var stat = unit_catalog[unit_id]
+	var unit = CampCatalogue.scene_for_unit(stat, unit_id, camp_level).instantiate()
+	if not ("stats" in unit):
+		push_warning("Invalid unit scene for id %s: root must have 'stats' property." % str(unit_id))
+		unit.queue_free()
+		_advance_queue_after_failure()
+		return
+	unit.stats = stat
+	var spawn_position = _unit_spawn_position()
+	unit.team = team
+
+	if team == Owner.PLAYER:
+		unit.add_to_group("soldiers")
+	else:
+		if unit.is_in_group("soldiers"):
+			unit.remove_from_group("soldiers")
+		unit.add_to_group("enemies")
 
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
-		soldat.queue_free()
+		unit.queue_free()
 		return
-	parent_node.add_child(soldat)
-	soldat.global_position = spawn_position
-	if file_production.size() > 0:
-		temps_total_unite_actuelle = _temps_fabrication_pour(catalogue_unites[file_production[0]])
-		temps_restant = temps_total_unite_actuelle
+	parent_node.add_child(unit)
+	unit.global_position = spawn_position
+	_advance_queue_after_failure()
+
+
+func _advance_queue_after_failure() -> void:
+	if production_queue.size() > 0:
+		current_unit_total_time = _build_time_for(unit_catalog[production_queue[0]])
+		remaining_time = current_unit_total_time
 	else:
-		production_maj.emit(0, 0)
+		production_updated.emit(0, 0)
 
-func _on_timer_ia_timeout(): pass
 
-func cout_upgrade_prochain_niveau() -> int:
-	match niveau_camp:
+func next_upgrade_cost() -> int:
+	match camp_level:
 		1:
-			return cout_upgrade_niveau_2
+			return upgrade_cost_level_2
 		2:
-			return cout_upgrade_niveau_3
+			return upgrade_cost_level_3
 		_:
 			return -1
 
-func peut_ameliorer() -> bool:
-	return equipe == Proprietaire.JOUEUR and niveau_camp < 3
 
-func ameliorer_camp() -> bool:
-	if not peut_ameliorer():
+func can_upgrade() -> bool:
+	return team == Owner.PLAYER and camp_level < 3 and not is_port()
+
+
+func upgrade_camp() -> bool:
+	if not can_upgrade():
 		return false
 
-	var cout = cout_upgrade_prochain_niveau()
-	if cout <= 0:
-		return false
-	if not Economie.retrancher_argent(cout):
+	var cost = next_upgrade_cost()
+	if cost <= 0 or not Economy.spend_gold(cost):
 		return false
 
-	niveau_camp += 1
-	_appliquer_configuration_niveau()
-	_rafraichir_catalogue_unites()
-	_appliquer_visuel_niveau()
-	camp_upgrade.emit(niveau_camp)
+	camp_level += 1
+	_apply_level_config()
+	_refresh_unit_catalog()
+	_apply_level_visuals()
+	camp_upgradedd.emit(camp_level)
 
-	if is_instance_valid(timer_ia_production):
-		timer_ia_production.wait_time = frequence_ia
+	if production_queue.size() > 0:
+		current_unit_total_time = _build_time_for(unit_catalog[production_queue[0]])
+		remaining_time = min(remaining_time, current_unit_total_time)
+		production_updated.emit(production_queue.size(), 1.0 - (remaining_time / current_unit_total_time))
 
-	if file_production.size() > 0:
-		temps_total_unite_actuelle = _temps_fabrication_pour(catalogue_unites[file_production[0]])
-		temps_restant = min(temps_restant, temps_total_unite_actuelle)
-		production_maj.emit(file_production.size(), 1.0 - (temps_restant / temps_total_unite_actuelle))
-
-	# Le gardien actuel est remplacé pour appliquer la scène/stats du nouveau niveau.
-	if is_instance_valid(gardien):
-		gardien.queue_free()
-		gardien = null
+	if is_instance_valid(guardian):
+		guardian.queue_free()
+		guardian = null
 
 	return true
 
-func set_selection(etat : bool):
-	modulate = Color(1.5, 1.5, 1.5) if etat else Color(1, 1, 1)
 
-func recevoir_degats(montant : int, auteur : Node2D = null):
-	hp_actuels -= montant
-	if hp_actuels <= 0: _etre_capture(auteur)
+func set_selection(selected: bool) -> void:
+	modulate = Color(1.5, 1.5, 1.5) if selected else Color(1, 1, 1)
 
-func _etre_capture(auteur : Node2D, auteur_equipe : int = -1):
-	hp_actuels = hp_max
-	file_production.clear()
-	if auteur_equipe != -1: equipe = auteur_equipe
-	elif is_instance_valid(auteur) and auteur.get("equipe") != null: equipe = auteur.equipe
-	else: equipe = Proprietaire.NEUTRE
-	_mettre_a_jour_groupes_et_visuels()
 
-func _mettre_a_jour_groupes_et_visuels():
+func take_damage(amount: int, attacker: Node2D = null) -> void:
+	current_hp -= amount
+	if current_hp <= 0:
+		_capture(attacker)
+
+
+func _capture(attacker: Node2D, attacker_team: int = -1) -> void:
+	current_hp = hp_max
+	production_queue.clear()
+	if attacker_team != -1:
+		team = attacker_team
+	elif is_instance_valid(attacker) and attacker.get("team") != null:
+		team = attacker.team
+	else:
+		team = Owner.NEUTRAL
+	_update_groups_and_visuals()
+	_notify_capture()
+
+
+func _update_groups_and_visuals() -> void:
 	var color_rect = get_node_or_null("ColorRect") as ColorRect
 	var label_node = get_node_or_null("Label") as Label
 
-	# Si les noeuds UI ont ete supprimes des prefabs joueur, on les recree
-	# uniquement pour les camps ennemis/neutres.
-	if equipe != Proprietaire.JOUEUR:
+	if team != Owner.PLAYER:
 		if color_rect == null:
 			color_rect = ColorRect.new()
 			color_rect.name = "ColorRect"
@@ -531,41 +383,43 @@ func _mettre_a_jour_groupes_et_visuels():
 			label_node.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			add_child(label_node)
 
-	if is_in_group("ennemis"): remove_from_group("ennemis")
-	match equipe:
-		Proprietaire.JOUEUR:
+	if is_in_group("enemies"):
+		remove_from_group("enemies")
+	match team:
+		Owner.PLAYER:
 			if color_rect:
 				color_rect.visible = false
 			if label_node:
 				label_node.visible = false
-		Proprietaire.ENNEMI:
-			add_to_group("ennemis")
+		Owner.ENEMY:
+			add_to_group("enemies")
 			if color_rect:
 				color_rect.visible = true
 				color_rect.color = Color(0.8, 0.1, 0.1, 0.3)
 			if label_node:
 				label_node.visible = true
-				label_node.text = "ENNEMI"
-		Proprietaire.NEUTRE:
+				label_node.text = "ENEMY" if not is_port() else "ENEMY PORT"
+		Owner.NEUTRAL:
 			if color_rect:
 				color_rect.visible = true
 				color_rect.color = Color(0.5, 0.5, 0.5, 0.3)
 			if label_node:
 				label_node.visible = true
-				label_node.text = "NEUTRE"
+				label_node.text = "NEUTRAL" if not is_port() else "NEUTRAL PORT"
 	queue_redraw()
 
-func _draw(): pass
 
-func recevoir_renforts(quantite : int):
-	var stats_infanterie = _stats_infanterie_niveau()
-	for i in range(quantite):
-		var s = _scene_pour_unite(stats_infanterie).instantiate()
-		s.stats = stats_infanterie
-		var spawn_position = _position_spawn_unite()
+func receive_reinforcements(count: int) -> void:
+	if is_port():
+		return
+	var infantry_stats = CampCatalogue.stats_for_level(CampCatalogue.STATS_INFANTRY, camp_level)
+	for _i in range(count):
+		var unit = CampCatalogue.scene_for_unit(infantry_stats, 0, camp_level).instantiate()
+		unit.stats = infantry_stats
+		var spawn_position = _unit_spawn_position()
 		var parent_node = get_parent()
 		if not is_instance_valid(parent_node):
-			s.queue_free()
+			unit.queue_free()
 			return
-		parent_node.add_child(s)
-		s.global_position = spawn_position
+		parent_node.add_child(unit)
+		unit.global_position = spawn_position

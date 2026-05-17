@@ -71,90 +71,90 @@ position = Vector2(-1181, 1045)
 
 [node name="camp2" parent="Undead-Land/Camp map 1" unique_id=1255783348 instance=ExtResource("2_4iars")]
 position = Vector2(220, 1017)
-equipe = 2
+team = 2
 
 [node name="camp18" parent="Undead-Land/Camp map 1" unique_id=740753571 instance=ExtResource("2_4iars")]
 position = Vector2(2126, 1864)
-equipe = 2
+team = 2
 
 [node name="camp19" parent="Undead-Land/Camp map 1" unique_id=837238890 instance=ExtResource("2_4iars")]
 position = Vector2(2184, 970)
-equipe = 2
+team = 2
 
 [node name="camp20" parent="Undead-Land/Camp map 1" unique_id=290480249 instance=ExtResource("2_4iars")]
-equipe = 2
+team = 2
 
 [node name="camp21" parent="Undead-Land/Camp map 1" unique_id=1937221627 instance=ExtResource("2_4iars")]
 position = Vector2(89, -772)
-equipe = 2
+team = 2
 
 [node name="camp22" parent="Undead-Land/Camp map 1" unique_id=1256524292 instance=ExtResource("2_4iars")]
 position = Vector2(2191, -1331)
-equipe = 2
+team = 2
 
 [node name="camp23" parent="Undead-Land/Camp map 1" unique_id=891068037 instance=ExtResource("2_4iars")]
 position = Vector2(455, -1297)
-equipe = 2
+team = 2
 
 [node name="camp3" parent="Undead-Land/Camp map 1" unique_id=1255783349 instance=ExtResource("2_4iars")]
 position = Vector2(-468, 639)
-equipe = 2
+team = 2
 
 [node name="camp4" parent="Undead-Land/Camp map 1" unique_id=1969353026 instance=ExtResource("2_4iars")]
 position = Vector2(316, 1953)
-equipe = 2
+team = 2
 
 [node name="camp5" parent="Undead-Land/Camp map 1" unique_id=353800249 instance=ExtResource("2_4iars")]
 position = Vector2(-715, -345)
-equipe = 2
+team = 2
 
 [node name="camp6" parent="Undead-Land/Camp map 1" unique_id=1998850693 instance=ExtResource("2_4iars")]
 position = Vector2(-1191, 107)
-equipe = 2
+team = 2
 
 [node name="camp7" parent="Undead-Land/Camp map 1" unique_id=884937335 instance=ExtResource("2_4iars")]
 position = Vector2(-148, -1302)
-equipe = 2
+team = 2
 
 [node name="camp8" parent="Undead-Land/Camp map 1" unique_id=247910245 instance=ExtResource("2_4iars")]
 position = Vector2(-949, -1427)
-equipe = 2
+team = 2
 
 [node name="camp9" parent="Undead-Land/Camp map 1" unique_id=1437621393 instance=ExtResource("2_4iars")]
 position = Vector2(-742, -793)
-equipe = 2
+team = 2
 
 [node name="camp10" parent="Undead-Land/Camp map 1" unique_id=1129627150 instance=ExtResource("2_4iars")]
 position = Vector2(1556, -737)
-equipe = 2
+team = 2
 
 [node name="camp11" parent="Undead-Land/Camp map 1" unique_id=993804753 instance=ExtResource("2_4iars")]
 position = Vector2(1170, -1123)
-equipe = 2
+team = 2
 
 [node name="camp13" parent="Undead-Land/Camp map 1" unique_id=830201921 instance=ExtResource("2_4iars")]
 position = Vector2(-958, 1918)
-equipe = 2
+team = 2
 
 [node name="camp17" parent="Undead-Land/Camp map 1" unique_id=773725888 instance=ExtResource("2_4iars")]
 position = Vector2(1022, 274)
-equipe = 2
+team = 2
 
 [node name="camp14" parent="Undead-Land/Camp map 1" unique_id=1255449380 instance=ExtResource("2_4iars")]
 position = Vector2(1296, 1229)
-equipe = 2
+team = 2
 
 [node name="camp12" parent="Undead-Land/Camp map 1" unique_id=991904472 instance=ExtResource("2_4iars")]
 position = Vector2(2011, -326)
-equipe = 2
+team = 2
 
 [node name="camp15" parent="Undead-Land/Camp map 1" unique_id=1834511001 instance=ExtResource("2_4iars")]
 position = Vector2(1337, 1949)
-equipe = 2
+team = 2
 
 [node name="camp16" parent="Undead-Land/Camp map 1" unique_id=743443703 instance=ExtResource("2_4iars")]
 position = Vector2(774, -422)
-equipe = 2
+team = 2
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="Undead-Land" unique_id=2057829229]
 visible = false
@@ -261,7 +261,7 @@ position = Vector2(1079, 865)
 [node name="port7" parent="Cave-Land/Port_map_2" unique_id=1628664638 instance=ExtResource("7_bntna")]
 position = Vector2(-868, 1874)
 
-[node name="port" parent="Cave-Land/Port_map_2" unique_id=1836851142 instance=ExtResource("7_bntna")]
+[node name="port1" parent="Cave-Land/Port_map_2" unique_id=1836851142 instance=ExtResource("7_bntna")]
 position = Vector2(-2279, -2427)
 
 [node name="port2" parent="Cave-Land/Port_map_2" unique_id=154310278 instance=ExtResource("7_bntna")]

@@ -1,144 +1,163 @@
 extends Node2D
 
-@onready var boite_selection = $BoiteSelection
+@onready var selection_box = $BoiteSelection
 @onready var camera = $Camera2D
 
-var en_selection : bool = false
-var point_depart : Vector2 = Vector2.ZERO
-var batiment_selectionne : Node2D = null
+var is_selecting: bool = false
+var start_point: Vector2 = Vector2.ZERO
+var selected_building: Node2D = null
 
-signal batiment_selectionne_change(batiment)
+signal selected_building_changed(building)
 
-@export var vitesse_camera : float = 400.0
-@export var vitesse_zoom : float = 0.1
-var zoom_cible : float = 1.0
-var zoom_min : float = 0.5
-var zoom_max : float = 2.0
+@export var camera_speed: float = 400.0
+@export var zoom_speed: float = 0.1
+var target_zoom: float = 1.0
+var zoom_min: float = 0.5
+var zoom_max: float = 2.0
 
-func _ready():
-	boite_selection.hide()
+
+func _ready() -> void:
+	selection_box.hide()
 	add_to_group("manager_rts")
-	if camera: camera.make_current()
+	if camera:
+		camera.make_current()
 
-func _process(delta):
-	_gerer_mouvement_camera(delta)
-	_gerer_zoom_camera(delta)
 
-func _gerer_mouvement_camera(delta):
+func _process(delta: float) -> void:
+	_handle_camera_movement(delta)
+	_handle_camera_zoom(delta)
+
+
+func _handle_camera_movement(delta: float) -> void:
 	var dir = Vector2.ZERO
-	if Input.is_key_pressed(KEY_Z) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): dir.y -= 1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): dir.y += 1
-	if Input.is_key_pressed(KEY_Q) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): dir.x -= 1
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): dir.x += 1
-	
+	if Input.is_key_pressed(KEY_Z) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		dir.y -= 1
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		dir.y += 1
+	if Input.is_key_pressed(KEY_Q) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		dir.x -= 1
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		dir.x += 1
+
 	if dir != Vector2.ZERO:
-		camera.global_position += dir.normalized() * vitesse_camera * delta * (1.0 / camera.zoom.x)
+		camera.global_position += dir.normalized() * camera_speed * delta * (1.0 / camera.zoom.x)
 
-func _gerer_zoom_camera(delta):
-	camera.zoom = camera.zoom.lerp(Vector2(zoom_cible, zoom_cible), 10.0 * delta)
 
-func _unhandled_input(event):
+func _handle_camera_zoom(delta: float) -> void:
+	camera.zoom = camera.zoom.lerp(Vector2(target_zoom, target_zoom), 10.0 * delta)
+
+
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			en_selection = true
-			point_depart = get_global_mouse_position()
-			boite_selection.global_position = point_depart
-			boite_selection.size = Vector2.ZERO
-			boite_selection.show()
+			is_selecting = true
+			start_point = get_global_mouse_position()
+			selection_box.global_position = start_point
+			selection_box.size = Vector2.ZERO
+			selection_box.show()
 		else:
-			en_selection = false
-			boite_selection.hide()
-			selectionner_unites()
-			if boite_selection.size.length() < 5:
-				_gerer_clic_batiment()
+			is_selecting = false
+			selection_box.hide()
+			select_units()
+			if selection_box.size.length() < 5:
+				_handle_building_click()
 
 	if event is InputEventKey and event.keycode == KEY_E and event.pressed:
-		var sort_lance = false
-		for soldat in get_tree().get_nodes_in_group("soldats"):
-			if soldat.get("est_selectionne") and soldat.has_method("lancer_sort"):
-				soldat.lancer_sort()
-				sort_lance = true
-		if sort_lance: return
+		var spell_cast = false
+		for soldier in get_tree().get_nodes_in_group("soldiers"):
+			if soldier.get("is_selected") and soldier.has_method("cast_spell"):
+				soldier.cast_spell()
+				spell_cast = true
+		if spell_cast:
+			return
 
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			zoom_cible = clamp(zoom_cible + vitesse_zoom, zoom_min, zoom_max)
+			target_zoom = clamp(target_zoom + zoom_speed, zoom_min, zoom_max)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			zoom_cible = clamp(zoom_cible - vitesse_zoom, zoom_min, zoom_max)
+			target_zoom = clamp(target_zoom - zoom_speed, zoom_min, zoom_max)
 
-	if event is InputEventMouseMotion and en_selection:
+	if event is InputEventMouseMotion and is_selecting:
 		var pos = get_global_mouse_position()
-		boite_selection.global_position = Vector2(min(point_depart.x, pos.x), min(point_depart.y, pos.y))
-		boite_selection.size = Vector2(abs(pos.x - point_depart.x), abs(pos.y - point_depart.y))
-		if boite_selection.size.length() > 10:
-			deselect_batiment()
+		selection_box.global_position = Vector2(min(start_point.x, pos.x), min(start_point.y, pos.y))
+		selection_box.size = Vector2(abs(pos.x - start_point.x), abs(pos.y - start_point.y))
+		if selection_box.size.length() > 10:
+			deselect_building()
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		var dest = get_global_mouse_position()
-		var selection = get_tree().get_nodes_in_group("soldats").filter(func(s): return s.get("est_selectionne"))
-		var nb = selection.size()
-		if nb == 0: return
-		
-		var requete = PhysicsPointQueryParameters2D.new()
-		requete.position = dest
-		requete.collide_with_areas = false
-		requete.collide_with_bodies = true
-		
-		var resultats = get_world_2d().direct_space_state.intersect_point(requete)
-		var cible = null
-		
-		for res in resultats:
-			var obj = res.collider
-			if obj and obj.has_method("recevoir_degats") and not obj.is_in_group("camps"):
-				var eq = obj.get("equipe")
-				if eq != null and eq != 0:
-					cible = obj
-					break
-				
-		if cible:
-			for soldat in selection:
-				if soldat.has_method("attaquer_cible"): soldat.attaquer_cible(cible)
-		else:
-			var cols = ceil(sqrt(nb))
-			var espace = 24.0
-			for i in range(nb):
-				var offset = Vector2(
-					(i % int(cols)) * espace - (cols - 1) * espace / 2.0,
-					(i / int(cols)) * espace - (ceil(float(nb) / cols) - 1) * espace / 2.0
-				)
-				selection[i].aller_vers(dest + offset)
-
-func selectionner_unites():
-	var zone = Rect2(boite_selection.global_position, boite_selection.size)
-	for soldat in get_tree().get_nodes_in_group("soldats"):
-		if soldat.has_method("set_selection"):
-			soldat.set_selection(soldat.get("equipe") == 0 and zone.has_point(soldat.global_position))
-
-func _gerer_clic_batiment():
-	var requete = PhysicsPointQueryParameters2D.new()
-	requete.position = boite_selection.global_position
-	requete.collide_with_areas = false
-	requete.collide_with_bodies = true
-	var resultats = get_world_2d().direct_space_state.intersect_point(requete)
-	
-	for res in resultats:
-		if res.collider and res.collider.is_in_group("camps"):
-			select_batiment(res.collider)
+		var selection = get_tree().get_nodes_in_group("soldiers").filter(func(s): return s.get("is_selected"))
+		var count = selection.size()
+		if count == 0:
 			return
-	
-	var sel = get_tree().get_nodes_in_group("soldats").filter(func(s): return s.get("est_selectionne"))
-	if sel.is_empty(): deselect_batiment()
 
-func select_batiment(bat):
-	if batiment_selectionne: deselect_batiment()
-	batiment_selectionne = bat
-	if batiment_selectionne.has_method("set_selection"):
-		batiment_selectionne.set_selection(true)
-	batiment_selectionne_change.emit(batiment_selectionne)
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = dest
+		query.collide_with_areas = false
+		query.collide_with_bodies = true
 
-func deselect_batiment():
-	if batiment_selectionne:
-		if batiment_selectionne.has_method("set_selection"):
-			batiment_selectionne.set_selection(false)
-		batiment_selectionne = null
-		batiment_selectionne_change.emit(null)
+		var hits = get_world_2d().direct_space_state.intersect_point(query)
+		var target = null
+
+		for res in hits:
+			var obj = res.collider
+			if obj and obj.has_method("take_damage") and not obj.is_in_group("camps"):
+				var t = obj.get("team")
+				if t != null and t != 0:
+					target = obj
+					break
+
+		if target:
+			for soldier in selection:
+				if soldier.has_method("attack_target"):
+					soldier.attack_target(target)
+		else:
+			var cols = ceil(sqrt(count))
+			var spacing = 24.0
+			for i in range(count):
+				var offset = Vector2(
+					(i % int(cols)) * spacing - (cols - 1) * spacing / 2.0,
+					(i / int(cols)) * spacing - (ceil(float(count) / cols) - 1) * spacing / 2.0
+				)
+				selection[i].move_to(dest + offset)
+
+
+func select_units() -> void:
+	var zone = Rect2(selection_box.global_position, selection_box.size)
+	for soldier in get_tree().get_nodes_in_group("soldiers"):
+		if soldier.has_method("set_selection"):
+			soldier.set_selection(soldier.get("team") == 0 and zone.has_point(soldier.global_position))
+
+
+func _handle_building_click() -> void:
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = selection_box.global_position
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var hits = get_world_2d().direct_space_state.intersect_point(query)
+
+	for res in hits:
+		if res.collider and res.collider.is_in_group("camps"):
+			select_building(res.collider)
+			return
+
+	var sel = get_tree().get_nodes_in_group("soldiers").filter(func(s): return s.get("is_selected"))
+	if sel.is_empty():
+		deselect_building()
+
+
+func select_building(building) -> void:
+	if selected_building:
+		deselect_building()
+	selected_building = building
+	if selected_building.has_method("set_selection"):
+		selected_building.set_selection(true)
+	selected_building_changed.emit(selected_building)
+
+
+func deselect_building() -> void:
+	if selected_building:
+		if selected_building.has_method("set_selection"):
+			selected_building.set_selection(false)
+		selected_building = null
+		selected_building_changed.emit(null)

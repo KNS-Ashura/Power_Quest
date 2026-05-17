@@ -1,136 +1,153 @@
 extends CanvasLayer
 
 @onready var panel = $Control/Panel
-@onready var label_argent = $Control/LabelArgent
-@onready var label_queue = $Control/Panel/LabelQueue
-@onready var label_niveau = $Control/Panel/LabelNiveau
+@onready var gold_label = $Control/LabelArgent
+@onready var queue_label = $Control/Panel/LabelQueue
+@onready var level_label = $Control/Panel/LabelNiveau
 @onready var btn_upgrade = $Control/Panel/GridContainer/BtnUpgrade
 
-var current_batiment = null
+var selected_building = null
 
-func _ready():
+
+func _ready() -> void:
 	panel.hide()
 	_connect_manager_signal()
-	# La scene peut instancier ProductionUI avant ManagerRts.
-	# On retente au frame suivant pour eviter une UI non connectee.
 	call_deferred("_connect_manager_signal")
-	
-	Economie.argent_modifie.connect(_on_argent_modifie)
-	_on_argent_modifie(Economie.argent)
 
-func _connect_manager_signal():
+	Economy.gold_changed.connect(_on_gold_changed)
+	_on_gold_changed(Economy.gold)
+
+
+func _connect_manager_signal() -> void:
 	var manager = get_tree().get_first_node_in_group("manager_rts")
-	if manager and not manager.batiment_selectionne_change.is_connected(_on_batiment_change):
-		manager.batiment_selectionne_change.connect(_on_batiment_change)
+	if manager and not manager.selected_building_changed.is_connected(_on_building_changed):
+		manager.selected_building_changed.connect(_on_building_changed)
 
-func _on_batiment_change(bat):
+
+func _on_building_changed(building) -> void:
 	Sound.play_menu2()
-	if current_batiment and current_batiment.has_signal("production_maj"):
-		if current_batiment.production_maj.is_connected(_update_queue_display):
-			current_batiment.production_maj.disconnect(_update_queue_display)
-	if current_batiment and current_batiment.has_signal("camp_upgrade"):
-		if current_batiment.camp_upgrade.is_connected(_on_camp_upgrade):
-			current_batiment.camp_upgrade.disconnect(_on_camp_upgrade)
+	if selected_building and selected_building.has_signal("production_updated"):
+		if selected_building.production_updated.is_connected(_update_queue_display):
+			selected_building.production_updated.disconnect(_update_queue_display)
+	if selected_building and selected_building.has_signal("camp_upgradedd"):
+		if selected_building.camp_upgradedd.is_connected(_on_camp_upgradedd):
+			selected_building.camp_upgradedd.disconnect(_on_camp_upgradedd)
 
-	current_batiment = bat
-	
-	if current_batiment and current_batiment.get("equipe") == 0:
+	selected_building = building
+
+	if selected_building and selected_building.get("team") == 0:
+		if selected_building.has_method("is_port") and selected_building.is_port():
+			panel.hide()
+			level_label.text = "Port — naval production coming soon"
+			return
 		panel.show()
 		_update_queue_display(0, 0)
-		_update_niveau_display()
+		_update_level_display()
 		_refresh_upgrade_button()
-		if not current_batiment.production_maj.is_connected(_update_queue_display):
-			current_batiment.production_maj.connect(_update_queue_display)
-		if current_batiment.has_signal("camp_upgrade") and not current_batiment.camp_upgrade.is_connected(_on_camp_upgrade):
-			current_batiment.camp_upgrade.connect(_on_camp_upgrade)
-			
+		if not selected_building.production_updated.is_connected(_update_queue_display):
+			selected_building.production_updated.connect(_update_queue_display)
+		if selected_building.has_signal("camp_upgradedd") and not selected_building.camp_upgradedd.is_connected(_on_camp_upgradedd):
+			selected_building.camp_upgradedd.connect(_on_camp_upgradedd)
 			Sound.play_menu2()
 	else:
 		panel.hide()
-		label_niveau.text = ""
+		level_label.text = ""
 
-func _update_queue_display(taille, progression):
-	if taille > 0:
-		label_queue.text = "File : " + str(taille) + " (" + str(int(progression * 100)) + "%)"
+
+func _update_queue_display(size, progress) -> void:
+	if size > 0:
+		queue_label.text = "Queue: " + str(size) + " (" + str(int(progress * 100)) + "%)"
 	else:
-		label_queue.text = "File vide"
-	_update_niveau_display()
+		queue_label.text = "Queue empty"
+	_update_level_display()
 	_refresh_upgrade_button()
 
-func _update_niveau_display():
-	if not current_batiment:
-		label_niveau.text = ""
-		return
-	var nv = int(current_batiment.get("niveau_camp"))
-	label_niveau.text = "Niveau camp : " + str(nv)
 
-func _refresh_upgrade_button():
-	if not current_batiment:
+func _update_level_display() -> void:
+	if not selected_building:
+		level_label.text = ""
+		return
+	var level = int(selected_building.get("camp_level"))
+	level_label.text = "Camp level: " + str(level)
+
+
+func _refresh_upgrade_button() -> void:
+	if not selected_building:
 		btn_upgrade.disabled = true
 		btn_upgrade.text = "Upgrade Camp"
 		return
-	if not current_batiment.has_method("peut_ameliorer"):
+	if not selected_building.has_method("can_upgrade"):
 		btn_upgrade.disabled = true
-		btn_upgrade.text = "Upgrade indisponible"
+		btn_upgrade.text = "Upgrade unavailable"
 		return
 
-	if not current_batiment.peut_ameliorer():
+	if not selected_building.can_upgrade():
 		btn_upgrade.disabled = true
 		btn_upgrade.text = "Camp MAX"
 		return
 
-	var cout = current_batiment.cout_upgrade_prochain_niveau() if current_batiment.has_method("cout_upgrade_prochain_niveau") else -1
-	var peut_payer = cout > 0 and Economie.argent >= cout
-	btn_upgrade.disabled = not peut_payer
-	btn_upgrade.text = "Upgrade Camp (%sG)" % str(cout) if cout > 0 else "Upgrade Camp"
+	var cost = selected_building.next_upgrade_cost() if selected_building.has_method("next_upgrade_cost") else -1
+	var can_afford = cost > 0 and Economy.gold >= cost
+	btn_upgrade.disabled = not can_afford
+	btn_upgrade.text = "Upgrade Camp (%sG)" % str(cost) if cost > 0 else "Upgrade Camp"
 
-func _on_btn_inf_pressed():
+
+func _on_btn_inf_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(0)
+	if selected_building:
+		selected_building.request_production(0)
 
-func _on_btn_arc_pressed():
+
+func _on_btn_arc_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(1)
+	if selected_building:
+		selected_building.request_production(1)
 
-func _on_btn_lourd_pressed():
+
+func _on_btn_lourd_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(2)
+	if selected_building:
+		selected_building.request_production(2)
 
-func _on_btn_support_pressed():
+
+func _on_btn_support_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(3)
+	if selected_building:
+		selected_building.request_production(3)
 
-func _on_btn_heal_pressed():
+
+func _on_btn_heal_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(4)
+	if selected_building:
+		selected_building.request_production(4)
 
-func _on_btn_anti_armor_pressed():
+
+func _on_btn_anti_armor_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(5)
+	if selected_building:
+		selected_building.request_production(5)
 
-func _on_btn_mortar_pressed():
+
+func _on_btn_mortar_pressed() -> void:
 	Sound.play_menu1()
-	if current_batiment:
-		current_batiment.demander_production(6)
+	if selected_building:
+		selected_building.request_production(6)
 
-func _on_btn_upgrade_pressed():
-	if not current_batiment or not current_batiment.has_method("ameliorer_camp"):
+
+func _on_btn_upgrade_pressed() -> void:
+	if not selected_building or not selected_building.has_method("upgrade_camp"):
 		return
-	if current_batiment.ameliorer_camp():
+	if selected_building.upgrade_camp():
 		Sound.play_menu1()
-		_update_niveau_display()
+		_update_level_display()
 		_refresh_upgrade_button()
 
-func _on_camp_upgrade(_nouveau_niveau):
-	_update_niveau_display()
+
+func _on_camp_upgradedd(_new_level) -> void:
+	_update_level_display()
 	_refresh_upgrade_button()
 
-func _on_argent_modifie(val):
-	label_argent.text = "OR : " + str(val)
+
+func _on_gold_changed(value) -> void:
+	gold_label.text = "GOLD: " + str(value)
 	_refresh_upgrade_button()

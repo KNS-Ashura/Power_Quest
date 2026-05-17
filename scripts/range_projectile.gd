@@ -1,64 +1,69 @@
 extends CharacterBody2D
 
-const SCENE_IMPACT = preload("res://scenes/personnages/range/range-land-projectile.tscn")
+const IMPACT_SCENE = preload("res://scenes/personnages/range/range-land-projectile.tscn")
 
-var cible: Node2D = null
-var degats: int = 0
-var vitesse: float = 520.0
-var auteur: Node2D = null
-var equipe_tireur: int = -1
-var deja_touche: bool = false
+var target: Node2D = null
+var damage: int = 0
+var speed: float = 520.0
+var shooter: Node2D = null
+var shooter_team: int = -1
+var already_hit: bool = false
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
-func lancer(target: Node2D, p_degats: int, p_auteur: Node2D = null):
-	cible = target
-	degats = p_degats
-	auteur = p_auteur
-	if is_instance_valid(auteur) and auteur.get("equipe") != null:
-		equipe_tireur = auteur.equipe
-	_mettre_animation_direction()
 
-func _process(delta):
-	if deja_touche:
+func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = null) -> void:
+	target = target_node
+	damage = projectile_damage
+	shooter = shooter_node
+	if is_instance_valid(shooter) and shooter.get("team") != null:
+		shooter_team = shooter.team
+	_set_direction_animation()
+
+
+func _process(delta: float) -> void:
+	if already_hit:
 		return
-	if not is_instance_valid(cible):
+	if not is_instance_valid(target):
 		queue_free()
 		return
 
-	var dir = global_position.direction_to(cible.global_position)
-	global_position += dir * vitesse * delta
-	_mettre_animation_direction()
+	var dir = global_position.direction_to(target.global_position)
+	global_position += dir * speed * delta
+	_set_direction_animation()
 
-	if global_position.distance_to(cible.global_position) < 14.0:
-		_impacter()
+	if global_position.distance_to(target.global_position) < 14.0:
+		_impact()
 
-func _impacter():
-	if deja_touche:
+
+func _impact() -> void:
+	if already_hit:
 		return
-	deja_touche = true
+	already_hit = true
 
-	if is_instance_valid(cible) and cible.has_method("recevoir_degats"):
-		cible.recevoir_degats(degats, auteur, equipe_tireur)
+	if is_instance_valid(target) and target.has_method("take_damage"):
+		target.take_damage(damage, shooter, shooter_team)
 
 	var parent_node = get_parent()
 	if is_instance_valid(parent_node):
-		var impact = SCENE_IMPACT.instantiate()
+		var impact = IMPACT_SCENE.instantiate()
 		parent_node.add_child(impact)
 		impact.global_position = global_position
-		if impact.has_method("jouer_impact"):
-			impact.jouer_impact(_direction_depuis_vecteur((cible.global_position - global_position) if is_instance_valid(cible) else Vector2.DOWN))
+		if impact.has_method("play_impact"):
+			impact.play_impact(_direction_from_vector((target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN))
 	queue_free()
 
-func _mettre_animation_direction():
+
+func _set_direction_animation() -> void:
 	if not is_instance_valid(sprite):
 		return
-	var delta = (cible.global_position - global_position) if is_instance_valid(cible) else Vector2.DOWN
-	var dir = _direction_depuis_vecteur(delta)
+	var delta_vec = (target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN
+	var dir = _direction_from_vector(delta_vec)
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(dir):
 		sprite.play(dir)
 
-func _direction_depuis_vecteur(delta: Vector2) -> String:
-	if abs(delta.y) >= abs(delta.x):
-		return "b" if delta.y < 0 else "f"
-	return "l" if delta.x < 0 else "r"
+
+func _direction_from_vector(delta_vec: Vector2) -> String:
+	if abs(delta_vec.y) >= abs(delta_vec.x):
+		return "b" if delta_vec.y < 0 else "f"
+	return "l" if delta_vec.x < 0 else "r"

@@ -1,5 +1,5 @@
 extends "res://scripts/camp.gd"
 
-func _ready():
-	niveau_camp = 3
+func _ready() -> void:
+	camp_level = 3
 	super._ready()

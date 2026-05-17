@@ -4,42 +4,45 @@ extends CanvasLayer
 @onready var btn_boost: Button = $Control/Panel/HBoxContainer/BtnBoost
 @onready var btn_mortar_spell: Button = $Control/Panel/HBoxContainer/BtnMortarSpell
 
-const RAYON_EFFET_SORT: float = 150.0
-const DUREE_AFFICHAGE_ZONE: float = 0.6
-const NB_POINTS_CERCLE: int = 48
-const COULEUR_HEAL_BORD: Color = Color(0.2, 1.0, 0.2, 1.0)
-const COULEUR_HEAL_FOND: Color = Color(0.2, 1.0, 0.2, 0.2)
-const COULEUR_BOOST_BORD: Color = Color(0.25, 0.55, 1.0, 1.0)
-const COULEUR_BOOST_FOND: Color = Color(0.25, 0.55, 1.0, 0.2)
-const COULEUR_MORTAR_BORD: Color = Color(1.0, 0.55, 0.15, 1.0)
-const COULEUR_MORTAR_FOND: Color = Color(1.0, 0.55, 0.15, 0.2)
+const SPELL_EFFECT_RADIUS: float = 150.0
+const ZONE_DISPLAY_DURATION: float = 0.6
+const CIRCLE_POINT_COUNT: int = 48
+const HEAL_BORDER_COLOR: Color = Color(0.2, 1.0, 0.2, 1.0)
+const HEAL_FILL_COLOR: Color = Color(0.2, 1.0, 0.2, 0.2)
+const BOOST_BORDER_COLOR: Color = Color(0.25, 0.55, 1.0, 1.0)
+const BOOST_FILL_COLOR: Color = Color(0.25, 0.55, 1.0, 0.2)
+const MORTAR_BORDER_COLOR: Color = Color(1.0, 0.55, 0.15, 1.0)
+const MORTAR_FILL_COLOR: Color = Color(1.0, 0.55, 0.15, 0.2)
 
-var _nb_healers_selectionnes: int = 0
-var _nb_supports_selectionnes: int = 0
-var _nb_mortars_selectionnes: int = 0
+var _selected_healer_count: int = 0
+var _selected_support_count: int = 0
+var _selected_mortar_count: int = 0
 
-func _ready():
+
+func _ready() -> void:
 	btn_heal.disabled = true
 	btn_boost.disabled = true
 	btn_mortar_spell.disabled = true
 
-func _process(_delta):
-	_refresh_etat_boutons()
 
-func _refresh_etat_boutons():
+func _process(_delta: float) -> void:
+	_refresh_button_state()
+
+
+func _refresh_button_state() -> void:
 	var healers := 0
 	var supports := 0
 	var mortars := 0
 
-	for unite in get_tree().get_nodes_in_group("soldats"):
-		if not unite.get("est_selectionne"):
+	for unit in get_tree().get_nodes_in_group("soldiers"):
+		if not unit.get("is_selected"):
 			continue
-		if unite.get("equipe") != 0:
+		if unit.get("team") != 0:
 			continue
-		if not unite.get("stats"):
+		if not unit.get("stats"):
 			continue
 
-		match int(unite.stats.type_unite):
+		match int(unit.stats.unit_type):
 			3:
 				supports += 1
 			4:
@@ -47,85 +50,87 @@ func _refresh_etat_boutons():
 			6:
 				mortars += 1
 
-	if healers == _nb_healers_selectionnes and supports == _nb_supports_selectionnes and mortars == _nb_mortars_selectionnes:
+	if healers == _selected_healer_count and supports == _selected_support_count and mortars == _selected_mortar_count:
 		return
 
-	_nb_healers_selectionnes = healers
-	_nb_supports_selectionnes = supports
-	_nb_mortars_selectionnes = mortars
+	_selected_healer_count = healers
+	_selected_support_count = supports
+	_selected_mortar_count = mortars
 
-	btn_heal.disabled = _nb_healers_selectionnes <= 0
-	btn_boost.disabled = _nb_supports_selectionnes <= 0
-	btn_mortar_spell.disabled = _nb_mortars_selectionnes <= 0
+	btn_heal.disabled = _selected_healer_count <= 0
+	btn_boost.disabled = _selected_support_count <= 0
+	btn_mortar_spell.disabled = _selected_mortar_count <= 0
 
-func _on_btn_heal_pressed():
-	var healers = _get_unites_selectionnees_par_type(4)
+
+func _on_btn_heal_pressed() -> void:
+	var healers = _get_selected_units_by_type(4)
 	for healer in healers:
-		if healer.has_method("lancer_sort"):
-			healer.lancer_sort()
-		_afficher_zone_effet(healer.global_position, RAYON_EFFET_SORT, COULEUR_HEAL_BORD, COULEUR_HEAL_FOND)
+		if healer.has_method("cast_spell"):
+			healer.cast_spell()
+		_show_effect_zone(healer.global_position, SPELL_EFFECT_RADIUS, HEAL_BORDER_COLOR, HEAL_FILL_COLOR)
+	print("%d healer(s) selected, Heal activated" % _selected_healer_count)
 
-	print(str(_nb_healers_selectionnes) + " healer(s) selectionne(s), pouvoir Heal active")
 
-func _on_btn_boost_pressed():
-	var supports = _get_unites_selectionnees_par_type(3)
+func _on_btn_boost_pressed() -> void:
+	var supports = _get_selected_units_by_type(3)
 	for support in supports:
-		if support.has_method("lancer_sort"):
-			support.lancer_sort()
-		_afficher_zone_effet(support.global_position, RAYON_EFFET_SORT, COULEUR_BOOST_BORD, COULEUR_BOOST_FOND)
+		if support.has_method("cast_spell"):
+			support.cast_spell()
+		_show_effect_zone(support.global_position, SPELL_EFFECT_RADIUS, BOOST_BORDER_COLOR, BOOST_FILL_COLOR)
+	print("%d support(s) selected, Boost activated" % _selected_support_count)
 
-	print(str(_nb_supports_selectionnes) + " support(s) selectionne(s), pouvoir Boost active")
 
-func _on_btn_mortar_spell_pressed():
-	var mortars = _get_unites_selectionnees_par_type(6)
+func _on_btn_mortar_spell_pressed() -> void:
+	var mortars = _get_selected_units_by_type(6)
 	for mortar in mortars:
-		if mortar.has_method("lancer_sort"):
-			mortar.lancer_sort()
-		_afficher_zone_effet(mortar.global_position, RAYON_EFFET_SORT, COULEUR_MORTAR_BORD, COULEUR_MORTAR_FOND)
+		if mortar.has_method("cast_spell"):
+			mortar.cast_spell()
+		_show_effect_zone(mortar.global_position, SPELL_EFFECT_RADIUS, MORTAR_BORDER_COLOR, MORTAR_FILL_COLOR)
+	print("%d mortar(s) selected, Ult activated" % _selected_mortar_count)
 
-	print(str(_nb_mortars_selectionnes) + " mortar(s) selectionne(s), pouvoir Ult active")
 
-func _get_unites_selectionnees_par_type(type_unite: int) -> Array:
-	var resultat: Array = []
-	for unite in get_tree().get_nodes_in_group("soldats"):
-		if not unite.get("est_selectionne"):
+func _get_selected_units_by_type(unit_type: int) -> Array:
+	var result: Array = []
+	for unit in get_tree().get_nodes_in_group("soldiers"):
+		if not unit.get("is_selected"):
 			continue
-		if unite.get("equipe") != 0:
+		if unit.get("team") != 0:
 			continue
-		if not unite.get("stats"):
+		if not unit.get("stats"):
 			continue
-		if int(unite.stats.type_unite) == type_unite:
-			resultat.append(unite)
-	return resultat
+		if int(unit.stats.unit_type) == unit_type:
+			result.append(unit)
+	return result
 
-func _afficher_zone_effet(position_monde: Vector2, rayon: float, couleur_bord: Color, couleur_fond: Color):
+
+func _show_effect_zone(world_position: Vector2, radius: float, border_color: Color, fill_color: Color) -> void:
 	var scene = get_tree().current_scene
 	if scene == null:
 		return
 
 	var zone = Node2D.new()
-	zone.global_position = position_monde
+	zone.global_position = world_position
 
-	var contour = Line2D.new()
-	contour.width = 4.0
-	contour.default_color = couleur_bord
-	contour.closed = true
+	var outline = Line2D.new()
+	outline.width = 4.0
+	outline.default_color = border_color
+	outline.closed = true
 
-	var remplissage = Polygon2D.new()
-	remplissage.color = couleur_fond
+	var fill = Polygon2D.new()
+	fill.color = fill_color
 
 	var points: PackedVector2Array = []
-	for i in range(NB_POINTS_CERCLE):
-		var angle = TAU * float(i) / float(NB_POINTS_CERCLE)
-		points.append(Vector2(cos(angle), sin(angle)) * rayon)
+	for i in range(CIRCLE_POINT_COUNT):
+		var angle = TAU * float(i) / float(CIRCLE_POINT_COUNT)
+		points.append(Vector2(cos(angle), sin(angle)) * radius)
 
-	contour.points = points
-	remplissage.polygon = points
+	outline.points = points
+	fill.polygon = points
 
-	zone.add_child(remplissage)
-	zone.add_child(contour)
+	zone.add_child(fill)
+	zone.add_child(outline)
 	scene.add_child(zone)
 
 	var tween = create_tween()
-	tween.tween_property(zone, "modulate:a", 0.0, DUREE_AFFICHAGE_ZONE)
+	tween.tween_property(zone, "modulate:a", 0.0, ZONE_DISPLAY_DURATION)
 	tween.finished.connect(func(): zone.queue_free())

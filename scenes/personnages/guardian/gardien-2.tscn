@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bxaepch0u0ta"]
 
 [ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_dyhcn"]
-[ext_resource type="Texture2D" uid="uid://gora7scd0ss" path="res://assets/character/gardien/nv2/Run.png" id="2_4klc4"]
-[ext_resource type="Texture2D" uid="uid://clowavetc1rxn" path="res://assets/character/gardien/nv2/Attack.png" id="2_sfqgp"]
-[ext_resource type="Texture2D" uid="uid://dut6xedwr72u0" path="res://assets/character/gardien/nv2/Idle.png" id="3_idle"]
-[ext_resource type="Texture2D" uid="uid://cb2ajt2jsffps" path="res://assets/character/gardien/nv2/Death.png" id="3_si5vs"]
+[ext_resource type="Texture2D" uid="uid://gora7scd0ss" path="res://assets/character/guardian/nv2/Run.png" id="2_4klc4"]
+[ext_resource type="Texture2D" uid="uid://clowavetc1rxn" path="res://assets/character/guardian/nv2/Attack.png" id="2_sfqgp"]
+[ext_resource type="Texture2D" uid="uid://dut6xedwr72u0" path="res://assets/character/guardian/nv2/Idle.png" id="3_idle"]
+[ext_resource type="Texture2D" uid="uid://cb2ajt2jsffps" path="res://assets/character/guardian/nv2/Death.png" id="3_si5vs"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7rj3h"]
 atlas = ExtResource("2_sfqgp")
@@ -1089,9 +1089,9 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="gardien" type="CharacterBody2D" unique_id=1299368703 groups=["soldats"]]
+[node name="guardian" type="CharacterBody2D" unique_id=1299368703 groups=["soldiers"]]
 script = ExtResource("1_dyhcn")
-equipe = null
+team = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=885986411]
 position = Vector2(3.8146973e-06, 0)

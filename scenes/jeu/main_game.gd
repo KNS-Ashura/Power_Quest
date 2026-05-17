@@ -15,10 +15,8 @@ func _ready() -> void:
 		if cave:
 			cave.free()
 
-	# Quand on arrive depuis le menu, l'autoload a deja lance sa premiere
-	# initialisation avant que les camps n'existent. On relance ici pour
-	# garantir des camps ennemis/alliés sur la map choisie.
-	if GameManager.has_method("initialiser_partie"):
-		GameManager.initialiser_partie()
-	if IAManager.has_method("initialiser_partie"):
-		IAManager.initialiser_partie()
+	# Autoload may init before camps exist; re-run after map load.
+	if GameManager.has_method("init_match"):
+		GameManager.init_match()
+	if AIManager.has_method("init_match"):
+		AIManager.init_match()
