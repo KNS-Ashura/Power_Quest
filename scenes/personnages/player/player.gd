@@ -4,7 +4,6 @@ signal killed_by(tueur, tueur_team)
 
 @export var stats : UnitStats
 
-enum Owner { JOUEUR, ENNEMI, NEUTRE }
 enum Owner { PLAYER, ENEMY, NEUTRAL }
 @export var team: Owner = Owner.PLAYER
 

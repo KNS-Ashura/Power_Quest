@@ -6,6 +6,8 @@ func _ready() -> void:
 	var win := get_window()
 	if win == null:
 		return
+	if win.mode != Window.MODE_WINDOWED:
+		return
 	var usable := DisplayServer.screen_get_usable_rect(win.current_screen)
 	var sz := win.size
 	if sz.x <= usable.size.x and sz.y <= usable.size.y:
