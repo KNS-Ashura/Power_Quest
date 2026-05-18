@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://cjg2y6e1td4vt"]
+[gd_scene format=4 uid="uid://cjncnq5yit72b"]
 
 [ext_resource type="TileSet" uid="uid://cyyprh4nrhan3" path="res://Tilesets/map1/map_1_tiles.tres" id="1_j8wkn"]
 [ext_resource type="PackedScene" uid="uid://ybntlc6fwopw" path="res://scenes/camera/manager_rts.tscn" id="3_in3gv"]

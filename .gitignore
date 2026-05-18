@@ -1,5 +1,8 @@
 # Godot 4+ specific ignores
 .godot/
+
+# Recréé par l'éditeur si format texte activé ; la scène de jeu est Main.scn
+scenes/jeu/Main.tscn
 /android/
 
 addons

@@ -9,4 +9,4 @@ func _on_map_2_pressed() -> void:
 	_start_game()
 
 func _start_game() -> void:
-	get_tree().change_scene_to_file("res://scenes/jeu/Main.tscn")
+	get_tree().change_scene_to_file("res://scenes/jeu/Main.scn")

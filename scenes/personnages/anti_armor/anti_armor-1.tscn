@@ -844,7 +844,7 @@ team = null
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=200497238]
 position = Vector2(1, -11)
 sprite_frames = SubResource("SpriteFrames_anti")
-animation = &"run_b"
+animation = &"attack_b"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=734048962]
 position = Vector2(0, -11)

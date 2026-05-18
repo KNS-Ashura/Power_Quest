@@ -3,7 +3,7 @@ extends RefCounted
 ## Extra gold per second per site when its region is fully controlled.
 const BONUS_INCOME_PER_SITE := 3
 
-## map_index -> region_id -> { "sites": [node names in Main.tscn], "name": "..." }
+## map_index -> region_id -> { "sites": [node names in Main.scn], "name": "..." }
 const REGIONS := {
 	2: {
 		1: {
