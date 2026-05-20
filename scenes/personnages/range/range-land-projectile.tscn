@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c60x2s6lph8fn"]
 
-[ext_resource type="Script" uid="uid://b8og7dh1w0ux5" path="res://scripts/range_projectile_land.gd" id="1_player_gd"]
+[ext_resource type="Script" uid="uid://b8og7dh1w0ux5" path="res://scripts/combat/range_projectile_land.gd" id="1_player_gd"]
 [ext_resource type="Texture2D" uid="uid://f1wqgw02nqb2" path="res://assets/character/range/Attack_fire/Fire_land.png" id="2_omh0x"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5labi"]

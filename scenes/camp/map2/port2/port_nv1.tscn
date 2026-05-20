@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bu1uxi86jhnal"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp_nv1.gd" id="1_rmswj"]
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_rmswj"]
 [ext_resource type="Texture2D" uid="uid://c6x8shv6eqnn6" path="res://assets/objects/map2/trilobite_house_grass_shadow.png" id="2_nakrp"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]

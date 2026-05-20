@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://buceavab1b56w"]
 
-[ext_resource type="Script" uid="uid://d2qfhkd6apipo" path="res://scripts/spell_ui.gd" id="1_spell_ui"]
+[ext_resource type="Script" uid="uid://d2qfhkd6apipo" path="res://scripts/ui/spell_ui.gd" id="1_spell_ui"]
 
 [node name="SpellUI" type="CanvasLayer" unique_id=873144193]
 script = ExtResource("1_spell_ui")

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ntiarmor0001"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_player_gd"]
+[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_player_gd"]
 [ext_resource type="Texture2D" uid="uid://dpaa05p23vyoy" path="res://assets/character/anti-armor/nv1/attack.png" id="2_rdj80"]
 [ext_resource type="Texture2D" uid="uid://c3dmoei75rltt" path="res://assets/character/anti-armor/nv1/death.png" id="3_s233y"]
 [ext_resource type="Texture2D" uid="uid://d13kbks2qgqv" path="res://assets/character/anti-armor/nv1/idle.png" id="4_ffgxw"]

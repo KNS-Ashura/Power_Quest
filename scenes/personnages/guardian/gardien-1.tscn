@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bxaepch0u0ta"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_dyhcn"]
+[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_dyhcn"]
 [ext_resource type="Texture2D" uid="uid://bs4d7wldrj76g" path="res://assets/character/guardian/nv1/Run.png" id="2_4klc4"]
 [ext_resource type="Texture2D" uid="uid://cy6x4wfb84q0a" path="res://assets/character/guardian/nv1/Attack.png" id="2_xmo7t"]
 [ext_resource type="Texture2D" uid="uid://b5tyfk2dbc0n5" path="res://assets/character/guardian/nv1/Idle.png" id="3_idle"]

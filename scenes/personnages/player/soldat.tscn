@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dsq8gkr5eq2u3"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_dyhcn"]
+[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_dyhcn"]
 [ext_resource type="Texture2D" uid="uid://cx4chysxp5wne" path="res://assets/character/Unarmed_Run_without_shadow.png" id="2_4klc4"]
 [ext_resource type="Texture2D" uid="uid://b7dh4wnpfp054" path="res://assets/character/Unarmed_Idle_without_shadow.png" id="3_idle"]
 

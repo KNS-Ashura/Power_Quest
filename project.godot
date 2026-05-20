@@ -20,13 +20,13 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
-MapSession="*res://scripts/map_session.gd"
-Economy="*res://scripts/economy.gd"
-RegionManager="*res://scripts/region_manager.gd"
-GameManager="*res://scripts/game_manager.gd"
-AIManager="*res://scripts/ai_manager.gd"
+MapSession="*res://scripts/autoload/map_session.gd"
+Economy="*res://scripts/autoload/economy.gd"
+RegionManager="*res://scripts/autoload/region_manager.gd"
+GameManager="*res://scripts/autoload/game_manager.gd"
+AIManager="*res://scripts/autoload/ai_manager.gd"
 Sound="*uid://c6u57jpr1208q"
-ScreenAdapter="*res://scripts/screen_adapter.gd"
+ScreenAdapter="*res://scripts/autoload/screen_adapter.gd"
 
 [display]
 

@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://cjg2y6e1td4vt"]
+[gd_scene format=4 uid="uid://ctwd37482obyo"]
 
 [ext_resource type="TileSet" uid="uid://cyyprh4nrhan3" path="res://Tilesets/map1/map_1_tiles.tres" id="1_j8wkn"]
 [ext_resource type="PackedScene" uid="uid://ybntlc6fwopw" path="res://scenes/camera/manager_rts.tscn" id="3_in3gv"]
@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://buceavab1b56w" path="res://scenes/ui/spell_ui.tscn" id="6_spell"]
 [ext_resource type="TileSet" uid="uid://cwwvlngsarq76" path="res://Tilesets/Utils_obj/cloud.tres" id="7_341om"]
 [ext_resource type="PackedScene" uid="uid://bu1uxi86jhnal" path="res://scenes/camp/map2/port2/port_nv1.tscn" id="7_bntna"]
-[ext_resource type="Script" uid="uid://bls8gji5qjdxb" path="res://scenes/jeu/main_game.gd" id="7_main"]
+[ext_resource type="Script" uid="uid://bls8gji5qjdxb" path="res://scripts/game/main_game.gd" id="7_main"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_j8wkn"]
 vertices = PackedVector2Array(-1982, 911.03125, -1980.0313, -1982.3516, -1978.1328, -1977.0078, -421.8125, 1181.2422, 1980.0313, -1982.9766, 1995.9531, 1992.9922, -423.10938, 1235.6875, -1364, 826.0469, -1316.25, 792.6406, -1424, 1098.5938, -1400, 1099.5938, -1400, 1128.4922, -1381, 1129.4922, -1381, 1158.1797, -798.1797, 1370, -725.2578, 1370, -724.25, 1383.1484, -1987.9375, 1991, -1251.3828, 761.40625, -1252.3672, 776.27344, -1284.0078, 777.2422, -1205.3203, 745.14844, -1206.3281, 759.39844, -660.5781, 1382.1328, -657.5703, 1402.25, -1396.4297, 890.6875, -1399.3516, 931.7422, -1424, 933.7969, -1317.2891, 805.14844, -1331.0469, 806.9922, -1287.0781, 790.5469, -1378.3594, 860.3281, -1381.1875, 887.6328, -1001.10156, 775.3203, -1041.2188, 773.3594, -1045.0391, 759.03906, -860.4219, 1335.7188, -834.8125, 1337.4766, -830.77344, 1352.6719, -434.65625, 1178.0234, -438.6797, 1132.8906, -456.71875, 1113.8906, -466.53125, 1111.2109, -468.39844, 1085.0703, -1335.0078, 822.8203, -490.8672, 1349.0078, -485.6875, 1325.7109, -455.8125, 1320.5625, -681.6172, 918.7422, -723.40625, 918.09375, -730.46094, 902, -452.78125, 1129.6328, -495.92188, 1068.75, -502.5703, 1030, -1364, 853.6328, -624.71094, 938.0781, -673.4375, 937.1172, -1059.2969, 756.9922, -1063.6484, 742.8828, -971.14844, 792.34375, -995.03125, 790.5, -806.2969, 1353.7266, -1052.25, 1240.8984, -1014.0703, 1241.8516, -1006, 1257, -1309.3672, 1204.9609, -1205.75, 1205.9375, -1195.75, 1222.9531, -437.6875, 1248.1875, -440.67188, 1267.0313, -451.4297, 1276.8125, -789.53906, 902, -798.4922, 888.0781, -540.7422, 1398.8828, -877.8828, 1318.2578, -897.8281, 1299.3594, -904.0625, 1289.2266, -937.35156, 1284.4766, -955.97656, 1268.1797, -966.3594, 1257, -1069.1719, 1223.9609, -1355.8125, 1170.7734, -1326.2109, 1187, -534.78906, 1030, -867.6406, 887.0625, -882.59375, 871.3203, -889.34375, 856.47656, -917.1406, 854.34375)
@@ -76,7 +76,6 @@ position = Vector2(-2, -2)
 navigation_polygon = SubResource("NavigationPolygon_j8wkn")
 
 [node name="Cave-Land" type="Node2D" parent="." unique_id=1508714318]
-visible = false
 
 [node name="Map 2" type="Node2D" parent="Cave-Land" unique_id=1174779793]
 position = Vector2(6, -5)
@@ -189,24 +188,19 @@ position = Vector2(100, 972)
 position = Vector2(-2484, 961)
 
 [node name="Nav_water" type="NavigationRegion2D" parent="Cave-Land" unique_id=31917465]
-visible = false
 position = Vector2(6, 7)
 navigation_polygon = SubResource("NavigationPolygon_341om")
 navigation_layers = 2
 
 [node name="Nav_ground" type="NavigationRegion2D" parent="Cave-Land" unique_id=1919273886]
-visible = false
 position = Vector2(3, 2)
 navigation_polygon = SubResource("NavigationPolygon_bntna")
 
 [node name="ProductionUI" parent="." unique_id=692410953 instance=ExtResource("5_in3gv")]
-visible = false
 
 [node name="SpellUI" parent="." unique_id=1755883466 instance=ExtResource("6_spell")]
-visible = false
 
 [node name="ManagerRts" parent="." unique_id=631515687 instance=ExtResource("3_in3gv")]
-visible = false
 position = Vector2(51, -69)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=825541744]

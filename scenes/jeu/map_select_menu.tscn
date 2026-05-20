@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://pbx12gcara03"]
 
-[ext_resource type="Script" uid="uid://snfbe4ywubd3" path="res://scenes/jeu/map_select_menu.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://snfbe4ywubd3" path="res://scripts/game/map_select_menu.gd" id="1_script"]
 
 [node name="MapSelectMenu" type="Control" unique_id=2124822258]
 layout_mode = 3

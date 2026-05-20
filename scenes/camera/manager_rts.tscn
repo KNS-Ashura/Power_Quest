@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ybntlc6fwopw"]
 
-[ext_resource type="Script" uid="uid://cg2p1vgrrljbm" path="res://scenes/camera/manager_rts.gd" id="1_ot2pa"]
+[ext_resource type="Script" uid="uid://cg2p1vgrrljbm" path="res://scripts/camera/manager_rts.gd" id="1_ot2pa"]
 
 [node name="ManagerRTS" type="Node2D" unique_id=631515687]
 script = ExtResource("1_ot2pa")

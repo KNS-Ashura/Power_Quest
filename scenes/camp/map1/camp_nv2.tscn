@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cl1lmkvd7sry1"]
 
 [ext_resource type="Texture2D" uid="uid://b7ulmbgkkhwtx" path="res://assets/objects/map1/Objects_animated.png" id="1_tex"]
-[ext_resource type="Script" uid="uid://dfrvq33wykm6h" path="res://scripts/camp_nv2.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://dfrvq33wykm6h" path="res://scripts/camp/camp_nv2.gd" id="2_script"]
 [ext_resource type="Texture2D" uid="uid://cs40egrli3erh" path="res://assets/objects/map1/torch_animation/Animation6.png" id="3_jn3m5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]

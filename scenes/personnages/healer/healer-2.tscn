@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://csgp56yj3vhbk"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scenes/personnages/player/player.gd" id="1_player_gd"]
+[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_player_gd"]
 [ext_resource type="Texture2D" uid="uid://bhmtf5wjb4pe5" path="res://assets/character/healer/nv2/attack.png" id="2_5j23h"]
 [ext_resource type="Texture2D" uid="uid://b2esn8x8vgyib" path="res://assets/character/healer/nv2/idle.png" id="2_run"]
 [ext_resource type="Texture2D" uid="uid://c2vnlvasg5l74" path="res://assets/character/healer/nv2/run.png" id="3_idle"]

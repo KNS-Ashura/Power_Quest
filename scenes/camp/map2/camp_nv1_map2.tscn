@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cctrp11cvwddf"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp_nv1.gd" id="1_08t6x"]
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_08t6x"]
 [ext_resource type="Texture2D" uid="uid://bp70hhhaiua77" path="res://assets/objects/map2/Statues_grass_shadow4.png" id="2_4jprg"]
 [ext_resource type="Texture2D" uid="uid://ndb2v4y7gnt6" path="res://assets/objects/map2/Scarabaeus_house_grass_shadow.png" id="3_iirmq"]
 
@@ -11,8 +11,8 @@ height = 88.0
 [node name="camp" type="StaticBody2D" unique_id=1255783347]
 script = ExtResource("1_08t6x")
 team = 0
-utiliser_overlays_visuels_niveau = false
-variante_visuelle_camp = "map2"
+use_level_visual_overlays = false
+camp_visual_variant = "map2"
 
 [node name="Sprite2D2" type="Sprite2D" parent="." unique_id=2021980861]
 position = Vector2(-42.999996, -34.999996)

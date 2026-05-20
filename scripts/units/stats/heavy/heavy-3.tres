@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/units/unit_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+unit_type = 2
+name = "Heavy III"
+price = 220
+hp_max = 470
+speed = 100.0
+damage = 23
+range = 40.0
+build_time = 8.0
+is_ranged = false
+color = Color(1, 0.3, 0.3, 1)
