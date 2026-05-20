@@ -12,7 +12,7 @@ var current_hp : int = 100
 var unit_speed : float = 150.0
 var unit_damage : int = 10
 var is_selected : bool = false
-const SCENE_RANGE_PROJECTILE_LOOP = preload("res://scenes/personnages/range/range-loop-projectile.tscn")
+const SCENE_RANGE_PROJECTILE_LOOP = preload("uid://swrp6c3h83xg")
 const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
@@ -25,6 +25,15 @@ const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
 const NAV_LAYER_GROUND := 1
 const NAV_LAYER_WATER := 2
 const NAV_LAYER_AMPHIBIOUS := NAV_LAYER_GROUND | NAV_LAYER_WATER
+
+## Calques physique : alliés ne se bloquent pas entre eux (glissement latéral).
+const COLLISION_LAYER_WORLD := 1
+const COLLISION_LAYER_PLAYER_UNIT := 2
+const COLLISION_LAYER_ENEMY_UNIT := 4
+const UNIT_BODY_RADIUS := 10.0
+const GUARDIAN_BODY_RADIUS := 11.0
+const SEPARATION_RADIUS := 52.0
+const SEPARATION_FORCE := 95.0
 
 @export var force_water_navigation: bool = false
 @export var force_amphibious_navigation: bool = false
@@ -68,6 +77,7 @@ func _ready():
 		agent_navigation.target_desired_distance = stats.range - 5.0
 
 	_configurer_calques_navigation()
+	_configurer_mouvement_et_collisions()
 	agent_navigation.path_desired_distance = 10.0
 	await get_tree().process_frame
 	agent_navigation.target_position = global_position
@@ -172,8 +182,7 @@ func _physics_process(_delta):
 			
 	if doit_avancer:
 		var prochain_point = agent_navigation.get_next_path_position()
-		velocity = global_position.direction_to(prochain_point) * unit_speed
-		move_and_slide()
+		_appliquer_deplacement_vers(prochain_point)
 	else:
 		velocity = Vector2.ZERO
 
@@ -661,4 +670,119 @@ func configure_guardian_mode(position_ancre: Vector2, rayon_defense: float = 260
 	guard_position = position_ancre
 	guard_defense_radius = rayon_defense
 	guard_chase_radius = rayon_poursuite
-	agent_navigation.target_position = guard_position
+	_configurer_mouvement_et_collisions()
+	if is_instance_valid(agent_navigation):
+		agent_navigation.target_position = guard_position
+
+
+func _est_scene_gardien() -> bool:
+	var chemin := scene_file_path
+	return chemin.contains("/guardian/") or chemin.contains("/port_guardian/")
+
+
+func _configurer_mouvement_et_collisions() -> void:
+	motion_mode = MOTION_MODE_FLOATING
+	floor_stop_on_slope = false
+	floor_block_on_wall = false
+	safe_margin = 0.035
+	_appliquer_calques_collision_equipe()
+	_configurer_zone_detection()
+	_configurer_forme_collision()
+	_configurer_evitement_navigation()
+
+
+func _appliquer_calques_collision_equipe() -> void:
+	match team:
+		Owner.PLAYER:
+			collision_layer = COLLISION_LAYER_PLAYER_UNIT
+			collision_mask = COLLISION_LAYER_WORLD | COLLISION_LAYER_ENEMY_UNIT
+		Owner.ENEMY:
+			collision_layer = COLLISION_LAYER_ENEMY_UNIT
+			collision_mask = COLLISION_LAYER_WORLD | COLLISION_LAYER_PLAYER_UNIT
+		_:
+			collision_layer = COLLISION_LAYER_PLAYER_UNIT | COLLISION_LAYER_ENEMY_UNIT
+			collision_mask = COLLISION_LAYER_WORLD
+
+
+func _configurer_zone_detection() -> void:
+	if not is_instance_valid(zone_detection):
+		return
+	# L'Area2D doit voir les corps sur les calques unités (sinon plus d'attaque auto).
+	zone_detection.collision_layer = 0
+	zone_detection.monitorable = false
+	zone_detection.monitoring = true
+	zone_detection.collision_mask = (
+		COLLISION_LAYER_PLAYER_UNIT
+		| COLLISION_LAYER_ENEMY_UNIT
+		| COLLISION_LAYER_WORLD
+	)
+
+
+func _configurer_forme_collision() -> void:
+	if not has_node("CollisionShape2D"):
+		return
+	var shape_node: CollisionShape2D = $CollisionShape2D
+	var shape = shape_node.shape
+	if shape is CircleShape2D:
+		var circle: CircleShape2D = shape.duplicate()
+		if is_camp_guardian or _est_scene_gardien():
+			circle.radius = GUARDIAN_BODY_RADIUS
+		else:
+			circle.radius = UNIT_BODY_RADIUS
+		shape_node.shape = circle
+
+
+func _configurer_evitement_navigation() -> void:
+	if not is_instance_valid(agent_navigation):
+		return
+	agent_navigation.avoidance_enabled = true
+	var rayon := GUARDIAN_BODY_RADIUS if (is_camp_guardian or _est_scene_gardien()) else UNIT_BODY_RADIUS
+	agent_navigation.radius = rayon * 0.9
+	agent_navigation.neighbor_distance = 70.0
+	agent_navigation.max_neighbors = 8
+	agent_navigation.time_horizon_agents = 0.45
+	agent_navigation.max_speed = unit_speed
+
+
+func _appliquer_deplacement_vers(prochain_point: Vector2) -> void:
+	var vitesse_desiree := _calculer_vitesse_desiree(prochain_point)
+	velocity = vitesse_desiree
+	move_and_slide()
+	if get_slide_collision_count() > 0 and velocity.length() < unit_speed * 0.35:
+		var glisse := Vector2.ZERO
+		for i in get_slide_collision_count():
+			var normale := get_slide_collision(i).get_normal()
+			glisse += Vector2(-normale.y, normale.x) * signf(vitesse_desiree.dot(Vector2(-normale.y, normale.x)))
+		if glisse.length_squared() > 0.01:
+			velocity = glisse.normalized() * unit_speed * 0.75
+			move_and_slide()
+
+
+func _calculer_vitesse_desiree(prochain_point: Vector2) -> Vector2:
+	var direction := global_position.direction_to(prochain_point)
+	if direction.length_squared() < 0.0001:
+		return Vector2.ZERO
+	var vitesse := direction * unit_speed
+	vitesse += _calculer_repulsion_allies()
+	if vitesse.length() > unit_speed:
+		vitesse = vitesse.normalized() * unit_speed
+	return vitesse
+
+
+func _calculer_repulsion_allies() -> Vector2:
+	var repulsion := Vector2.ZERO
+	var groupe := "soldiers" if team == Owner.PLAYER else "enemies"
+	for node in get_tree().get_nodes_in_group(groupe):
+		if node == self or not (node is CharacterBody2D):
+			continue
+		if not is_instance_valid(node):
+			continue
+		if "is_dying" in node and node.is_dying:
+			continue
+		var ecart: Vector2 = global_position - node.global_position
+		var distance := ecart.length()
+		if distance < 0.001 or distance > SEPARATION_RADIUS:
+			continue
+		var intensite := (SEPARATION_RADIUS - distance) / SEPARATION_RADIUS
+		repulsion += ecart.normalized() * intensite * SEPARATION_FORCE
+	return repulsion

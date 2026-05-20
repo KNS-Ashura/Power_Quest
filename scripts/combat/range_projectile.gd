@@ -1,7 +1,5 @@
 extends CharacterBody2D
 
-const IMPACT_SCENE = preload("res://scenes/personnages/range/range-land-projectile.tscn")
-
 var target: Node2D = null
 var damage: int = 0
 var speed: float = 520.0
@@ -43,14 +41,6 @@ func _impact() -> void:
 
 	if is_instance_valid(target) and target.has_method("take_damage"):
 		target.take_damage(damage, shooter, shooter_team)
-
-	var parent_node = get_parent()
-	if is_instance_valid(parent_node):
-		var impact = IMPACT_SCENE.instantiate()
-		parent_node.add_child(impact)
-		impact.global_position = global_position
-		if impact.has_method("play_impact"):
-			impact.play_impact(_direction_from_vector((target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN))
 	queue_free()
 
 

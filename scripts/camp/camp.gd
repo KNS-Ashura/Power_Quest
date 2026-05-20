@@ -212,13 +212,14 @@ func _spawn_guardian() -> void:
 func _guardian_spawn_position() -> Vector2:
 	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
 	base.y = max(base.y, global_position.y + 90.0)
-	return base + Vector2(randf_range(-28, 28), randf_range(30, 52))
+	# Gardien un peu en retrait du point de spawn des unités pour éviter le blocage initial.
+	return base + Vector2(randf_range(-22, 22), randf_range(-8, 18))
 
 
 func _unit_spawn_position() -> Vector2:
 	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
 	base.y = max(base.y, global_position.y + 90.0)
-	return base + Vector2(randf_range(-42, 42), randf_range(36, 64))
+	return base + Vector2(randf_range(-48, 48), randf_range(52, 88))
 
 
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
