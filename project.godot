@@ -50,8 +50,11 @@ enabled=PackedStringArray()
 [layer_names]
 
 2d_physics/layer_1="world"
+2d_navigation/layer_1="Nav_ground"
 2d_physics/layer_2="player_units"
+2d_navigation/layer_2="Nav_water"
 2d_physics/layer_3="enemy_units"
+2d_navigation/layer_3="ground-and-water-unit"
 
 [physics]
 

@@ -33,6 +33,7 @@ signal site_captured(new_team)
 
 func _ready() -> void:
 	_detect_site_type()
+	_detect_visual_variant()
 	_apply_level_config()
 	_refresh_unit_catalog()
 	_apply_level_visuals()
@@ -55,6 +56,16 @@ func _detect_site_type() -> void:
 	var n := name.to_lower()
 	if n == "port" or n.begins_with("port"):
 		site_type = SiteType.PORT
+		return
+	var path := scene_file_path.to_lower()
+	if path.contains("/port") or path.contains("port_nv") or path.contains("port2/"):
+		site_type = SiteType.PORT
+
+
+func _detect_visual_variant() -> void:
+	var path := scene_file_path.to_lower()
+	if path.contains("map2"):
+		camp_visual_variant = "map2"
 
 
 func is_port() -> bool:
@@ -63,7 +74,7 @@ func is_port() -> bool:
 
 func _refresh_unit_catalog() -> void:
 	if is_port():
-		unit_catalog = CampCatalogue.naval_unit_catalog(camp_level)
+		unit_catalog = CampCatalogue.port_unit_catalog(camp_level)
 	else:
 		unit_catalog = CampCatalogue.land_unit_catalog(camp_level)
 
@@ -82,7 +93,7 @@ func _apply_level_visuals() -> void:
 		_apply_full_visual_from_template()
 		return
 
-	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant)
+	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant, is_port())
 	var template_path: String = paths_by_level.get(camp_level, paths_by_level.get(1, ""))
 	if template_path.is_empty():
 		return
@@ -115,7 +126,7 @@ func _apply_full_visual_from_template() -> void:
 			remove_child(child)
 			child.free()
 
-	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant)
+	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant, is_port())
 	var template_path: String = paths_by_level.get(camp_level, paths_by_level.get(1, ""))
 	if template_path.is_empty():
 		return
@@ -222,6 +233,38 @@ func _unit_spawn_position() -> Vector2:
 	return base + Vector2(randf_range(-48, 48), randf_range(52, 88))
 
 
+const NAV_LAYER_WATER := 2
+
+
+func _water_spawn_position() -> Vector2:
+	var origin: Vector2 = spawn_point.global_position if is_instance_valid(spawn_point) else global_position
+	var best: Vector2 = origin
+	var best_d2: float = INF
+	var regions: Array[NavigationRegion2D] = []
+	var root := get_tree().current_scene
+	if is_instance_valid(root):
+		_collect_navigation_regions(root, regions)
+	for region in regions:
+		if (region.navigation_layers & NAV_LAYER_WATER) == 0:
+			continue
+		var closest: Vector2 = NavigationServer2D.map_get_closest_point(region.get_navigation_map(), origin)
+		var d2: float = origin.distance_squared_to(closest)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = closest
+	if best_d2 == INF:
+		push_warning("Port: aucune NavigationRegion2D sur le calque eau (2). Spawn au point du port.")
+		return _unit_spawn_position()
+	return best + Vector2(randf_range(-28, 28), randf_range(-28, 28))
+
+
+func _collect_navigation_regions(node: Node, out: Array) -> void:
+	if node is NavigationRegion2D:
+		out.append(node)
+	for child in node.get_children():
+		_collect_navigation_regions(child, out)
+
+
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
 	if killer_team != -1 and killer_team != team:
 		_capture_by_team(killer_team)
@@ -276,7 +319,7 @@ func _finish_production() -> void:
 		_advance_queue_after_failure()
 		return
 	unit.stats = stat
-	var spawn_position = _unit_spawn_position()
+	var spawn_position = _water_spawn_position() if is_port() else _unit_spawn_position()
 	unit.team = team
 
 	if team == Owner.PLAYER:
@@ -292,6 +335,10 @@ func _finish_production() -> void:
 		return
 	parent_node.add_child(unit)
 	unit.global_position = spawn_position
+	if unit.has_method("_apply_stats_to_unit"):
+		unit._apply_stats_to_unit()
+	if unit.has_method("_configurer_calques_navigation"):
+		unit._configurer_calques_navigation()
 	_advance_queue_after_failure()
 
 
@@ -314,7 +361,7 @@ func next_upgrade_cost() -> int:
 
 
 func can_upgrade() -> bool:
-	return team == Owner.PLAYER and camp_level < 3 and not is_port()
+	return team == Owner.PLAYER and camp_level < 3
 
 
 func upgrade_camp() -> bool:

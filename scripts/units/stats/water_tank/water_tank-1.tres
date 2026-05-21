@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/units/unit_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+unit_type = 8
+name = "Water Tank I"
+price = 160
+hp_max = 320
+speed = 85.0
+damage = 16
+range = 32.0
+build_time = 10.0
+is_ranged = false
+color = Color(0.15, 0.55, 0.85, 1)

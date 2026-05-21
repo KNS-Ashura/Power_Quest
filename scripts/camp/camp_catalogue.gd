@@ -42,7 +42,7 @@ const SCENES_GUARDIAN = {
 }
 const SCENES_PORT_GUARDIAN = {
 	1: preload("res://scenes/personnages/port_guardian/port-gardian-1.tscn"),
-	2: preload("res://scenes/personnages/port_guardian/port_gardian-2.tscn"),
+	2: preload("res://scenes/personnages/port_guardian/port-gardian-2.tscn"),
 	3: preload("res://scenes/personnages/port_guardian/port-gardian-3.tscn")
 }
 
@@ -56,6 +56,19 @@ const CAMP_VISUAL_PATHS_BY_VARIANT = {
 		1: "res://scenes/camp/map2/camp_nv1_map2.tscn",
 		2: "res://scenes/camp/map2/camp_nv2_map2.tscn",
 		3: "res://scenes/camp/map2/camp_nv3_map2.tscn"
+	}
+}
+
+const PORT_VISUAL_PATHS_BY_VARIANT = {
+	"map1": {
+		1: "res://scenes/camp/map1/port/port_nv1.tscn",
+		2: "res://scenes/camp/map1/port/port_nv2.tscn",
+		3: "res://scenes/camp/map1/port/port_nv3.tscn"
+	},
+	"map2": {
+		1: "res://scenes/camp/map2/port2/port_nv1.tscn",
+		2: "res://scenes/camp/map2/port2/port_nv2.tscn",
+		3: "res://scenes/camp/map2/port2/port_nv3.tscn"
 	}
 }
 
@@ -105,25 +118,26 @@ const STATS_MORTAR = {
 	3: preload("res://scripts/units/stats/mortar/mortar-3.tres")
 }
 
-const NAVAL_UNIT_IDS := [7, 8, 9]
+const SCENES_WATER_TANK = {
+	1: preload("res://scenes/personnages/water-tank/water-tank-1.tscn"),
+	2: preload("res://scenes/personnages/water-tank/water-tank-2.tscn"),
+	3: preload("res://scenes/personnages/water-tank/water-tank-3.tscn"),
+}
+const SCENES_WATER_RANGE = {
+	1: preload("res://scenes/personnages/water-range/water-range-1.tscn"),
+	2: preload("res://scenes/personnages/water-range/water-range-2.tscn"),
+	3: preload("res://scenes/personnages/water-range/water-range-3.tscn"),
+}
 
-## Chemins des unités navales (chargement à la demande — pas de preload, scènes refaites au besoin).
-const NAVAL_SCENE_PATHS := {
-	7: {
-		1: "res://scenes/personnages/Water_transport/Water_transporter_nv1.tscn",
-		2: "res://scenes/personnages/Water_transport/Water_transporter_nv2.tscn",
-		3: "res://scenes/personnages/Water_transport/Water_transporter_nv3.tscn",
-	},
-	8: {
-		1: "res://scenes/personnages/Water_tank/Water_tank_nv1.tscn",
-		2: "res://scenes/personnages/Water_tank/Water_tank_nv2.tscn",
-		3: "res://scenes/personnages/Water_tank/Water_tank_nv3.tscn",
-	},
-	9: {
-		1: "res://scenes/personnages/Water_range/Water_range_nv1.tscn",
-		2: "res://scenes/personnages/Water_range/Water_range_nv2.tscn",
-		3: "res://scenes/personnages/Water_range/Water_range_nv3.tscn",
-	},
+const STATS_WATER_TANK = {
+	1: preload("res://scripts/units/stats/water_tank/water_tank-1.tres"),
+	2: preload("res://scripts/units/stats/water_tank/water_tank-2.tres"),
+	3: preload("res://scripts/units/stats/water_tank/water_tank-3.tres"),
+}
+const STATS_WATER_RANGE = {
+	1: preload("res://scripts/units/stats/water_range/water_range-1.tres"),
+	2: preload("res://scripts/units/stats/water_range/water_range-2.tres"),
+	3: preload("res://scripts/units/stats/water_range/water_range-3.tres"),
 }
 
 
@@ -139,8 +153,13 @@ static func land_unit_catalog(camp_level: int) -> Dictionary:
 	}
 
 
-static func naval_unit_catalog(_camp_level: int) -> Dictionary:
-	return {}
+static func port_unit_catalog(camp_level: int) -> Dictionary:
+	return {
+		0: stats_for_level(STATS_SUPPORT, camp_level),
+		1: stats_for_level(STATS_HEAL, camp_level),
+		2: stats_for_level(STATS_WATER_TANK, camp_level),
+		3: stats_for_level(STATS_WATER_RANGE, camp_level),
+	}
 
 
 static func stats_for_level(stats_by_level: Dictionary, camp_level: int) -> UnitStats:
@@ -162,19 +181,6 @@ static func _load_scene_if_exists(path: String) -> PackedScene:
 	return res if res is PackedScene else null
 
 
-static func naval_scene_for_unit(unit_id: int, camp_level: int) -> PackedScene:
-	if not NAVAL_SCENE_PATHS.has(unit_id):
-		return null
-	var by_level: Dictionary = NAVAL_SCENE_PATHS[unit_id]
-	var path: String = by_level.get(camp_level, by_level.get(1, ""))
-	return _load_scene_if_exists(path)
-
-
-static func naval_scenes_ready() -> bool:
-	for unit_id in NAVAL_UNIT_IDS:
-		if naval_scene_for_unit(unit_id, 1) == null:
-			return false
-	return true
 
 
 static func guardian_scene(camp_level: int) -> PackedScene:
@@ -205,21 +211,7 @@ static func guardian_stats_for_site(camp_level: int, port: bool) -> UnitStats:
 	return guardian_stats(camp_level)
 
 
-static func scene_for_unit(stat: UnitStats, unit_id: int, camp_level: int) -> PackedScene:
-	if unit_id == 1:
-		return scene_for_level(SCENES_RANGE, camp_level)
-	if unit_id == 2:
-		return scene_for_level(SCENES_HEAVY, camp_level)
-	if unit_id == 3:
-		return scene_for_level(SCENES_SUPPORT, camp_level)
-	if unit_id == 4:
-		return scene_for_level(SCENES_HEALER, camp_level)
-	if unit_id == 5:
-		return scene_for_level(SCENES_ANTI_ARMOR, camp_level)
-	if unit_id == 6:
-		return scene_for_level(SCENES_MORTAR, camp_level)
-	if unit_id in NAVAL_UNIT_IDS:
-		return naval_scene_for_unit(unit_id, camp_level)
+static func scene_for_unit(stat: UnitStats, _unit_id: int, camp_level: int) -> PackedScene:
 	match stat.unit_type:
 		UnitStats.UnitType.ARCHER:
 			return scene_for_level(SCENES_RANGE, camp_level)
@@ -233,15 +225,14 @@ static func scene_for_unit(stat: UnitStats, unit_id: int, camp_level: int) -> Pa
 			return scene_for_level(SCENES_ANTI_ARMOR, camp_level)
 		UnitStats.UnitType.MORTAR:
 			return scene_for_level(SCENES_MORTAR, camp_level)
-		UnitStats.UnitType.WATER_TRANSPORT:
-			return naval_scene_for_unit(7, camp_level)
 		UnitStats.UnitType.WATER_TANK:
-			return naval_scene_for_unit(8, camp_level)
+			return scene_for_level(SCENES_WATER_TANK, camp_level)
 		UnitStats.UnitType.WATER_RANGE:
-			return naval_scene_for_unit(9, camp_level)
+			return scene_for_level(SCENES_WATER_RANGE, camp_level)
 		_:
 			return scene_for_level(SCENES_INFANTRY, camp_level)
 
 
-static func visual_paths(variant: String) -> Dictionary:
-	return CAMP_VISUAL_PATHS_BY_VARIANT.get(variant, CAMP_VISUAL_PATHS_BY_VARIANT["map1"])
+static func visual_paths(variant: String, port: bool = false) -> Dictionary:
+	var table: Dictionary = PORT_VISUAL_PATHS_BY_VARIANT if port else CAMP_VISUAL_PATHS_BY_VARIANT
+	return table.get(variant, table["map1"])

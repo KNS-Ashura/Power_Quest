@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://meu87xd610dy"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_tkeqq"]
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/port_nv2.gd" id="1_tkeqq"]
 [ext_resource type="Texture2D" uid="uid://daf07netv2ti5" path="res://assets/objects/map2/Sail.png" id="2_cg4mo"]
 [ext_resource type="Texture2D" uid="uid://c6x8shv6eqnn6" path="res://assets/objects/map2/trilobite_house_grass_shadow.png" id="3_xhes5"]
 

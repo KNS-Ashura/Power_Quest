@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/units/unit_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+unit_type = 9
+name = "Water Range III"
+price = 125
+hp_max = 135
+speed = 140.0
+damage = 15
+range = 240.0
+build_time = 4.8
+is_ranged = true
+color = Color(0.2, 0.85, 1, 1)

@@ -21,10 +21,12 @@ const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
-## Calque 1 = sol (Nav_ground map 2, nav map 1). Calque 2 = eau (Nav_water map 2).
+## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
+## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
+## layer 3 (valeur 4) = ground-and-water-unit (mesh combiné sol+eau pour support/healer)
 const NAV_LAYER_GROUND := 1
 const NAV_LAYER_WATER := 2
-const NAV_LAYER_AMPHIBIOUS := NAV_LAYER_GROUND | NAV_LAYER_WATER
+const NAV_LAYER_GROUND_AND_WATER := 4
 
 ## Calques physique : alliés ne se bloquent pas entre eux (glissement latéral).
 const COLLISION_LAYER_WORLD := 1
@@ -57,25 +59,26 @@ var guard_position: Vector2 = Vector2.ZERO
 var guard_defense_radius: float = 260.0
 var guard_chase_radius: float = 320.0
 
-func _ready():
-	if stats:
-		hp_max = stats.hp_max
-		current_hp = hp_max
-		unit_speed = stats.speed
-		unit_damage = stats.damage
-		_appliquer_couleur_unite()
-		
-		if has_node("ProgressBar"):
-			$ProgressBar.max_value = hp_max
-			$ProgressBar.value = current_hp
-		
-		var shape = $ZoneDetection/CollisionShape2D.shape
-		if shape is CircleShape2D:
-			$ZoneDetection/CollisionShape2D.shape = shape.duplicate()
-			$ZoneDetection/CollisionShape2D.shape.radius = stats.range
-			
+func _apply_stats_to_unit() -> void:
+	if not stats:
+		return
+	hp_max = stats.hp_max
+	current_hp = hp_max
+	unit_speed = stats.speed
+	unit_damage = stats.damage
+	_appliquer_couleur_unite()
+	if has_node("ProgressBar"):
+		$ProgressBar.max_value = hp_max
+		$ProgressBar.value = current_hp
+	var shape = $ZoneDetection/CollisionShape2D.shape
+	if shape is CircleShape2D:
+		$ZoneDetection/CollisionShape2D.shape = shape.duplicate()
+		$ZoneDetection/CollisionShape2D.shape.radius = stats.range
+	if is_instance_valid(agent_navigation):
 		agent_navigation.target_desired_distance = stats.range - 5.0
 
+func _ready():
+	_apply_stats_to_unit()
 	_configurer_calques_navigation()
 	_configurer_mouvement_et_collisions()
 	agent_navigation.path_desired_distance = 10.0
@@ -88,7 +91,7 @@ func _configurer_calques_navigation() -> void:
 	if not is_instance_valid(agent_navigation):
 		return
 	if _is_amphibious_unit():
-		agent_navigation.navigation_layers = NAV_LAYER_AMPHIBIOUS
+		agent_navigation.navigation_layers = NAV_LAYER_GROUND_AND_WATER
 	elif _is_naval_unit():
 		agent_navigation.navigation_layers = NAV_LAYER_WATER
 	else:
@@ -97,16 +100,20 @@ func _configurer_calques_navigation() -> void:
 func _is_amphibious_unit() -> bool:
 	if force_amphibious_navigation:
 		return true
+	if stats != null:
+		return stats.unit_type == UnitStats.UnitType.SUPPORT or stats.unit_type == UnitStats.UnitType.HEAL
 	var chemin_scene := scene_file_path
-	return chemin_scene.contains("/port_guardian/")
+	return chemin_scene.contains("/support/") or chemin_scene.contains("/healer/")
 
 func _is_naval_unit() -> bool:
 	if _is_amphibious_unit():
 		return false
 	if force_water_navigation:
 		return true
+	if stats != null:
+		return stats.unit_type == UnitStats.UnitType.WATER_TANK or stats.unit_type == UnitStats.UnitType.WATER_RANGE
 	var chemin_scene := scene_file_path
-	return chemin_scene.contains("/Water_") or chemin_scene.contains("/water_")
+	return chemin_scene.contains("/water-range/") or chemin_scene.contains("/water-tank/")
 
 func set_selection(etat : bool):
 	is_selected = etat
