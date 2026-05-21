@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cc16voxg0n38a"
-path="res://.godot/imported/death.png-61e49b668b9b0c8dde12a12ad3426197.ctex"
+uid="uid://dfedcnhqbopfk"
+path="res://.godot/imported/run.png-594c4ab7435d44dc66ee73424dd92f4e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/character/gardien-port/gardien-port-2/death.png"
-dest_files=["res://.godot/imported/death.png-61e49b668b9b0c8dde12a12ad3426197.ctex"]
+source_file="res://assets/character/gardien-port/nv1/run.png"
+dest_files=["res://.godot/imported/run.png-594c4ab7435d44dc66ee73424dd92f4e.ctex"]
 
 [params]
 

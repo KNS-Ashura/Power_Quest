@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://22uiw1twjnhn"
-path="res://.godot/imported/run.png-a2bb8736533680bbec5edfb1c775be69.ctex"
+uid="uid://dqwmnjnc64g8n"
+path="res://.godot/imported/attack.png-b9086d7602c0392e8fb367d98b3de2bc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/character/gardien-port/gardien-port-2/run.png"
-dest_files=["res://.godot/imported/run.png-a2bb8736533680bbec5edfb1c775be69.ctex"]
+source_file="res://assets/character/water-tank/nv2/attack.png"
+dest_files=["res://.godot/imported/attack.png-b9086d7602c0392e8fb367d98b3de2bc.ctex"]
 
 [params]
 

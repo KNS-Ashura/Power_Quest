@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f5n7rk318hpv"
-path="res://.godot/imported/idle.png-e6edde671d095970dc81d8a632f09c56.ctex"
+uid="uid://bp475drmfx67g"
+path="res://.godot/imported/death.png-32e13c839f1747a78983624051d3c840.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/character/gardien-port/gardien-port-1/idle.png"
-dest_files=["res://.godot/imported/idle.png-e6edde671d095970dc81d8a632f09c56.ctex"]
+source_file="res://assets/character/water-tank/nv3/death.png"
+dest_files=["res://.godot/imported/death.png-32e13c839f1747a78983624051d3c840.ctex"]
 
 [params]
 

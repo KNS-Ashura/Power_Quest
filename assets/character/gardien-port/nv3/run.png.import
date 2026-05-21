@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btolxojn3fgy0"
-path="res://.godot/imported/run.png-eac4c41f49cf128bb539a84464c64858.ctex"
+uid="uid://ck6wkkc0jpo45"
+path="res://.godot/imported/run.png-21c64c1b8e199c6f61942ae0c5c0fdd5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/character/gardien-port/gardien-port-1/run.png"
-dest_files=["res://.godot/imported/run.png-eac4c41f49cf128bb539a84464c64858.ctex"]
+source_file="res://assets/character/gardien-port/nv3/run.png"
+dest_files=["res://.godot/imported/run.png-21c64c1b8e199c6f61942ae0c5c0fdd5.ctex"]
 
 [params]
 
