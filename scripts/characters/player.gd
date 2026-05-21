@@ -13,6 +13,7 @@ var unit_speed : float = 150.0
 var unit_damage : int = 10
 var is_selected : bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("uid://swrp6c3h83xg")
+const SCENE_HEALER_PROJECTILE_LOOP = preload("uid://5cvanebkvuv0")
 const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
@@ -199,7 +200,7 @@ func _on_timer_attaque_timeout():
 	if is_instance_valid(attack_target_node):
 		if _est_healer():
 			_jouer_animation_attaque(attack_target_node)
-			_appliquer_soin_cible(attack_target_node)
+			_tirer_projectile_heal(attack_target_node)
 			return
 		if _est_mortar():
 			_tirer_mortar_distance(attack_target_node)
@@ -278,6 +279,23 @@ func _tirer_projectile_range(cible: Node2D):
 	proj.global_position = global_position
 	if proj.has_method("launch"):
 		proj.launch(cible, unit_damage, self)
+
+func _montant_soin() -> int:
+	return int(max(10.0, float(hp_max) * 0.12))
+
+func _tirer_projectile_heal(cible: Node2D) -> void:
+	if not is_instance_valid(cible):
+		timer_attaque.stop()
+		attack_target_node = null
+		return
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var proj = SCENE_HEALER_PROJECTILE_LOOP.instantiate()
+	parent_node.add_child(proj)
+	proj.global_position = global_position
+	if proj.has_method("launch"):
+		proj.launch(cible, _montant_soin(), self)
 
 func _niveau_mortar() -> int:
 	if stats == null:
@@ -392,7 +410,7 @@ func _appliquer_soin_cible(cible: Node2D):
 		attack_target_node = null
 		return
 
-	var soin = int(max(10.0, float(hp_max) * 0.12))
+	var soin = _montant_soin()
 	cible.current_hp = min(cible.hp_max, cible.current_hp + soin)
 	if cible.has_node("ProgressBar"):
 		cible.get_node("ProgressBar").value = cible.current_hp
