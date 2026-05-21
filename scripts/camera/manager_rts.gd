@@ -63,10 +63,13 @@ func _unhandled_input(event: InputEvent) -> void:
 				_handle_building_click()
 
 	if event is InputEventKey and event.keycode == KEY_E and event.pressed:
-		var spell_cast = false
+		var spell_cast := false
 		for soldier in get_tree().get_nodes_in_group("soldiers"):
-			if soldier.get("is_selected") and soldier.has_method("cast_spell"):
-				soldier.cast_spell()
+			if not soldier.get("is_selected"):
+				continue
+			if soldier.has_method("peut_lancer_sort") and not soldier.peut_lancer_sort():
+				continue
+			if soldier.has_method("cast_spell") and soldier.cast_spell():
 				spell_cast = true
 		if spell_cast:
 			return

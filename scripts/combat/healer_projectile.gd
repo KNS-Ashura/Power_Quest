@@ -51,6 +51,8 @@ func _impact() -> void:
 				target.current_hp = min(target.hp_max, target.current_hp + heal_amount)
 				if target.has_node("ProgressBar"):
 					target.get_node("ProgressBar").value = target.current_hp
+				if shooter.has_method("_attacher_effet_soin_sur"):
+					shooter._attacher_effet_soin_sur(target)
 	queue_free()
 
 

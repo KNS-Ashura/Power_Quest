@@ -13,10 +13,22 @@ var unit_speed : float = 150.0
 var unit_damage : int = 10
 var is_selected : bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("uid://swrp6c3h83xg")
+const SCENE_WATER_RANGE_PROJECTILE_LOOP = preload("uid://djbfyhto8wuop")
 const SCENE_HEALER_PROJECTILE_LOOP = preload("uid://5cvanebkvuv0")
-const SCENE_PORT_GUARDIAN_PROJECTILE_LOOP = preload("res://scenes/personnages/gardian-port-loop-projectile.tscn")
+const SCENE_HEALER_EFFECT = preload("uid://cdvvumicj5qty")
+const SCENE_SUPPORT_EFFECT = preload("uid://ca8jxgt0j8nmw")
+const SCENE_DOUBLE_EFFECT = preload("uid://badrqmpt16vq7")
+const DUREE_INVULN_SORT_NIVEAU_1 := 10.0
+const DUREE_BOOST_SORT_NIVEAU_1 := 20.0
+const BONUS_INVULN_PAR_NIVEAU := 5.0
+const BONUS_BOOST_PAR_NIVEAU := 10.0
+const SCENE_PORT_GUARDIAN_PROJECTILE_LOOP = preload("res://scenes/personnages/port_guardian/gardian-port-loop-projectile.tscn")
+const SCENE_CAMP_GUARDIAN_PROJECTILE_LOOP = preload("uid://ofkkgjehycuj")
 const RAYON_TIR_PASSIF_PORT_GARDIEN := 420.0
 const VITESSE_PROJECTILE_PORT_GARDIEN := 320.0
+const VITESSE_PROJECTILE_CAMP_GARDIEN := 380.0
+const DUREE_EFFET_SOIN_DEFAUT := 4.0
+const NOM_NOEUD_EFFET_BUFF := "BuffEffectVfx"
 const FACTEUR_ZONE_RANGE := 0.65
 const FACTEUR_ZONE_HEALER := 0.6
 const FACTEUR_ZONE_GARDIEN_CAMP := 0.85
@@ -28,6 +40,7 @@ const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
+const COOLDOWN_SORT_SECONDES := 60.0
 ## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
 ## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
 ## layer 3 (valeur 4) = ground-and-water-unit (mesh combiné sol+eau pour support/healer)
@@ -59,6 +72,8 @@ var timer_tir_passif_gardien : float = 0.0
 var cooldown_actuel_sort : float = 0.0
 var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
+var invulnerabilite_actif : bool = false
+var temps_restant_invulnerabilite : float = 0.0
 var attack_rate_multiplier: float = 1.0
 var is_dying : bool = false
 var cycle_explosion_mortar : int = 0
@@ -179,8 +194,8 @@ func _physics_process(_delta):
 	if is_dying:
 		return
 
-	if _est_gardien_port():
-		_gerer_tirs_passifs_port(_delta)
+	if is_camp_guardian and (_est_gardien_port() or _est_gardien_camp()):
+		_gerer_tirs_passifs_gardien(_delta)
 
 	var doit_avancer = true
 	
@@ -195,6 +210,14 @@ func _physics_process(_delta):
 			unit_damage = stats.damage
 			attack_rate_multiplier = 1.0
 			_appliquer_couleur_unite()
+			_mettre_a_jour_effet_visuel(self)
+
+	if invulnerabilite_actif:
+		temps_restant_invulnerabilite -= _delta
+		if temps_restant_invulnerabilite <= 0:
+			invulnerabilite_actif = false
+			_appliquer_couleur_unite()
+			_mettre_a_jour_effet_visuel(self)
 	
 	if is_instance_valid(attack_target_node) and not _cible_combat_valide(attack_target_node):
 		_arreter_combat()
@@ -310,6 +333,9 @@ func _est_healer() -> bool:
 func _est_range() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.ARCHER
 
+func _est_water_range_unite() -> bool:
+	return stats != null and stats.unit_type == UnitStats.UnitType.WATER_RANGE
+
 func _est_mortar() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.MORTAR
 
@@ -320,7 +346,8 @@ func _tirer_projectile_range(cible: Node2D):
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
 		return
-	var proj = SCENE_RANGE_PROJECTILE_LOOP.instantiate()
+	var scene_proj := SCENE_WATER_RANGE_PROJECTILE_LOOP if _est_water_range_unite() else SCENE_RANGE_PROJECTILE_LOOP
+	var proj = scene_proj.instantiate()
 	parent_node.add_child(proj)
 	proj.global_position = global_position
 	if proj.has_method("launch"):
@@ -345,6 +372,9 @@ func _tirer_projectile_heal(cible: Node2D) -> void:
 func _est_gardien_port() -> bool:
 	return scene_file_path.contains("/port_guardian/")
 
+func _est_gardien_camp() -> bool:
+	return is_camp_guardian and scene_file_path.contains("/guardian/") and not _est_gardien_port()
+
 func _niveau_gardien_port() -> int:
 	if stats == null:
 		return 1
@@ -366,7 +396,21 @@ func _rayon_zone_detection() -> float:
 		return stats.range * FACTEUR_ZONE_GARDIEN_CAMP
 	return stats.range
 
-func _ennemis_portee_tir_passif_port() -> Array:
+func _gerer_tirs_passifs_gardien(delta: float) -> void:
+	var ennemis: Array = _ennemis_portee_tir_passif_gardien()
+	if ennemis.is_empty():
+		timer_tir_passif_gardien = 0.0
+		return
+	timer_tir_passif_gardien -= delta
+	if timer_tir_passif_gardien > 0.0:
+		return
+	timer_tir_passif_gardien = 1.0 / float(_niveau_gardien_port())
+	ennemis.sort_custom(func(a, b):
+		return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
+	)
+	_tirer_projectile_gardien_passif(ennemis[0])
+
+func _ennemis_portee_tir_passif_gardien() -> Array:
 	var requete := PhysicsShapeQueryParameters2D.new()
 	var cercle := CircleShape2D.new()
 	cercle.radius = RAYON_TIR_PASSIF_PORT_GARDIEN
@@ -390,19 +434,15 @@ func _ennemis_portee_tir_passif_port() -> Array:
 		cibles.append(obj)
 	return cibles
 
-func _gerer_tirs_passifs_port(delta: float) -> void:
-	var ennemis: Array = _ennemis_portee_tir_passif_port()
-	if ennemis.is_empty():
-		timer_tir_passif_gardien = 0.0
-		return
-	timer_tir_passif_gardien -= delta
-	if timer_tir_passif_gardien > 0.0:
-		return
-	timer_tir_passif_gardien = 1.0 / float(_niveau_gardien_port())
-	ennemis.sort_custom(func(a, b):
-		return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
-	)
-	_tirer_projectile_gardien_passif(ennemis[0])
+func _scene_projectile_gardien_passif() -> PackedScene:
+	if _est_gardien_port():
+		return SCENE_PORT_GUARDIAN_PROJECTILE_LOOP
+	return SCENE_CAMP_GUARDIAN_PROJECTILE_LOOP
+
+func _vitesse_projectile_gardien_passif() -> float:
+	if _est_gardien_port():
+		return VITESSE_PROJECTILE_PORT_GARDIEN
+	return VITESSE_PROJECTILE_CAMP_GARDIEN
 
 func _tirer_projectile_gardien_passif(cible: Node2D) -> void:
 	if not is_instance_valid(cible):
@@ -410,13 +450,16 @@ func _tirer_projectile_gardien_passif(cible: Node2D) -> void:
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
 		return
-	var proj = SCENE_PORT_GUARDIAN_PROJECTILE_LOOP.instantiate()
+	var proj = _scene_projectile_gardien_passif().instantiate()
 	parent_node.add_child(proj)
 	proj.global_position = global_position
 	if proj.has_method("launch"):
-		proj.launch(cible, unit_damage, self, VITESSE_PROJECTILE_PORT_GARDIEN)
+		proj.launch(cible, unit_damage, self, _vitesse_projectile_gardien_passif())
 
-func _niveau_mortar() -> int:
+func _duree_effet_soin() -> float:
+	return DUREE_EFFET_SOIN_DEFAUT
+
+func _niveau_unite() -> int:
 	if stats == null:
 		return 1
 	var nom_lower := String(stats.name).to_lower()
@@ -425,6 +468,74 @@ func _niveau_mortar() -> int:
 	if nom_lower.find("ii") != -1 or nom_lower.find(" 2") != -1:
 		return 2
 	return 1
+
+func _duree_sort_invulnerabilite() -> float:
+	var niveau := _niveau_unite()
+	return DUREE_INVULN_SORT_NIVEAU_1 + float(niveau - 1) * BONUS_INVULN_PAR_NIVEAU
+
+func _duree_sort_boost() -> float:
+	var niveau := _niveau_unite()
+	return DUREE_BOOST_SORT_NIVEAU_1 + float(niveau - 1) * BONUS_BOOST_PAR_NIVEAU
+
+func _duree_effet_visuel_sur_cible(cible: Node2D) -> float:
+	var duree := 0.0
+	if cible.get("invulnerabilite_actif") and cible.invulnerabilite_actif:
+		duree = maxf(duree, cible.temps_restant_invulnerabilite)
+	if cible.get("boost_actif") and cible.boost_actif:
+		duree = maxf(duree, cible.temps_restant_boost)
+	return duree
+
+func _scene_effet_pour_cible(cible: Node2D) -> PackedScene:
+	var invuln: bool = cible.get("invulnerabilite_actif") == true and bool(cible.invulnerabilite_actif)
+	var boost: bool = cible.get("boost_actif") == true and bool(cible.boost_actif)
+	if invuln and boost:
+		return SCENE_DOUBLE_EFFECT
+	if invuln:
+		return SCENE_HEALER_EFFECT
+	if boost:
+		return SCENE_SUPPORT_EFFECT
+	return null
+
+func _mettre_a_jour_effet_visuel(cible: Node2D) -> void:
+	if not is_instance_valid(cible):
+		return
+	var existant := cible.get_node_or_null(NOM_NOEUD_EFFET_BUFF)
+	if is_instance_valid(existant):
+		existant.queue_free()
+	var scene_fx := _scene_effet_pour_cible(cible)
+	if scene_fx == null:
+		return
+	var duree := _duree_effet_visuel_sur_cible(cible)
+	if duree <= 0.0:
+		return
+	var fx = scene_fx.instantiate()
+	fx.name = NOM_NOEUD_EFFET_BUFF
+	cible.add_child(fx)
+	if fx.has_method("demarrer"):
+		fx.demarrer(duree)
+
+func _attacher_effet_soin_sur(cible: Node2D) -> void:
+	if not is_instance_valid(cible):
+		return
+	if cible.get("invulnerabilite_actif") and cible.invulnerabilite_actif:
+		_mettre_a_jour_effet_visuel(cible)
+		return
+	_attacher_effet_sur_cible(cible, SCENE_HEALER_EFFECT, _duree_effet_soin())
+
+func _attacher_effet_sur_cible(cible: Node2D, scene_fx: PackedScene, duree: float) -> void:
+	if not is_instance_valid(cible) or scene_fx == null or duree <= 0.0:
+		return
+	var existant := cible.get_node_or_null(NOM_NOEUD_EFFET_BUFF)
+	if is_instance_valid(existant):
+		existant.queue_free()
+	var fx = scene_fx.instantiate()
+	fx.name = NOM_NOEUD_EFFET_BUFF
+	cible.add_child(fx)
+	if fx.has_method("demarrer"):
+		fx.demarrer(duree)
+
+func _niveau_mortar() -> int:
+	return _niveau_unite()
 
 func _cooldown_mortar_niveau() -> float:
 	var niveau := _niveau_mortar()
@@ -524,6 +635,7 @@ func _appliquer_soin_cible(cible: Node2D):
 	cible.current_hp = min(cible.hp_max, cible.current_hp + soin)
 	if cible.has_node("ProgressBar"):
 		cible.get_node("ProgressBar").value = cible.current_hp
+	_attacher_effet_soin_sur(cible)
 
 func update_animation():
 	if not has_node("AnimatedSprite2D"):
@@ -549,7 +661,7 @@ func update_animation():
 		_jouer_animation_sur_sprites("idle_" + dernier_regard)
 
 func take_damage(montant : int, auteur = null, auteur_team : int = -1):
-	if is_dying:
+	if is_dying or invulnerabilite_actif:
 		return
 
 	var degats_finaux = montant
@@ -714,38 +826,52 @@ func _configurer_animations_mort():
 			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 			frames.add_frame(anim_name, a)
 
-func cast_spell():
-	if not stats or cooldown_actuel_sort > 0:
-		return
+func peut_lancer_sort() -> bool:
+	if not stats or is_dying:
+		return false
+	if cooldown_actuel_sort > 0.0:
+		return false
+	if _est_mortar() or _est_healer() or (stats.unit_type == UnitStats.UnitType.SUPPORT):
+		return true
+	return stats.spell_cooldown > 0.0
+
+func cast_spell() -> bool:
+	if not peut_lancer_sort():
+		return false
 	if _est_mortar():
 		if _cast_spell_mortar_ult():
-			var spell_cooldown_mortar = stats.spell_cooldown if stats.spell_cooldown > 0 else MORTAR_SORT_COOLDOWN_DEFAUT
-			cooldown_actuel_sort = spell_cooldown_mortar
-		return
-	if stats.spell_cooldown <= 0:
-		return
-	cooldown_actuel_sort = stats.spell_cooldown
-	
-	var requete = PhysicsShapeQueryParameters2D.new()
-	var cercle = CircleShape2D.new()
+			cooldown_actuel_sort = COOLDOWN_SORT_SECONDES
+			return true
+		return false
+
+	var requete := PhysicsShapeQueryParameters2D.new()
+	var cercle := CircleShape2D.new()
 	cercle.radius = 150.0
 	requete.shape = cercle
 	requete.transform = Transform2D(0, global_position)
 	requete.collide_with_areas = false
 	requete.collide_with_bodies = true
-	
+
 	var resultats = get_world_2d().direct_space_state.intersect_shape(requete)
-	var groupe = "soldiers" if team == Owner.PLAYER else "enemies"
-	
+	var groupe := "soldiers" if team == Owner.PLAYER else "enemies"
+	var au_moins_un_effet := false
+
 	for res in resultats:
 		var obj = res.collider
-		if obj and obj.is_in_group(groupe):
-			if stats.unit_type == 3 and obj.has_method("receive_boost"):
-				obj.receive_boost(stats.spell_duration + 10.0)
-			elif stats.unit_type == 4 and "current_hp" in obj and "hp_max" in obj:
-				obj.current_hp = min(obj.hp_max, obj.current_hp + 50)
-				if obj.has_node("ProgressBar"):
-					obj.get_node("ProgressBar").value = obj.current_hp
+		if not obj or not obj.is_in_group(groupe):
+			continue
+		if stats.unit_type == UnitStats.UnitType.SUPPORT and obj.has_method("receive_boost"):
+			obj.receive_boost(_duree_sort_boost())
+			au_moins_un_effet = true
+		elif stats.unit_type == UnitStats.UnitType.HEAL and obj.has_method("recevoir_invulnerabilite_sort"):
+			obj.recevoir_invulnerabilite_sort(_duree_sort_invulnerabilite())
+			au_moins_un_effet = true
+
+	if not au_moins_un_effet:
+		return false
+
+	cooldown_actuel_sort = COOLDOWN_SORT_SECONDES
+	return true
 
 func _cast_spell_mortar_ult() -> bool:
 	var niveau = _niveau_mortar()
@@ -783,19 +909,34 @@ func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
 		resultat.append(cibles[i])
 	return resultat
 
+func recevoir_invulnerabilite_sort(duree: float) -> void:
+	if duree <= 0.0 or not stats:
+		return
+	invulnerabilite_actif = true
+	temps_restant_invulnerabilite = maxf(temps_restant_invulnerabilite, duree)
+	_appliquer_couleur_unite()
+	_mettre_a_jour_effet_visuel(self)
+
 func receive_boost(duree: float):
+	if duree <= 0.0 or not stats:
+		return
 	boost_actif = true
-	temps_restant_boost = duree
+	temps_restant_boost = maxf(temps_restant_boost, duree)
 	unit_speed = stats.speed * 1.25
 	unit_damage = int(round(stats.damage * 1.25))
 	attack_rate_multiplier = 1.25
 	_appliquer_couleur_unite()
+	_mettre_a_jour_effet_visuel(self)
 
 func _attack_rate_actuelle() -> float:
 	var cadence_base = stats.attack_rate if stats and "attack_rate" in stats else 1.0
 	return cadence_base * attack_rate_multiplier
 
 func _couleur_unite() -> Color:
+	if invulnerabilite_actif and boost_actif:
+		return Color(0.45, 1.0, 0.55)
+	if invulnerabilite_actif:
+		return Color(0.35, 1.0, 0.45)
 	if boost_actif:
 		return Color(1.0, 0.95, 0.25)
 	if team == Owner.ENEMY:

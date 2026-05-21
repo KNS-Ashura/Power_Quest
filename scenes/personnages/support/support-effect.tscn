@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://ca8jxgt0j8nmw"]
+
+[ext_resource type="Script" uid="uid://ciahcu1ekrc2c" path="res://scripts/combat/unit_attached_effect.gd" id="1_n3346"]
+[ext_resource type="Texture2D" uid="uid://d1ubhkmvlpvn1" path="res://assets/character/projectile-effect/Spell-R.png" id="5_bnmuo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hyv2g"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(0, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7xwrd"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(32, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rlx7u"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(64, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nuxoo"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(96, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nh7kk"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(128, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_csujm"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(160, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t3uu8"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(192, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_elfef"]
+atlas = ExtResource("5_bnmuo")
+region = Rect2(224, 160, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hyv2g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7xwrd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rlx7u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nuxoo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nh7kk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_csujm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t3uu8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_elfef")
+}],
+"loop": true,
+"name": &"effect",
+"speed": 5.0
+}]
+
+[node name="SupportEffect" type="Node2D" unique_id=1675101849]
+script = ExtResource("1_n3346")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
+rotation = 0.0038198903
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"effect"

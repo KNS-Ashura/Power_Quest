@@ -63,30 +63,41 @@ func _refresh_button_state() -> void:
 
 
 func _on_btn_heal_pressed() -> void:
-	var healers = _get_selected_units_by_type(4)
+	var healers: Array = _get_selected_units_by_type(4)
+	var lances := 0
 	for healer in healers:
-		if healer.has_method("cast_spell"):
-			healer.cast_spell()
-		_show_effect_zone(healer.global_position, SPELL_EFFECT_RADIUS, HEAL_BORDER_COLOR, HEAL_FILL_COLOR)
-	print("%d healer(s) selected, Heal activated" % _selected_healer_count)
+		if _essayer_lancer_sort(healer):
+			lances += 1
+			_show_effect_zone(healer.global_position, SPELL_EFFECT_RADIUS, HEAL_BORDER_COLOR, HEAL_FILL_COLOR)
+	print("%d healer(s) selected, %d sort(s) lance(s)" % [_selected_healer_count, lances])
 
 
 func _on_btn_boost_pressed() -> void:
-	var supports = _get_selected_units_by_type(3)
+	var supports: Array = _get_selected_units_by_type(3)
+	var lances := 0
 	for support in supports:
-		if support.has_method("cast_spell"):
-			support.cast_spell()
-		_show_effect_zone(support.global_position, SPELL_EFFECT_RADIUS, BOOST_BORDER_COLOR, BOOST_FILL_COLOR)
-	print("%d support(s) selected, Boost activated" % _selected_support_count)
+		if _essayer_lancer_sort(support):
+			lances += 1
+			_show_effect_zone(support.global_position, SPELL_EFFECT_RADIUS, BOOST_BORDER_COLOR, BOOST_FILL_COLOR)
+	print("%d support(s) selected, %d sort(s) lance(s)" % [_selected_support_count, lances])
 
 
 func _on_btn_mortar_spell_pressed() -> void:
-	var mortars = _get_selected_units_by_type(6)
+	var mortars: Array = _get_selected_units_by_type(6)
+	var lances := 0
 	for mortar in mortars:
-		if mortar.has_method("cast_spell"):
-			mortar.cast_spell()
-		_show_effect_zone(mortar.global_position, SPELL_EFFECT_RADIUS, MORTAR_BORDER_COLOR, MORTAR_FILL_COLOR)
-	print("%d mortar(s) selected, Ult activated" % _selected_mortar_count)
+		if _essayer_lancer_sort(mortar):
+			lances += 1
+			_show_effect_zone(mortar.global_position, SPELL_EFFECT_RADIUS, MORTAR_BORDER_COLOR, MORTAR_FILL_COLOR)
+	print("%d mortar(s) selected, %d sort(s) lance(s)" % [_selected_mortar_count, lances])
+
+
+func _essayer_lancer_sort(unit: Node) -> bool:
+	if not unit.has_method("peut_lancer_sort") or not unit.peut_lancer_sort():
+		return false
+	if unit.has_method("cast_spell"):
+		return unit.cast_spell()
+	return false
 
 
 func _get_selected_units_by_type(unit_type: int) -> Array:
