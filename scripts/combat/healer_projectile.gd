@@ -2,7 +2,8 @@ extends CharacterBody2D
 
 var target: Node2D = null
 var heal_amount: int = 0
-var speed: float = 520.0
+const SPEED_DEFAULT := 820.0
+var speed: float = SPEED_DEFAULT
 var shooter: Node2D = null
 var already_hit: bool = false
 
@@ -13,7 +14,15 @@ func launch(target_node: Node2D, amount: int, shooter_node: Node2D = null) -> vo
 	target = target_node
 	heal_amount = amount
 	shooter = shooter_node
+	_appliquer_couleurs_visibles()
 	_set_direction_animation()
+
+
+func _appliquer_couleurs_visibles() -> void:
+	modulate = Color.WHITE
+	if is_instance_valid(sprite):
+		sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+		sprite.self_modulate = Color.WHITE
 
 
 func _process(delta: float) -> void:

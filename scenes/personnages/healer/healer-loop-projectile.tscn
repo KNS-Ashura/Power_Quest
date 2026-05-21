@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://5cvanebkvuv0"]
 
-[ext_resource type="Script" path="res://scripts/combat/healer_projectile.gd" id="1_6iheb"]
+[ext_resource type="Script" uid="uid://8j677nwa357m" path="res://scripts/combat/healer_projectile.gd" id="1_6iheb"]
 [ext_resource type="Texture2D" uid="uid://bc5mkkt7asgol" path="res://assets/character/projectile-effect/Spell-B.png" id="2_nel38"]
 [ext_resource type="Texture2D" uid="uid://bcjbuwvs47dup" path="res://assets/character/projectile-effect/Spell-F.png" id="3_0vcqi"]
 [ext_resource type="Texture2D" uid="uid://dej6ewninj0gd" path="res://assets/character/projectile-effect/Spell-L.png" id="4_1tci0"]

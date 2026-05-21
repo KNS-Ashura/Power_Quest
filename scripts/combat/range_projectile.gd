@@ -2,7 +2,8 @@ extends CharacterBody2D
 
 var target: Node2D = null
 var damage: int = 0
-var speed: float = 520.0
+const SPEED_DEFAULT := 820.0
+var speed: float = SPEED_DEFAULT
 var shooter: Node2D = null
 var shooter_team: int = -1
 var already_hit: bool = false
@@ -10,13 +11,23 @@ var already_hit: bool = false
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 
-func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = null) -> void:
+func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = null, projectile_speed: float = -1.0) -> void:
 	target = target_node
 	damage = projectile_damage
 	shooter = shooter_node
+	if projectile_speed > 0.0:
+		speed = projectile_speed
 	if is_instance_valid(shooter) and shooter.get("team") != null:
 		shooter_team = shooter.team
+	_appliquer_couleurs_visibles()
 	_set_direction_animation()
+
+
+func _appliquer_couleurs_visibles() -> void:
+	modulate = Color.WHITE
+	if is_instance_valid(sprite):
+		sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+		sprite.self_modulate = Color.WHITE
 
 
 func _process(delta: float) -> void:

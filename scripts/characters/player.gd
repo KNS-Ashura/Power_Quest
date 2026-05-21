@@ -14,6 +14,12 @@ var unit_damage : int = 10
 var is_selected : bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("uid://swrp6c3h83xg")
 const SCENE_HEALER_PROJECTILE_LOOP = preload("uid://5cvanebkvuv0")
+const SCENE_PORT_GUARDIAN_PROJECTILE_LOOP = preload("res://scenes/personnages/gardian-port-loop-projectile.tscn")
+const RAYON_TIR_PASSIF_PORT_GARDIEN := 420.0
+const VITESSE_PROJECTILE_PORT_GARDIEN := 320.0
+const FACTEUR_ZONE_RANGE := 0.65
+const FACTEUR_ZONE_HEALER := 0.6
+const FACTEUR_ZONE_GARDIEN_CAMP := 0.85
 const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
@@ -48,6 +54,7 @@ var attack_target_node : Node2D = null
 
 var temps_recherche : float = 0.5
 var timer_recherche : float = 0.0
+var timer_tir_passif_gardien : float = 0.0
 
 var cooldown_actuel_sort : float = 0.0
 var temps_restant_boost : float = 0.0
@@ -71,12 +78,13 @@ func _apply_stats_to_unit() -> void:
 	if has_node("ProgressBar"):
 		$ProgressBar.max_value = hp_max
 		$ProgressBar.value = current_hp
+	var rayon := _rayon_zone_detection()
 	var shape = $ZoneDetection/CollisionShape2D.shape
 	if shape is CircleShape2D:
 		$ZoneDetection/CollisionShape2D.shape = shape.duplicate()
-		$ZoneDetection/CollisionShape2D.shape.radius = stats.range
+		$ZoneDetection/CollisionShape2D.shape.radius = rayon
 	if is_instance_valid(agent_navigation):
-		agent_navigation.target_desired_distance = stats.range - 5.0
+		agent_navigation.target_desired_distance = max(8.0, rayon - 5.0)
 
 func _ready():
 	_apply_stats_to_unit()
@@ -139,6 +147,9 @@ var dernier_regard : String = "f"
 func _physics_process(_delta):
 	if is_dying:
 		return
+
+	if _est_gardien_port():
+		_gerer_tirs_passifs_port(_delta)
 
 	var doit_avancer = true
 	
@@ -296,6 +307,80 @@ func _tirer_projectile_heal(cible: Node2D) -> void:
 	proj.global_position = global_position
 	if proj.has_method("launch"):
 		proj.launch(cible, _montant_soin(), self)
+
+func _est_gardien_port() -> bool:
+	return scene_file_path.contains("/port_guardian/")
+
+func _niveau_gardien_port() -> int:
+	if stats == null:
+		return 1
+	var nom_lower := String(stats.name).to_lower()
+	if nom_lower.find("iii") != -1 or nom_lower.find(" 3") != -1:
+		return 3
+	if nom_lower.find("ii") != -1 or nom_lower.find(" 2") != -1:
+		return 2
+	return 1
+
+func _rayon_zone_detection() -> float:
+	if stats == null:
+		return 100.0
+	if _est_healer():
+		return stats.range * FACTEUR_ZONE_HEALER
+	if _est_range():
+		return stats.range * FACTEUR_ZONE_RANGE
+	if is_camp_guardian and not _est_gardien_port():
+		return stats.range * FACTEUR_ZONE_GARDIEN_CAMP
+	return stats.range
+
+func _ennemis_portee_tir_passif_port() -> Array:
+	var requete := PhysicsShapeQueryParameters2D.new()
+	var cercle := CircleShape2D.new()
+	cercle.radius = RAYON_TIR_PASSIF_PORT_GARDIEN
+	requete.shape = cercle
+	requete.transform = Transform2D(0, global_position)
+	requete.collide_with_areas = false
+	requete.collide_with_bodies = true
+	requete.collision_mask = COLLISION_LAYER_PLAYER_UNIT | COLLISION_LAYER_ENEMY_UNIT
+
+	var cibles: Array = []
+	for res in get_world_2d().direct_space_state.intersect_shape(requete):
+		var obj = res.collider
+		if not is_instance_valid(obj) or obj == self:
+			continue
+		if not obj.has_method("take_damage") or obj.is_in_group("camps"):
+			continue
+		if obj.get("team") == null or obj.team == team:
+			continue
+		if obj.global_position.distance_to(guard_position) > guard_chase_radius:
+			continue
+		cibles.append(obj)
+	return cibles
+
+func _gerer_tirs_passifs_port(delta: float) -> void:
+	var ennemis: Array = _ennemis_portee_tir_passif_port()
+	if ennemis.is_empty():
+		timer_tir_passif_gardien = 0.0
+		return
+	timer_tir_passif_gardien -= delta
+	if timer_tir_passif_gardien > 0.0:
+		return
+	timer_tir_passif_gardien = 1.0 / float(_niveau_gardien_port())
+	ennemis.sort_custom(func(a, b):
+		return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
+	)
+	_tirer_projectile_gardien_passif(ennemis[0])
+
+func _tirer_projectile_gardien_passif(cible: Node2D) -> void:
+	if not is_instance_valid(cible):
+		return
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var proj = SCENE_PORT_GUARDIAN_PROJECTILE_LOOP.instantiate()
+	parent_node.add_child(proj)
+	proj.global_position = global_position
+	if proj.has_method("launch"):
+		proj.launch(cible, unit_damage, self, VITESSE_PROJECTILE_PORT_GARDIEN)
 
 func _niveau_mortar() -> int:
 	if stats == null:
