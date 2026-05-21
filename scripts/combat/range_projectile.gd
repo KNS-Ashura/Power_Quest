@@ -24,10 +24,14 @@ func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = 
 
 
 func _appliquer_couleurs_visibles() -> void:
+	var teinte := Color(1.2, 1.2, 1.2, 1.0)
+	if scene_file_path.contains("water-range"):
+		teinte = Color(0.55, 1.35, 1.45, 1.0)
 	modulate = Color.WHITE
 	if is_instance_valid(sprite):
-		sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+		sprite.modulate = teinte
 		sprite.self_modulate = Color.WHITE
+		sprite.z_index = 8
 
 
 func _process(delta: float) -> void:

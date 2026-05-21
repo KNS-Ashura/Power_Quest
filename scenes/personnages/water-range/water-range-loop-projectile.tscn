@@ -261,4 +261,4 @@ script = ExtResource("1_qx0k4")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
 rotation = 0.0038198903
 sprite_frames = SubResource("SpriteFrames_s1qi2")
-animation = &"b"
+animation = &"f"

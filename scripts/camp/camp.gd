@@ -62,9 +62,16 @@ func _detect_site_type() -> void:
 		site_type = SiteType.PORT
 
 
+const OVERLAY_VISUAL_NODE_NAMES: Array[String] = [
+	"AnimatedSprite2D2", "AnimatedSprite2D3", "Sprite2D2", "Sprite2D3"
+]
+
 func _detect_visual_variant() -> void:
 	var path := scene_file_path.to_lower()
 	if path.contains("map2"):
+		camp_visual_variant = "map2"
+		return
+	if MapSession.active_map_index == 2:
 		camp_visual_variant = "map2"
 
 
@@ -84,7 +91,7 @@ func _apply_level_visuals() -> void:
 	if sprite_base:
 		sprite_base.play("animation_camp_V")
 
-	for n in ["AnimatedSprite2D2", "AnimatedSprite2D3"]:
+	for n in OVERLAY_VISUAL_NODE_NAMES:
 		var old_node = get_node_or_null(n)
 		if old_node:
 			old_node.queue_free()
@@ -104,15 +111,16 @@ func _apply_level_visuals() -> void:
 	if not is_instance_valid(template_root):
 		return
 
-	for n in ["AnimatedSprite2D2", "AnimatedSprite2D3"]:
+	for n in OVERLAY_VISUAL_NODE_NAMES:
 		var source_node = template_root.get_node_or_null(n)
 		if source_node == null:
 			continue
 		var clone = source_node.duplicate()
 		clone.name = n
 		add_child(clone)
-		if sprite_base:
-			move_child(clone, sprite_base.get_index())
+		var anchor := sprite_base if sprite_base else get_node_or_null("Sprite2D") as Node2D
+		if anchor:
+			move_child(clone, anchor.get_index() + 1)
 		if clone is AnimatedSprite2D:
 			var s: AnimatedSprite2D = clone
 			if s.sprite_frames and s.animation != StringName("") and s.sprite_frames.has_animation(s.animation):
@@ -319,6 +327,9 @@ func _finish_production() -> void:
 		_advance_queue_after_failure()
 		return
 	unit.stats = stat
+	if stat.unit_type == UnitStats.UnitType.WATER_RANGE or stat.unit_type == UnitStats.UnitType.WATER_TANK:
+		if "force_water_navigation" in unit:
+			unit.force_water_navigation = true
 	var spawn_position = _water_spawn_position() if is_port() else _unit_spawn_position()
 	unit.team = team
 

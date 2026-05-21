@@ -277,7 +277,7 @@ func _on_timer_attaque_timeout():
 	if _est_mortar():
 		_tirer_mortar_distance(attack_target_node)
 		return
-	if _est_range():
+	if _est_range() or _est_water_range_unite() or (stats != null and stats.is_ranged):
 		_jouer_animation_attaque(attack_target_node)
 		_tirer_projectile_range(attack_target_node)
 		return
