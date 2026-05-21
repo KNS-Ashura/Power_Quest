@@ -134,7 +134,38 @@ func move_to(cible : Vector2):
 	attack_target_node = null
 	agent_navigation.target_position = cible
 
+func _arreter_combat() -> void:
+	attack_target_node = null
+	if is_instance_valid(timer_attaque):
+		timer_attaque.stop()
+	velocity = Vector2.ZERO
+
+func _cible_combat_valide(cible: Node) -> bool:
+	if cible == null or not is_instance_valid(cible):
+		return false
+	if not cible.is_inside_tree():
+		return false
+	if "is_dying" in cible and cible.is_dying:
+		return false
+	if "current_hp" in cible and cible.current_hp <= 0:
+		return false
+	if _est_healer():
+		if not ("current_hp" in cible and "hp_max" in cible):
+			return false
+		if cible.get("team") == null or cible.team != team:
+			return false
+		return cible.current_hp < cible.hp_max
+	if cible.has_method("take_damage"):
+		if cible.is_in_group("camps"):
+			return false
+		if cible.get("team") != null and cible.team == team:
+			return false
+		return true
+	return false
+
 func attack_target(cible : Node2D):
+	if not _cible_combat_valide(cible):
+		return
 	if is_camp_guardian and is_instance_valid(cible):
 		if cible.global_position.distance_to(guard_position) > guard_chase_radius:
 			return
@@ -165,30 +196,32 @@ func _physics_process(_delta):
 			attack_rate_multiplier = 1.0
 			_appliquer_couleur_unite()
 	
+	if is_instance_valid(attack_target_node) and not _cible_combat_valide(attack_target_node):
+		_arreter_combat()
+
 	if is_instance_valid(attack_target_node):
 		var cible_valide := attack_target_node
 		if is_camp_guardian and cible_valide.global_position.distance_to(guard_position) > guard_chase_radius:
-			attack_target_node = null
-			timer_attaque.stop()
+			_arreter_combat()
 			agent_navigation.target_position = guard_position
 			doit_avancer = true
 		else:
 			agent_navigation.target_position = cible_valide.global_position
-
-		if is_instance_valid(attack_target_node) and attack_target_node in zone_detection.get_overlapping_bodies():
-			doit_avancer = false
-			if timer_attaque.is_stopped():
-				if _est_mortar():
-					# Mortar: tire immédiatement à la première fenêtre de tir, puis applique le cooldown.
-					_tirer_mortar_distance(attack_target_node)
-					timer_attaque.start(_cooldown_mortar_niveau())
-				else:
-					var cadence = _attack_rate_actuelle()
-					timer_attaque.start(1.0 / cadence)
-		else:
-			timer_attaque.stop()
+			var dans_zone: bool = cible_valide in zone_detection.get_overlapping_bodies()
+			if dans_zone:
+				doit_avancer = false
+				if timer_attaque.is_stopped():
+					if _est_mortar():
+						_tirer_mortar_distance(attack_target_node)
+						timer_attaque.start(_cooldown_mortar_niveau())
+					else:
+						var cadence = _attack_rate_actuelle()
+						timer_attaque.start(1.0 / cadence)
+			else:
+				_arreter_combat()
 	else:
-		timer_attaque.stop()
+		if is_instance_valid(timer_attaque):
+			timer_attaque.stop()
 		timer_recherche -= _delta
 		if timer_recherche <= 0:
 			_rechercher_cible_automatique()
@@ -208,25 +241,27 @@ func _physics_process(_delta):
 	update_animation()
 
 func _on_timer_attaque_timeout():
-	if is_instance_valid(attack_target_node):
-		if _est_healer():
-			_jouer_animation_attaque(attack_target_node)
-			_tirer_projectile_heal(attack_target_node)
-			return
-		if _est_mortar():
-			_tirer_mortar_distance(attack_target_node)
-			return
-		if _est_range():
-			_jouer_animation_attaque(attack_target_node)
-			_tirer_projectile_range(attack_target_node)
-			return
-		if attack_target_node.has_method("take_damage"):
-			_jouer_animation_attaque(attack_target_node)
-			attack_target_node.take_damage(unit_damage, self)
-			_animer_attaque_melee()
-	else:
-		timer_attaque.stop()
-		attack_target_node = null
+	if not _cible_combat_valide(attack_target_node):
+		_arreter_combat()
+		return
+	if not (attack_target_node in zone_detection.get_overlapping_bodies()):
+		_arreter_combat()
+		return
+	if _est_healer():
+		_jouer_animation_attaque(attack_target_node)
+		_tirer_projectile_heal(attack_target_node)
+		return
+	if _est_mortar():
+		_tirer_mortar_distance(attack_target_node)
+		return
+	if _est_range():
+		_jouer_animation_attaque(attack_target_node)
+		_tirer_projectile_range(attack_target_node)
+		return
+	if attack_target_node.has_method("take_damage"):
+		_jouer_animation_attaque(attack_target_node)
+		attack_target_node.take_damage(unit_damage, self)
+		_animer_attaque_melee()
 
 func _animer_attaque_melee():
 	if is_instance_valid(attack_target_node):
@@ -239,7 +274,7 @@ func _animer_attaque_melee():
 func _rechercher_cible_automatique():
 	if _est_healer():
 		var allies = zone_detection.get_overlapping_bodies().filter(func(c):
-			return c != self and c.get("team") != null and c.get("team") == team and not c.is_in_group("camps") and "current_hp" in c and "hp_max" in c and c.current_hp < c.hp_max
+			return c != self and _cible_combat_valide(c)
 		)
 		if is_camp_guardian:
 			allies = allies.filter(func(c): return c.global_position.distance_to(guard_position) <= guard_defense_radius)
@@ -255,7 +290,7 @@ func _rechercher_cible_automatique():
 		return
 
 	var cibles = zone_detection.get_overlapping_bodies().filter(func(c):
-		return c != self and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != team
+		return c != self and _cible_combat_valide(c)
 	)
 	if is_camp_guardian:
 		cibles = cibles.filter(func(c): return c.global_position.distance_to(guard_position) <= guard_defense_radius)
@@ -279,8 +314,8 @@ func _est_mortar() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.MORTAR
 
 func _tirer_projectile_range(cible: Node2D):
-	if not is_instance_valid(cible):
-		timer_attaque.stop()
+	if not _cible_combat_valide(cible):
+		_arreter_combat()
 		return
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
@@ -295,9 +330,8 @@ func _montant_soin() -> int:
 	return int(max(10.0, float(hp_max) * 0.12))
 
 func _tirer_projectile_heal(cible: Node2D) -> void:
-	if not is_instance_valid(cible):
-		timer_attaque.stop()
-		attack_target_node = null
+	if not _cible_combat_valide(cible):
+		_arreter_combat()
 		return
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
@@ -401,9 +435,8 @@ func _cooldown_mortar_niveau() -> float:
 	return MORTAR_ATTACK_COOLDOWN_NIVEAU_1
 
 func _tirer_mortar_distance(cible: Node2D):
-	if not is_instance_valid(cible):
-		timer_attaque.stop()
-		attack_target_node = null
+	if not _cible_combat_valide(cible):
+		_arreter_combat()
 		return
 	var position_impact := cible.global_position
 	var explosion = _prochaine_explosion_mortar()
@@ -483,16 +516,8 @@ func _appliquer_degats_zone(centre: Vector2, rayon: float, degats: int):
 		obj.take_damage(degats, self)
 
 func _appliquer_soin_cible(cible: Node2D):
-	if not is_instance_valid(cible):
-		timer_attaque.stop()
-		attack_target_node = null
-		return
-	if not ("current_hp" in cible and "hp_max" in cible):
-		return
-	if cible.get("team") == null or cible.team != team:
-		return
-	if cible.current_hp >= cible.hp_max:
-		attack_target_node = null
+	if not _cible_combat_valide(cible):
+		_arreter_combat()
 		return
 
 	var soin = _montant_soin()
@@ -506,7 +531,14 @@ func update_animation():
 
 	var sprite: AnimatedSprite2D = $AnimatedSprite2D
 	if sprite.is_playing():
-		if sprite.animation.begins_with("attack_") or sprite.animation.begins_with("death_"):
+		if sprite.animation.begins_with("death_"):
+			return
+		if sprite.animation.begins_with("attack_"):
+			var combat_actif: bool = is_instance_valid(attack_target_node) \
+				and _cible_combat_valide(attack_target_node) \
+				and attack_target_node in zone_detection.get_overlapping_bodies()
+			if not combat_actif:
+				_jouer_animation_sur_sprites("idle_" + dernier_regard)
 			return
 
 	if velocity.length() > 5.0:
@@ -549,8 +581,7 @@ func die(tueur : Node2D = null, tueur_team : int = -1):
 		await get_tree().create_timer(0.22).timeout
 	killed_by.emit(tueur, tueur_team)
 	velocity = Vector2.ZERO
-	attack_target_node = null
-	timer_attaque.stop()
+	_arreter_combat()
 
 	# Stoppe tout blocage physique/agent dès le début de l'anim de mort.
 	collision_layer = 0
