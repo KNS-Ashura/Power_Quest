@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://y43f16258p0x"]
 
 [ext_resource type="Script" uid="uid://d3up038d3bj6d" path="res://scripts/combat/range_projectile.gd" id="1_cvn38"]
-[ext_resource type="Texture2D" uid="uid://c7j4r2bp8qs4b" path="res://assets/character/range/Attack_fire/Fire_loop.png" id="2_nu8di"]
+[ext_resource type="Texture2D" uid="uid://c7j4r2bp8qs4b" path="res://assets/character/range/projectile/loop.png" id="2_nu8di"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_c2ceo"]
 atlas = ExtResource("2_nu8di")
