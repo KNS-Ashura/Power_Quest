@@ -34,16 +34,21 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Center/VBox" unique_id=613406740]
 layout_mode = 2
-text = "Test — choisir la map"
+text = "Select a map"
 horizontal_alignment = 1
 
 [node name="BtnMap1" type="Button" parent="Center/VBox" unique_id=565414898]
 layout_mode = 2
-text = "Map 1 (Undead-Land)"
+text = "Map 1 — Undead Land"
 
 [node name="BtnMap2" type="Button" parent="Center/VBox" unique_id=5783218]
 layout_mode = 2
-text = "Map 2 (Cave-Land)"
+text = "Map 2 — Cave Land"
+
+[node name="BtnMap3" type="Button" parent="Center/VBox" unique_id=5783219]
+layout_mode = 2
+text = "Map 3 (coming soon)"
 
 [connection signal="pressed" from="Center/VBox/BtnMap1" to="." method="_on_map_1_pressed"]
 [connection signal="pressed" from="Center/VBox/BtnMap2" to="." method="_on_map_2_pressed"]
+[connection signal="pressed" from="Center/VBox/BtnMap3" to="." method="_on_map_3_pressed"]

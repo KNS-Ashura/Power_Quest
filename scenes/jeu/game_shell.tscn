@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dwlvuxksc84ke"]
+
+[ext_resource type="Script" uid="uid://bls8gji5qjdxb" path="res://scripts/game/main_game.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://cui68p4q4p4m" path="res://scenes/ui/production_ui.tscn" id="2_prod"]
+[ext_resource type="PackedScene" uid="uid://buceavab1b56w" path="res://scenes/ui/spell_ui.tscn" id="3_spell"]
+[ext_resource type="PackedScene" uid="uid://ybntlc6fwopw" path="res://scenes/camera/manager_rts.tscn" id="4_cam"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="MapSlot" type="Node2D" parent="."]
+
+[node name="ProductionUI" parent="." instance=ExtResource("2_prod")]
+
+[node name="SpellUI" parent="." instance=ExtResource("3_spell")]
+
+[node name="ManagerRts" parent="." instance=ExtResource("4_cam")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]

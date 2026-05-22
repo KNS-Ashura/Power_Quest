@@ -64,36 +64,36 @@ func _refresh_button_state() -> void:
 
 func _on_btn_heal_pressed() -> void:
 	var healers: Array = _get_selected_units_by_type(4)
-	var lances := 0
+	var casts := 0
 	for healer in healers:
-		if _essayer_lancer_sort(healer):
-			lances += 1
+		if _try_cast_spell(healer):
+			casts += 1
 			_show_effect_zone(healer.global_position, SPELL_EFFECT_RADIUS, HEAL_BORDER_COLOR, HEAL_FILL_COLOR)
-	print("%d healer(s) selected, %d sort(s) lance(s)" % [_selected_healer_count, lances])
+	print("%d healer(s) selected, %d spell(s) cast" % [_selected_healer_count, casts])
 
 
 func _on_btn_boost_pressed() -> void:
 	var supports: Array = _get_selected_units_by_type(3)
-	var lances := 0
+	var casts := 0
 	for support in supports:
-		if _essayer_lancer_sort(support):
-			lances += 1
+		if _try_cast_spell(support):
+			casts += 1
 			_show_effect_zone(support.global_position, SPELL_EFFECT_RADIUS, BOOST_BORDER_COLOR, BOOST_FILL_COLOR)
-	print("%d support(s) selected, %d sort(s) lance(s)" % [_selected_support_count, lances])
+	print("%d support(s) selected, %d spell(s) cast" % [_selected_support_count, casts])
 
 
 func _on_btn_mortar_spell_pressed() -> void:
 	var mortars: Array = _get_selected_units_by_type(6)
-	var lances := 0
+	var casts := 0
 	for mortar in mortars:
-		if _essayer_lancer_sort(mortar):
-			lances += 1
+		if _try_cast_spell(mortar):
+			casts += 1
 			_show_effect_zone(mortar.global_position, SPELL_EFFECT_RADIUS, MORTAR_BORDER_COLOR, MORTAR_FILL_COLOR)
-	print("%d mortar(s) selected, %d sort(s) lance(s)" % [_selected_mortar_count, lances])
+	print("%d mortar(s) selected, %d spell(s) cast" % [_selected_mortar_count, casts])
 
 
-func _essayer_lancer_sort(unit: Node) -> bool:
-	if not unit.has_method("peut_lancer_sort") or not unit.peut_lancer_sort():
+func _try_cast_spell(unit: Node) -> bool:
+	if not unit.has_method("can_cast_spell") or not unit.can_cast_spell():
 		return false
 	if unit.has_method("cast_spell"):
 		return unit.cast_spell()

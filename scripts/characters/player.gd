@@ -826,7 +826,7 @@ func _configurer_animations_mort():
 			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 			frames.add_frame(anim_name, a)
 
-func peut_lancer_sort() -> bool:
+func can_cast_spell() -> bool:
 	if not stats or is_dying:
 		return false
 	if cooldown_actuel_sort > 0.0:
@@ -836,7 +836,7 @@ func peut_lancer_sort() -> bool:
 	return stats.spell_cooldown > 0.0
 
 func cast_spell() -> bool:
-	if not peut_lancer_sort():
+	if not can_cast_spell():
 		return false
 	if _est_mortar():
 		if _cast_spell_mortar_ult():

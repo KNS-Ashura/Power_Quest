@@ -67,10 +67,6 @@ const OVERLAY_VISUAL_NODE_NAMES: Array[String] = [
 ]
 
 func _detect_visual_variant() -> void:
-	var path := scene_file_path.to_lower()
-	if path.contains("map2"):
-		camp_visual_variant = "map2"
-		return
 	if MapSession.active_map_index == 2:
 		camp_visual_variant = "map2"
 
@@ -231,7 +227,7 @@ func _spawn_guardian() -> void:
 func _guardian_spawn_position() -> Vector2:
 	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
 	base.y = max(base.y, global_position.y + 90.0)
-	# Gardien un peu en retrait du point de spawn des unités pour éviter le blocage initial.
+	# Slightly offset from unit spawn to reduce initial blocking.
 	return base + Vector2(randf_range(-22, 22), randf_range(-8, 18))
 
 
@@ -261,7 +257,7 @@ func _water_spawn_position() -> Vector2:
 			best_d2 = d2
 			best = closest
 	if best_d2 == INF:
-		push_warning("Port: aucune NavigationRegion2D sur le calque eau (2). Spawn au point du port.")
+		push_warning("Port: no NavigationRegion2D on water layer (2). Spawning at port point.")
 		return _unit_spawn_position()
 	return best + Vector2(randf_range(-28, 28), randf_range(-28, 28))
 
@@ -317,7 +313,7 @@ func _finish_production() -> void:
 	var stat = unit_catalog[unit_id]
 	var scene := CampCatalogue.scene_for_unit(stat, unit_id, camp_level)
 	if scene == null:
-		push_warning("Scene manquante pour l'unité %s (navale en refonte ?)." % str(unit_id))
+		push_warning("Missing unit scene for id %s (naval units may be WIP)." % str(unit_id))
 		_advance_queue_after_failure()
 		return
 	var unit = scene.instantiate()

@@ -67,7 +67,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		for soldier in get_tree().get_nodes_in_group("soldiers"):
 			if not soldier.get("is_selected"):
 				continue
-			if soldier.has_method("peut_lancer_sort") and not soldier.peut_lancer_sort():
+			if soldier.has_method("can_cast_spell") and not soldier.can_cast_spell():
 				continue
 			if soldier.has_method("cast_spell") and soldier.cast_spell():
 				spell_cast = true
