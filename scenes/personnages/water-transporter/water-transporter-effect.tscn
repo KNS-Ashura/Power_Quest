@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://d186rhjhv3v3w"]
+
+[ext_resource type="Script" uid="uid://ciahcu1ekrc2c" path="res://scripts/combat/unit_attached_effect.gd" id="1_h7w2h"]
+[ext_resource type="Texture2D" uid="uid://d1ubhkmvlpvn1" path="res://assets/character/projectile-effect/Spell-R.png" id="2_od61k"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kdu2p"]
+atlas = ExtResource("2_od61k")
+region = Rect2(0, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ngmgk"]
+atlas = ExtResource("2_od61k")
+region = Rect2(32, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n5gwj"]
+atlas = ExtResource("2_od61k")
+region = Rect2(64, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0rm1w"]
+atlas = ExtResource("2_od61k")
+region = Rect2(96, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ut061"]
+atlas = ExtResource("2_od61k")
+region = Rect2(128, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_626yv"]
+atlas = ExtResource("2_od61k")
+region = Rect2(160, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mldnk"]
+atlas = ExtResource("2_od61k")
+region = Rect2(192, 608, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_saybt"]
+atlas = ExtResource("2_od61k")
+region = Rect2(224, 608, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kdu2p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ngmgk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5gwj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0rm1w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ut061")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_626yv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mldnk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_saybt")
+}],
+"loop": true,
+"name": &"effect",
+"speed": 5.0
+}]
+
+[node name="HealerEffect" type="Node2D"]
+script = ExtResource("1_h7w2h")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
+rotation = 0.0038198903
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"effect"

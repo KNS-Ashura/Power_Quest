@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://fb7hd0ncsy6e"]
+
+[ext_resource type="Texture2D" uid="uid://c4wlmtocbf5nh" path="res://assets/menu/book-ui/PNG/Pages_elements_full.png" id="1_rgvag"]
+
+[resource]
+atlas = ExtResource("1_rgvag")
+region = Rect2(617, 46, 7, 12)

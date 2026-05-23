@@ -1,0 +1,292 @@
+[gd_scene format=3 uid="uid://ctcktsumn5tr0"]
+
+[ext_resource type="Script" uid="uid://cafyeof7kxfd2" path="res://scripts/menu/language.gd" id="1_82xqq"]
+[ext_resource type="Texture2D" uid="uid://cdmwmmw4q5dax" path="res://assets/menu/img-sur-mesure/scene_settings/banniere_rose.tres" id="2_cj1lu"]
+[ext_resource type="Texture2D" uid="uid://0u7my54ps17" path="res://assets/menu/img-sur-mesure/scene_settings/option_bouton.tres" id="4_3j6r5"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="4_82xqq"]
+[ext_resource type="Script" uid="uid://cimcxuo84g5ib" path="res://scripts/menu/option_button.gd" id="5_3lj6o"]
+[ext_resource type="Texture2D" uid="uid://bihqixlplqy6p" path="res://assets/menu/img-sur-mesure/scene_settings/grabber.tres" id="5_71mqq"]
+[ext_resource type="Texture2D" uid="uid://c3kjubouhmo0t" path="res://assets/menu/img-sur-mesure/scene_settings/music_logo.tres" id="7_3j6r5"]
+[ext_resource type="Texture2D" uid="uid://boml27cl5bj1r" path="res://assets/menu/img-sur-mesure/scene_settings/sfx.tres" id="8_3lj6o"]
+[ext_resource type="Texture2D" uid="uid://bqlr4x64mxh03" path="res://assets/menu/img-sur-mesure/scene_settings/fond_bouton.tres" id="9_6mhpt"]
+[ext_resource type="Script" uid="uid://b3a1sechv25pq" path="res://scripts/menu/link_menu.gd" id="9_ohexs"]
+[ext_resource type="Texture2D" uid="uid://xm4y3dmbjhs8" path="res://assets/menu/img-sur-mesure/scene_settings/reliure.tres" id="11_1k4ii"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_enj72"]
+content_margin_left = 10.0
+texture = ExtResource("4_3j6r5")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_71mqq"]
+content_margin_left = 10.0
+texture = ExtResource("4_3j6r5")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xyjnm"]
+atlas = ExtResource("5_71mqq")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_enj72"]
+atlas = ExtResource("5_71mqq")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3j6r5"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 2.0
+bg_color = Color(0.7411765, 0.6313726, 0.47843137, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_ohexs"]
+color = Color(0.6431373, 0.17254902, 0.32941177, 1)
+thickness = 2
+
+[node name="Settings" type="Node2D" unique_id=2067524118]
+script = ExtResource("1_82xqq")
+
+[node name="Banniere" type="Control" parent="." unique_id=370176643]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 111.0
+offset_top = 273.0
+offset_right = 151.0
+offset_bottom = 313.0
+
+[node name="TextureRect" type="TextureRect" parent="Banniere" unique_id=1112651986]
+layout_mode = 0
+offset_left = -55.0
+offset_top = -33.0
+offset_right = 520.0
+offset_bottom = 87.0
+texture = ExtResource("2_cj1lu")
+
+[node name="TitreSettings" type="Label" parent="Banniere" unique_id=549599103]
+texture_filter = 1
+layout_mode = 0
+offset_left = -15.0
+offset_top = 22.0
+offset_right = 196.0
+offset_bottom = 57.0
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 32
+text = "MENU_SETTINGS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Language" type="VBoxContainer" parent="." unique_id=906753833]
+offset_left = 113.0
+offset_top = 362.0
+offset_right = 293.0
+offset_bottom = 422.0
+
+[node name="Label" type="Label" parent="Language" unique_id=57998170]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "UI_LANGUAGE"
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="Language" unique_id=1999180067]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_focus_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_pressed_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_hover_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxTexture_enj72")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_71mqq")
+selected = 1
+item_count = 3
+popup/item_0/text = "TXT_LANG_EN"
+popup/item_0/id = 0
+popup/item_1/text = "TXT_LANG_FR"
+popup/item_1/id = 1
+popup/item_2/text = "TXT_LANG_DE"
+popup/item_2/id = 2
+script = ExtResource("5_3lj6o")
+
+[node name="Music" type="VBoxContainer" parent="." unique_id=1445916063]
+texture_filter = 1
+offset_left = 141.0
+offset_top = 458.0
+offset_right = 291.0
+offset_bottom = 496.0
+theme_override_constants/separation = 28
+
+[node name="MusicSlider" type="HSlider" parent="Music" unique_id=469285279]
+layout_mode = 2
+theme_override_icons/grabber = SubResource("AtlasTexture_xyjnm")
+theme_override_icons/grabber_highlight = SubResource("AtlasTexture_enj72")
+theme_override_styles/slider = SubResource("StyleBoxFlat_3j6r5")
+step = 3.0
+
+[node name="SFXSlider" type="HSlider" parent="Music" unique_id=1887993601]
+layout_mode = 2
+theme_override_icons/grabber = SubResource("AtlasTexture_xyjnm")
+theme_override_icons/grabber_highlight = SubResource("AtlasTexture_enj72")
+theme_override_styles/slider = SubResource("StyleBoxFlat_3j6r5")
+step = 3.0
+
+[node name="IconMusic" type="TextureRect" parent="." unique_id=1294744671]
+offset_left = 113.0
+offset_top = 453.0
+offset_right = 133.0
+offset_bottom = 473.0
+texture = ExtResource("7_3j6r5")
+
+[node name="IconSound" type="TextureRect" parent="." unique_id=1964095478]
+offset_left = 113.0
+offset_top = 483.0
+offset_right = 128.0
+offset_bottom = 503.0
+texture = ExtResource("8_3lj6o")
+
+[node name="Crédits" type="VBoxContainer" parent="." unique_id=1411974504]
+offset_left = 370.0
+offset_top = 355.0
+offset_right = 621.0
+offset_bottom = 414.0
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="Crédits" unique_id=732161900]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "UI_DEV_TEAM"
+horizontal_alignment = 1
+
+[node name="Dev" type="HBoxContainer" parent="Crédits" unique_id=179687816]
+layout_mode = 2
+
+[node name="Dev1" type="Label" parent="Crédits/Dev" unique_id=179301782]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 16
+text = "Gilbard Tom"
+
+[node name="Dev2" type="Label" parent="Crédits/Dev" unique_id=306559541]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 16
+text = "Matelot Robin"
+
+[node name="Dev3" type="Label" parent="Crédits/Dev" unique_id=145266392]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 16
+text = "Le Joncour Pierre"
+
+[node name="HSeparator" type="HSeparator" parent="Crédits" unique_id=2139062038]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_ohexs")
+
+[node name="Link" type="VBoxContainer" parent="." unique_id=982726202]
+offset_left = 378.0
+offset_top = 422.0
+offset_right = 608.0
+offset_bottom = 557.0
+theme_override_constants/separation = 15
+script = ExtResource("9_ohexs")
+
+[node name="BtnLicences" type="TextureButton" parent="Link" unique_id=737090558]
+texture_filter = 1
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+texture_normal = ExtResource("9_6mhpt")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Link/BtnLicences" unique_id=628844783]
+layout_mode = 0
+offset_left = 1.0
+offset_top = -3.0
+offset_right = 230.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "BTN_LICENSES"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnManuel" type="TextureButton" parent="Link" unique_id=849894324]
+texture_filter = 1
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+texture_normal = ExtResource("9_6mhpt")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Link/BtnManuel" unique_id=1640931210]
+layout_mode = 0
+offset_top = -3.0
+offset_right = 230.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "BTN_MANUAL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnGithub" type="TextureButton" parent="Link" unique_id=784260158]
+texture_filter = 1
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+texture_normal = ExtResource("9_6mhpt")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Link/BtnGithub" unique_id=266510106]
+layout_mode = 0
+offset_left = 1.0
+offset_top = -2.0
+offset_right = 229.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "BTN_GITHUB"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnDocTech" type="TextureButton" parent="Link" unique_id=1117202555]
+texture_filter = 1
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+texture_normal = ExtResource("9_6mhpt")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Link/BtnDocTech" unique_id=1671281372]
+layout_mode = 0
+offset_left = 1.0
+offset_top = -3.0
+offset_right = 230.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("4_82xqq")
+theme_override_font_sizes/font_size = 24
+text = "BTN_TECH_DOC"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Reliure1" type="TextureRect" parent="." unique_id=1096150484]
+offset_left = 402.0
+offset_top = 585.0
+offset_right = 582.0
+offset_bottom = 607.0
+texture = ExtResource("11_1k4ii")
+
+[node name="Reliure2" type="TextureRect" parent="." unique_id=1140546149]
+offset_left = 114.0
+offset_top = 584.0
+offset_right = 294.0
+offset_bottom = 606.0
+texture = ExtResource("11_1k4ii")
+
+[connection signal="item_selected" from="Language/OptionButton" to="." method="_on_option_button_item_selected"]

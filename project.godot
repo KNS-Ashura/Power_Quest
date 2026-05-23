@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="2proj"
-run/main_scene="res://scenes/jeu/map_select_menu.tscn"
+run/main_scene="res://scenes/menu/book-menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
@@ -46,6 +46,10 @@ version_control/autoload_on_startup=true
 [editor_plugins]
 
 enabled=PackedStringArray()
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://assets/menu/traduction.de.translation", "res://assets/menu/traduction.en.translation", "res://assets/menu/traduction.fr.translation")
 
 [layer_names]
 

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cdvvumicj5qty"]
 
-[ext_resource type="Script" path="res://scripts/combat/unit_attached_effect.gd" id="1_ne3aj"]
+[ext_resource type="Script" uid="uid://ciahcu1ekrc2c" path="res://scripts/combat/unit_attached_effect.gd" id="1_ne3aj"]
 [ext_resource type="Texture2D" uid="uid://d1ubhkmvlpvn1" path="res://assets/character/projectile-effect/Spell-R.png" id="2_o1bv0"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kdu2p"]
