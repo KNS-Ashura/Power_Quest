@@ -88,7 +88,7 @@ func _set_port_button_labels() -> void:
 		return
 	var ids := [0, 1, 2, 3]
 	var buttons := [btn_inf, btn_arc, btn_heavy, btn_support]
-	var defaults := ["Support", "Heal", "Water Tank", "Water Range"]
+	var defaults := ["Water Transport", "Heal", "Water Tank", "Water Range"]
 	for i in ids.size():
 		var stat: UnitStats = catalog.get(ids[i])
 		if stat:

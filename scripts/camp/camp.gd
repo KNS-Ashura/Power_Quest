@@ -323,7 +323,9 @@ func _finish_production() -> void:
 		_advance_queue_after_failure()
 		return
 	unit.stats = stat
-	if stat.unit_type == UnitStats.UnitType.WATER_RANGE or stat.unit_type == UnitStats.UnitType.WATER_TANK:
+	if stat.unit_type == UnitStats.UnitType.WATER_RANGE \
+			or stat.unit_type == UnitStats.UnitType.WATER_TANK \
+			or stat.unit_type == UnitStats.UnitType.WATER_TRANSPORT:
 		if "force_water_navigation" in unit:
 			unit.force_water_navigation = true
 	var spawn_position = _water_spawn_position() if is_port() else _unit_spawn_position()

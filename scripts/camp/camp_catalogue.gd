@@ -118,6 +118,11 @@ const STATS_MORTAR = {
 	3: preload("res://scripts/units/stats/mortar/mortar-3.tres")
 }
 
+const SCENES_WATER_TRANSPORTER = {
+	1: preload("res://scenes/personnages/water-transporter/water-transporter-1.tscn"),
+	2: preload("res://scenes/personnages/water-transporter/water-transporter-2.tscn"),
+	3: preload("res://scenes/personnages/water-transporter/water-transporter-3.tscn"),
+}
 const SCENES_WATER_TANK = {
 	1: preload("res://scenes/personnages/water-tank/water-tank-1.tscn"),
 	2: preload("res://scenes/personnages/water-tank/water-tank-2.tscn"),
@@ -129,6 +134,11 @@ const SCENES_WATER_RANGE = {
 	3: preload("res://scenes/personnages/water-range/water-range-3.tscn"),
 }
 
+const STATS_WATER_TRANSPORTER = {
+	1: preload("res://scripts/units/stats/water_transporter/water_transporter-1.tres"),
+	2: preload("res://scripts/units/stats/water_transporter/water_transporter-2.tres"),
+	3: preload("res://scripts/units/stats/water_transporter/water_transporter-3.tres"),
+}
 const STATS_WATER_TANK = {
 	1: preload("res://scripts/units/stats/water_tank/water_tank-1.tres"),
 	2: preload("res://scripts/units/stats/water_tank/water_tank-2.tres"),
@@ -155,7 +165,7 @@ static func land_unit_catalog(camp_level: int) -> Dictionary:
 
 static func port_unit_catalog(camp_level: int) -> Dictionary:
 	return {
-		0: stats_for_level(STATS_SUPPORT, camp_level),
+		0: stats_for_level(STATS_WATER_TRANSPORTER, camp_level),
 		1: stats_for_level(STATS_HEAL, camp_level),
 		2: stats_for_level(STATS_WATER_TANK, camp_level),
 		3: stats_for_level(STATS_WATER_RANGE, camp_level),
@@ -225,6 +235,8 @@ static func scene_for_unit(stat: UnitStats, _unit_id: int, camp_level: int) -> P
 			return scene_for_level(SCENES_ANTI_ARMOR, camp_level)
 		UnitStats.UnitType.MORTAR:
 			return scene_for_level(SCENES_MORTAR, camp_level)
+		UnitStats.UnitType.WATER_TRANSPORT:
+			return scene_for_level(SCENES_WATER_TRANSPORTER, camp_level)
 		UnitStats.UnitType.WATER_TANK:
 			return scene_for_level(SCENES_WATER_TANK, camp_level)
 		UnitStats.UnitType.WATER_RANGE:

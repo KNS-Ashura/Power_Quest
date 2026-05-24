@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/units/unit_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+unit_type = 7
+name = "Water Transport II"
+price = 220
+hp_max = 520
+speed = 85.0
+damage = 7
+range = 32.0
+build_time = 11.0
+is_ranged = false
+color = Color(0.15, 0.6, 0.92, 1)
+spell_cooldown = 30.0

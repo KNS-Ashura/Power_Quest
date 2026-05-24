@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://cywf5fftersnt"]
+
+[ext_resource type="Script" uid="uid://ciahcu1ekrc2c" path="res://scripts/combat/unit_attached_effect.gd" id="1_bsjfn"]
+[ext_resource type="Texture2D" uid="uid://bwskbjircvwih" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle1.png" id="2_uqwa1"]
+[ext_resource type="Texture2D" uid="uid://b8dekb3hm42v4" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle2.png" id="3_y8xrg"]
+[ext_resource type="Texture2D" uid="uid://bj35l3ok1jkju" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle3.png" id="4_hpc73"]
+[ext_resource type="Texture2D" uid="uid://w54t5dl4ppte" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle4.png" id="5_vfgh1"]
+[ext_resource type="Texture2D" uid="uid://cdoqwurcjk6dq" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle5.png" id="6_wf62g"]
+[ext_resource type="Texture2D" uid="uid://b22bhlc1hafjk" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle6.png" id="7_yukpg"]
+[ext_resource type="Texture2D" uid="uid://bm8qoqt28ul4n" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle7.png" id="8_dbst6"]
+[ext_resource type="Texture2D" uid="uid://dsb2vykayq3ur" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle8.png" id="9_akt5t"]
+[ext_resource type="Texture2D" uid="uid://kaesknp7hh5v" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle9.png" id="10_d65f2"]
+[ext_resource type="Texture2D" uid="uid://cw0flejioq2mu" path="res://assets/character/water-transporter/Explosion_blue_circle/Explosion_blue_circle10.png" id="11_7hjnb"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_uqwa1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_y8xrg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_hpc73")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_vfgh1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_wf62g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_yukpg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_dbst6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_akt5t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_d65f2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_7hjnb")
+}],
+"loop": true,
+"name": &"effect",
+"speed": 11.0
+}]
+
+[node name="HealerEffect" type="Node2D" unique_id=43047137]
+script = ExtResource("1_bsjfn")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
+rotation = 0.0038198903
+scale = Vector2(0.13274868, 0.13579302)
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"effect"
+frame_progress = 0.73625666

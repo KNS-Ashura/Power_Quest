@@ -41,6 +41,13 @@ const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
 const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
 const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
 const COOLDOWN_SORT_SECONDES := 60.0
+const SCENE_WATER_TRANSPORT_MARK_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect.tscn")
+const SCENE_WATER_TRANSPORT_BOARD_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect-2.tscn")
+const WATER_TRANSPORT_MARK_RADIUS := 150.0
+const WATER_TRANSPORT_COOLDOWN := 30.0
+const WATER_TRANSPORT_SCALE_BONUS := 0.05
+const WATER_TRANSPORT_DISEMBARK_MAX_DIST := 30.0
+const WATER_TRANSPORT_CAP_BY_LEVEL := {1: 5, 2: 8, 3: 11}
 ## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
 ## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
 ## layer 3 (valeur 4) = ground-and-water-unit (mesh combiné sol+eau pour support/healer)
@@ -82,6 +89,14 @@ var guard_position: Vector2 = Vector2.ZERO
 var guard_defense_radius: float = 260.0
 var guard_chase_radius: float = 320.0
 
+enum WaterTransportPhase { IDLE, UNITS_MARKED, CARRYING }
+var water_transport_phase: WaterTransportPhase = WaterTransportPhase.IDLE
+var water_transport_marked: Array[Node2D] = []
+var water_transport_boarded: Array[Node2D] = []
+var water_transport_origin: Dictionary = {}
+var water_transport_cooldown: float = 0.0
+var water_transport_base_scale: Vector2 = Vector2.ONE
+
 func _apply_stats_to_unit() -> void:
 	if not stats:
 		return
@@ -102,6 +117,7 @@ func _apply_stats_to_unit() -> void:
 		agent_navigation.target_desired_distance = max(8.0, rayon - 5.0)
 
 func _ready():
+	water_transport_base_scale = scale
 	_apply_stats_to_unit()
 	_configurer_calques_navigation()
 	_configurer_mouvement_et_collisions()
@@ -135,7 +151,9 @@ func _is_naval_unit() -> bool:
 	if force_water_navigation:
 		return true
 	if stats != null:
-		return stats.unit_type == UnitStats.UnitType.WATER_TANK or stats.unit_type == UnitStats.UnitType.WATER_RANGE
+		return stats.unit_type == UnitStats.UnitType.WATER_TANK \
+			or stats.unit_type == UnitStats.UnitType.WATER_RANGE \
+			or stats.unit_type == UnitStats.UnitType.WATER_TRANSPORT
 	var chemin_scene := scene_file_path
 	return chemin_scene.contains("/water-range/") or chemin_scene.contains("/water-tank/")
 
@@ -201,6 +219,8 @@ func _physics_process(_delta):
 	
 	if cooldown_actuel_sort > 0:
 		cooldown_actuel_sort -= _delta
+	if water_transport_cooldown > 0.0:
+		water_transport_cooldown = maxf(0.0, water_transport_cooldown - _delta)
 		
 	if boost_actif:
 		temps_restant_boost -= _delta
@@ -685,6 +705,12 @@ func die(tueur : Node2D = null, tueur_team : int = -1):
 	if is_dying:
 		return
 
+	if _est_water_transporter():
+		if water_transport_boarded.size() > 0:
+			_water_transport_release_boarded_at_origin()
+		elif water_transport_phase == WaterTransportPhase.UNITS_MARKED:
+			_water_transport_clear_marked()
+
 	is_dying = true
 	if _est_mortar():
 		_jouer_animation_sur_sprites("attack_" + dernier_regard, "idle_" + dernier_regard)
@@ -825,6 +851,260 @@ func _configurer_animations_mort():
 			a.atlas = death_tex
 			a.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 			frames.add_frame(anim_name, a)
+
+func _est_water_transporter() -> bool:
+	return stats != null and stats.unit_type == UnitStats.UnitType.WATER_TRANSPORT
+
+
+func get_water_transport_cooldown_remaining() -> float:
+	return water_transport_cooldown
+
+
+func get_water_transport_phase() -> int:
+	return int(water_transport_phase)
+
+
+func can_use_water_transport() -> bool:
+	if not _est_water_transporter() or is_dying:
+		return false
+	if water_transport_phase != WaterTransportPhase.IDLE:
+		return true
+	return water_transport_cooldown <= 0.0
+
+
+func water_transport_step() -> bool:
+	if not can_use_water_transport():
+		return false
+	match water_transport_phase:
+		WaterTransportPhase.IDLE:
+			return _water_transport_mark_allies()
+		WaterTransportPhase.UNITS_MARKED:
+			return _water_transport_board_marked()
+		WaterTransportPhase.CARRYING:
+			return _water_transport_disembark()
+	return false
+
+
+func water_transport_cancel_mark() -> void:
+	if water_transport_phase != WaterTransportPhase.UNITS_MARKED:
+		return
+	_water_transport_clear_marked()
+
+
+func _water_transport_capacity() -> int:
+	return WATER_TRANSPORT_CAP_BY_LEVEL.get(_niveau_unite(), 5)
+
+
+func _est_unite_terrestre_transportable(unit: Node) -> bool:
+	if not is_instance_valid(unit) or unit == self:
+		return false
+	if unit.get("is_dying") and unit.is_dying:
+		return false
+	if unit.get_meta("water_transport_hidden", false):
+		return false
+	if unit.get("is_camp_guardian") and unit.is_camp_guardian:
+		return false
+	if not unit.get("stats") or unit.stats == null:
+		return false
+	if unit.get("team") != team:
+		return false
+	var ut: UnitStats.UnitType = unit.stats.unit_type
+	return ut == UnitStats.UnitType.INFANTRY \
+		or ut == UnitStats.UnitType.ARCHER \
+		or ut == UnitStats.UnitType.HEAVY \
+		or ut == UnitStats.UnitType.SUPPORT \
+		or ut == UnitStats.UnitType.HEAL \
+		or ut == UnitStats.UnitType.ANTI_ARMOR \
+		or ut == UnitStats.UnitType.MORTAR
+
+
+func _water_transport_mark_allies() -> bool:
+	var allies := _water_transport_allies_in_radius()
+	if allies.is_empty():
+		return false
+	var cap := _water_transport_capacity()
+	allies.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
+	water_transport_marked.clear()
+	for unit in allies:
+		if water_transport_marked.size() >= cap:
+			break
+		water_transport_marked.append(unit)
+		_attacher_effet_sur_cible(unit, SCENE_WATER_TRANSPORT_MARK_FX, 3600.0)
+	water_transport_phase = WaterTransportPhase.UNITS_MARKED
+	return true
+
+
+func _water_transport_allies_in_radius() -> Array[Node2D]:
+	var result: Array[Node2D] = []
+	var requete := PhysicsShapeQueryParameters2D.new()
+	var cercle := CircleShape2D.new()
+	cercle.radius = WATER_TRANSPORT_MARK_RADIUS
+	requete.shape = cercle
+	requete.transform = Transform2D(0, global_position)
+	requete.collide_with_areas = false
+	requete.collide_with_bodies = true
+	var groupe := "soldiers" if team == Owner.PLAYER else "enemies"
+	for res in get_world_2d().direct_space_state.intersect_shape(requete):
+		var obj = res.collider as Node2D
+		if obj == null or not obj.is_in_group(groupe):
+			continue
+		if _est_unite_terrestre_transportable(obj):
+			result.append(obj)
+	return result
+
+
+func _water_transport_board_marked() -> bool:
+	if water_transport_marked.is_empty():
+		_water_transport_clear_marked()
+		return false
+	water_transport_boarded.clear()
+	water_transport_origin.clear()
+	for unit in water_transport_marked:
+		if not is_instance_valid(unit):
+			continue
+		water_transport_origin[unit] = unit.global_position
+		water_transport_boarded.append(unit)
+		_retirer_effet_transport(unit)
+		_attacher_effet_sur_cible(unit, SCENE_WATER_TRANSPORT_BOARD_FX, 0.45)
+		_water_transport_hide_unit(unit)
+	water_transport_marked.clear()
+	if water_transport_boarded.is_empty():
+		water_transport_phase = WaterTransportPhase.IDLE
+		return false
+	var bonus := 1.0 + WATER_TRANSPORT_SCALE_BONUS * float(water_transport_boarded.size())
+	scale = water_transport_base_scale * bonus
+	water_transport_phase = WaterTransportPhase.CARRYING
+	return true
+
+
+func _water_transport_disembark() -> bool:
+	if water_transport_boarded.is_empty():
+		_water_transport_reset_after_disembark()
+		return false
+	var land_point := _water_transport_nearest_ground_point(global_position)
+	if land_point == Vector2.INF:
+		return false
+	var count := water_transport_boarded.size()
+	for i in range(count):
+		var unit: Node2D = water_transport_boarded[i]
+		if not is_instance_valid(unit):
+			continue
+		var angle := TAU * float(i) / float(max(count, 1))
+		var offset := Vector2(cos(angle), sin(angle)) * 14.0
+		_water_transport_show_unit(unit, land_point + offset)
+	water_transport_boarded.clear()
+	water_transport_origin.clear()
+	_water_transport_reset_after_disembark()
+	water_transport_cooldown = WATER_TRANSPORT_COOLDOWN
+	return true
+
+
+func _water_transport_reset_after_disembark() -> void:
+	water_transport_phase = WaterTransportPhase.IDLE
+	scale = water_transport_base_scale
+
+
+func _water_transport_clear_marked() -> void:
+	for unit in water_transport_marked:
+		if is_instance_valid(unit):
+			_retirer_effet_transport(unit)
+	water_transport_marked.clear()
+	water_transport_phase = WaterTransportPhase.IDLE
+
+
+func _water_transport_release_boarded_at_origin() -> void:
+	for unit in water_transport_boarded:
+		if not is_instance_valid(unit):
+			continue
+		var origin: Vector2 = water_transport_origin.get(unit, global_position)
+		_water_transport_show_unit(unit, origin)
+	water_transport_boarded.clear()
+	water_transport_origin.clear()
+	water_transport_marked.clear()
+	scale = water_transport_base_scale
+	water_transport_phase = WaterTransportPhase.IDLE
+
+
+func _water_transport_hide_unit(unit: Node2D) -> void:
+	if not is_instance_valid(unit):
+		return
+	_arreter_combat_unite(unit)
+	unit.visible = false
+	unit.collision_layer = 0
+	unit.collision_mask = 0
+	unit.set_process(false)
+	unit.set_physics_process(false)
+	if unit.has_node("ZoneDetection"):
+		unit.get_node("ZoneDetection").monitoring = false
+	unit.set_meta("water_transport_hidden", true)
+	unit.set_meta("water_transport_carrier", self)
+
+
+func _water_transport_show_unit(unit: Node2D, spawn_pos: Vector2) -> void:
+	if not is_instance_valid(unit):
+		return
+	_retirer_effet_transport(unit)
+	unit.visible = true
+	unit.global_position = spawn_pos
+	unit.collision_layer = COLLISION_LAYER_PLAYER_UNIT if unit.get("team") == Owner.PLAYER else COLLISION_LAYER_ENEMY_UNIT
+	unit.collision_mask = COLLISION_LAYER_WORLD | COLLISION_LAYER_PLAYER_UNIT | COLLISION_LAYER_ENEMY_UNIT
+	unit.set_process(true)
+	unit.set_physics_process(true)
+	if unit.has_node("ZoneDetection"):
+		var zone: Area2D = unit.get_node("ZoneDetection")
+		zone.monitoring = true
+	if unit.has_method("_configurer_calques_navigation"):
+		unit._configurer_calques_navigation()
+	if unit.has_method("_configurer_mouvement_et_collisions"):
+		unit._configurer_mouvement_et_collisions()
+	unit.remove_meta("water_transport_hidden")
+	if unit.has_meta("water_transport_carrier"):
+		unit.remove_meta("water_transport_carrier")
+
+
+func _arreter_combat_unite(unit: Node) -> void:
+	if unit.has_method("_arreter_combat"):
+		unit._arreter_combat()
+	elif unit.get("attack_target_node") != null:
+		unit.attack_target_node = null
+
+
+func _retirer_effet_transport(unit: Node2D) -> void:
+	if not is_instance_valid(unit):
+		return
+	var fx = unit.get_node_or_null(NOM_NOEUD_EFFET_BUFF)
+	if is_instance_valid(fx):
+		fx.queue_free()
+
+
+func _water_transport_nearest_ground_point(from: Vector2) -> Vector2:
+	var best := Vector2.INF
+	var best_d2 := INF
+	var regions: Array[NavigationRegion2D] = []
+	var root := get_tree().current_scene
+	if is_instance_valid(root):
+		_collect_nav_regions_for_transport(root, regions)
+	for region in regions:
+		if (region.navigation_layers & NAV_LAYER_GROUND) == 0:
+			continue
+		var pt := NavigationServer2D.map_get_closest_point(region.get_navigation_map(), from)
+		var d2 := from.distance_squared_to(pt)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = pt
+	if best == Vector2.INF:
+		return Vector2.INF
+	if sqrt(best_d2) > WATER_TRANSPORT_DISEMBARK_MAX_DIST:
+		return Vector2.INF
+	return best
+
+
+func _collect_nav_regions_for_transport(node: Node, out: Array) -> void:
+	if node is NavigationRegion2D:
+		out.append(node)
+	for child in node.get_children():
+		_collect_nav_regions_for_transport(child, out)
+
 
 func can_cast_spell() -> bool:
 	if not stats or is_dying:
