@@ -3,28 +3,20 @@ extends Node2D
 # --- 1. CONFIGURATION DES DONNÉES ---
 var liste_des_cartes = [
 	{
-		"nom": "THE GREEN ISLAND",
+		"nom": "Undead Land",
 		"image_map": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres"),
 		"portrait": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_generale/imgDroite.tres"),
-		"description": "VOILA DU TEXTE ET J'EN REJOUE POUR TESTER, C'EST COOL",
+		"description": "A cursed battlefield haunted by the dead.",
 		"attr1": "CURSED LAND", "attr2": "GLOWING LAND",
-		"attr3": "CAVE LAND", "attr4": "UNDEAD LAND"
+		"attr3": "SWAMP LAND", "attr4": "UNDEAD LAND"
 	},
 	{
-		"nom": "CHEVALIER TEST",
-		"image_map": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
-		"portrait": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
-		"description": "Je suis un chevalier super mega stylé",
-		"attr1": "ROCKY AREA", "attr2": "WINTER LAND",
-		"attr3": "SEABED LAND", "attr4": "FLYING ISLAND"
-	},
-	{
-		"nom": "FANTOME TEST",
+		"nom": "Desert Land",
 		"image_map": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
 		"portrait": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
-		"description": "Je suis un fantome super mega stylé",
-		"attr1": "FOREST", "attr2": "DESERT",
-		"attr3": "SWAMP LAND", "attr4": "GLADES LAND"
+		"description": "A dry desert map with open lines and harsh ground.",
+		"attr1": "DESERT", "attr2": "ROCKY AREA",
+		"attr3": "DRY LAND", "attr4": "ANCIENT RUINS"
 	}
 ]
 

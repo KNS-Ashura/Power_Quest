@@ -43,7 +43,7 @@ text = "Map 1 — Undead Land"
 
 [node name="BtnMap2" type="Button" parent="Center/VBox" unique_id=5783218]
 layout_mode = 2
-text = "Map 2 — Cave Land"
+text = "Map 2 — Desert Land"
 
 [node name="BtnMap3" type="Button" parent="Center/VBox" unique_id=5783219]
 layout_mode = 2

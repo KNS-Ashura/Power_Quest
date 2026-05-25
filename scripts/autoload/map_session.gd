@@ -1,6 +1,6 @@
 extends Node
 
-## Active map for this session (1 = Undead Land, 2 = Cave Land, 3 = TBD).
+## Active map for this session (1 = Undead Land, 2 = Desert Land, 3 = TBD).
 var active_map_index: int = 1
 
 const MAP_SCENE_PATHS: Dictionary = {

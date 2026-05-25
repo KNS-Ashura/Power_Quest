@@ -1,6 +1,5 @@
 extends Node2D
 
-
 @onready var book_anim = $AnimatedSprite2D
 @onready var anim_apparition = $apparition
 @onready var anim_disparition = $disparition
@@ -178,7 +177,8 @@ func _on_solo_vs_ia_pressed() -> void:
 
 
 func _on_solo_pressed() -> void:
-	if is_transitioning: return 
+	if is_transitioning:
+		return
 	_animer_marque_page(mark_solo)
 	_jouer_transition_complete($SoloVsIa)
 
