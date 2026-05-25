@@ -46,7 +46,10 @@ const SCENE_WATER_TRANSPORT_BOARD_FX = preload("res://scenes/personnages/water-t
 const WATER_TRANSPORT_MARK_RADIUS := 150.0
 const WATER_TRANSPORT_COOLDOWN := 30.0
 const WATER_TRANSPORT_SCALE_BONUS := 0.05
+const WATER_TRANSPORT_DISEMBARK_TRIGGER_DIST := 60.0
 const WATER_TRANSPORT_DISEMBARK_MAX_DIST := 30.0
+const WATER_TRANSPORT_DISEMBARK_MIN_CLEARANCE := 18.0
+const WATER_TRANSPORT_DISEMBARK_SPREAD := 14.0
 const WATER_TRANSPORT_CAP_BY_LEVEL := {1: 5, 2: 8, 3: 11}
 ## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
 ## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
@@ -983,6 +986,7 @@ func _water_transport_disembark() -> bool:
 		return false
 	var land_point := _water_transport_nearest_ground_point(global_position)
 	if land_point == Vector2.INF:
+		push_warning("Transport: approchez-vous de la cote (sol) pour debarquer.")
 		return false
 	var count := water_transport_boarded.size()
 	for i in range(count):
@@ -990,8 +994,11 @@ func _water_transport_disembark() -> bool:
 		if not is_instance_valid(unit):
 			continue
 		var angle := TAU * float(i) / float(max(count, 1))
-		var offset := Vector2(cos(angle), sin(angle)) * 14.0
-		_water_transport_show_unit(unit, land_point + offset)
+		var offset := Vector2(cos(angle), sin(angle)) * WATER_TRANSPORT_DISEMBARK_SPREAD
+		var spawn_pos := land_point + offset
+		if not _water_transport_is_valid_land_point(spawn_pos):
+			spawn_pos = land_point
+		_water_transport_show_unit(unit, spawn_pos)
 	water_transport_boarded.clear()
 	water_transport_origin.clear()
 	_water_transport_reset_after_disembark()
@@ -1077,26 +1084,122 @@ func _retirer_effet_transport(unit: Node2D) -> void:
 		fx.queue_free()
 
 
-func _water_transport_nearest_ground_point(from: Vector2) -> Vector2:
-	var best := Vector2.INF
-	var best_d2 := INF
+func _water_transport_nav_regions() -> Array[NavigationRegion2D]:
 	var regions: Array[NavigationRegion2D] = []
 	var root := get_tree().current_scene
 	if is_instance_valid(root):
 		_collect_nav_regions_for_transport(root, regions)
-	for region in regions:
-		if (region.navigation_layers & NAV_LAYER_GROUND) == 0:
-			continue
-		var pt := NavigationServer2D.map_get_closest_point(region.get_navigation_map(), from)
-		var d2 := from.distance_squared_to(pt)
+	if regions.is_empty():
+		var map_slot := get_tree().root.find_child("MapSlot", true, false)
+		if map_slot:
+			_collect_nav_regions_for_transport(map_slot, regions)
+	return regions
+
+
+func _water_transport_closest_point_on_segment(point: Vector2, a: Vector2, b: Vector2) -> Vector2:
+	var ab := b - a
+	var ab_len_sq := ab.length_squared()
+	if ab_len_sq <= 0.0001:
+		return a
+	var t: float = clampf((point - a).dot(ab) / ab_len_sq, 0.0, 1.0)
+	return a + ab * t
+
+
+func _water_transport_closest_point_on_polygon(point: Vector2, polygon: PackedVector2Array) -> Vector2:
+	if polygon.size() < 3:
+		return Vector2.INF
+	var best := Vector2.INF
+	var best_d2 := INF
+	for i in range(polygon.size()):
+		var a := polygon[i]
+		var b := polygon[(i + 1) % polygon.size()]
+		var candidate := _water_transport_closest_point_on_segment(point, a, b)
+		var d2 := point.distance_squared_to(candidate)
 		if d2 < best_d2:
 			best_d2 = d2
-			best = pt
-	if best == Vector2.INF:
-		return Vector2.INF
-	if sqrt(best_d2) > WATER_TRANSPORT_DISEMBARK_MAX_DIST:
-		return Vector2.INF
+			best = candidate
 	return best
+
+
+func _water_transport_surface_mask_at(world_pos: Vector2) -> int:
+	var surface_mask := 0
+	for region in _water_transport_nav_regions():
+		if not is_instance_valid(region):
+			continue
+		var nav_polygon: NavigationPolygon = region.navigation_polygon
+		if nav_polygon == null:
+			continue
+		var vertices: PackedVector2Array = nav_polygon.get_vertices()
+		var local_pos := region.to_local(world_pos)
+		for polygon_idx in range(nav_polygon.get_polygon_count()):
+			var polygon_indices: PackedInt32Array = nav_polygon.get_polygon(polygon_idx)
+			if polygon_indices.size() < 3:
+				continue
+			var polygon_local := PackedVector2Array()
+			for vertex_idx in polygon_indices:
+				polygon_local.append(vertices[vertex_idx])
+			if Geometry2D.is_point_in_polygon(local_pos, polygon_local):
+				surface_mask |= region.navigation_layers
+				break
+	return surface_mask
+
+
+func _water_transport_is_valid_land_point(world_pos: Vector2) -> bool:
+	var surface_mask := _water_transport_surface_mask_at(world_pos)
+	return (surface_mask & NAV_LAYER_GROUND) != 0 and (surface_mask & NAV_LAYER_WATER) == 0
+
+
+func _water_transport_closest_on_layers(from: Vector2, layer_mask: int) -> Vector2:
+	var best := Vector2.INF
+	var best_d2 := INF
+	for region in _water_transport_nav_regions():
+		if not is_instance_valid(region):
+			continue
+		if (region.navigation_layers & layer_mask) == 0:
+			continue
+		var nav_polygon: NavigationPolygon = region.navigation_polygon
+		if nav_polygon == null:
+			continue
+		var vertices: PackedVector2Array = nav_polygon.get_vertices()
+		var local_pos := region.to_local(from)
+		for polygon_idx in range(nav_polygon.get_polygon_count()):
+			var polygon_indices: PackedInt32Array = nav_polygon.get_polygon(polygon_idx)
+			if polygon_indices.size() < 3:
+				continue
+			var polygon_local := PackedVector2Array()
+			var polygon_world := PackedVector2Array()
+			for vertex_idx in polygon_indices:
+				var local_vertex := vertices[vertex_idx]
+				polygon_local.append(local_vertex)
+				polygon_world.append(region.to_global(local_vertex))
+			var candidate := from if Geometry2D.is_point_in_polygon(local_pos, polygon_local) else _water_transport_closest_point_on_polygon(from, polygon_world)
+			if candidate == Vector2.INF:
+				continue
+			var d2 := from.distance_squared_to(candidate)
+			if d2 < best_d2:
+				best_d2 = d2
+				best = candidate
+	return best
+
+
+func _water_transport_nearest_ground_point(from: Vector2) -> Vector2:
+	var shore := _water_transport_closest_on_layers(from, NAV_LAYER_GROUND)
+	if shore == Vector2.INF:
+		return Vector2.INF
+	if from.distance_to(shore) > WATER_TRANSPORT_DISEMBARK_TRIGGER_DIST:
+		return Vector2.INF
+
+	var toward_shore := shore - from
+	if toward_shore.length_squared() < 1.0:
+		return shore
+
+	var pushed := shore + toward_shore.normalized() * WATER_TRANSPORT_DISEMBARK_MIN_CLEARANCE
+	var land_point := _water_transport_closest_on_layers(pushed, NAV_LAYER_GROUND)
+	if land_point == Vector2.INF:
+		return shore
+	if from.distance_to(land_point) > WATER_TRANSPORT_DISEMBARK_MAX_DIST:
+		return shore
+	return land_point
 
 
 func _collect_nav_regions_for_transport(node: Node, out: Array) -> void:

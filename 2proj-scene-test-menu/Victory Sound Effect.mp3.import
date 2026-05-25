@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bbpsck75t4hb0"
+path="res://.godot/imported/Victory Sound Effect.mp3-aa8c028e27b787e6fa9dcecea3cc053a.mp3str"
+
+[deps]
+
+source_file="res://Victory Sound Effect.mp3"
+dest_files=["res://.godot/imported/Victory Sound Effect.mp3-aa8c028e27b787e6fa9dcecea3cc053a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

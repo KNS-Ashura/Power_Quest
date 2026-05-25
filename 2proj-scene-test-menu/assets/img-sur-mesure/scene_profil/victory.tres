@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://ccct5tyqalb5f"]
+
+[ext_resource type="Texture2D" uid="uid://b7asyeuualltq" path="res://assets/utils pour proj - Copie/hud/book-green/PNG/oui_non.png" id="1_51rma"]
+
+[resource]
+atlas = ExtResource("1_51rma")
+region = Rect2(26, 477, 119, 96)

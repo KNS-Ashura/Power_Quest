@@ -1,0 +1,226 @@
+[gd_scene format=3 uid="uid://3gyev7vui3ra"]
+
+[ext_resource type="Script" uid="uid://dlc2echapuwcu" path="res://map_ia_choice.gd" id="1_vrggs"]
+[ext_resource type="Texture2D" uid="uid://dv0gf2oh5ve0n" path="res://assets/img-sur-mesure/scene_solo_vs_ia/banniere_vert.tres" id="2_1id65"]
+[ext_resource type="Texture2D" uid="uid://del2vvqh3bcgv" path="res://assets/img-sur-mesure/scene_solo_vs_ia/flechGauche.tres" id="4_bm7pn"]
+[ext_resource type="Texture2D" uid="uid://dg5rrybx53kjq" path="res://assets/img-sur-mesure/scene_solo_vs_ia/felcheDroite.tres" id="5_wyohf"]
+[ext_resource type="Texture2D" uid="uid://dxoi0moex3817" path="res://assets/img-sur-mesure/scene_solo_vs_ia/bandeauvert.tres" id="6_vrggs"]
+[ext_resource type="Texture2D" uid="uid://dyv5vs7iklt36" path="res://assets/img-sur-mesure/scene_solo_vs_ia/bouton.tres" id="7_s7vnq"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/utils pour proj - Copie/fonts/m5x7.ttf" id="9_s7vnq"]
+[ext_resource type="Texture2D" uid="uid://bgfouk2777d0y" path="res://assets/img-sur-mesure/scene_maps/assets_map1/map_test.tres" id="9_wfcox"]
+
+[node name="SoloVsIa" type="Node2D" unique_id=515729282]
+script = ExtResource("1_vrggs")
+
+[node name="Banniere" type="Control" parent="." unique_id=270253189]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TextureRect" type="TextureRect" parent="Banniere" unique_id=1401525132]
+layout_mode = 0
+offset_left = 56.0
+offset_top = 236.0
+offset_right = 631.0
+offset_bottom = 356.0
+texture = ExtResource("2_1id65")
+
+[node name="Label" type="Label" parent="Banniere" unique_id=815373001]
+layout_mode = 0
+offset_left = 116.0
+offset_top = 289.0
+offset_right = 287.0
+offset_bottom = 324.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 32
+text = "SOLO VS IA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LVL_IA" type="Control" parent="." unique_id=833188555]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="FlecheGauche" type="TextureButton" parent="LVL_IA" unique_id=1859850169]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 113.0
+offset_top = 392.0
+offset_right = 120.0
+offset_bottom = 405.0
+scale = Vector2(2.5, 2.5)
+texture_normal = ExtResource("4_bm7pn")
+
+[node name="FlecheDroite" type="TextureButton" parent="LVL_IA" unique_id=1420506733]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 260.0
+offset_top = 392.0
+offset_right = 267.0
+offset_bottom = 405.0
+scale = Vector2(2.5, 2.5)
+texture_normal = ExtResource("5_wyohf")
+
+[node name="Bandeau1" type="TextureRect" parent="LVL_IA" unique_id=846904463]
+layout_mode = 0
+offset_left = 113.0
+offset_top = 363.0
+offset_right = 278.0
+offset_bottom = 388.0
+texture = ExtResource("6_vrggs")
+
+[node name="IntituleIA" type="Label" parent="LVL_IA" unique_id=2088966605]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 130.0
+offset_top = 394.0
+offset_right = 260.0
+offset_bottom = 424.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "DEBUTANT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Titre2" type="Label" parent="LVL_IA" unique_id=2074829762]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 131.0
+offset_top = 361.0
+offset_right = 260.0
+offset_bottom = 388.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "AI_BEGINNER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MapChoice" type="Control" parent="." unique_id=540509304]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 100.0
+offset_right = 40.0
+offset_bottom = 140.0
+
+[node name="FlecheGauche2" type="TextureButton" parent="MapChoice" unique_id=969853491]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 113.0
+offset_top = 392.0
+offset_right = 120.0
+offset_bottom = 405.0
+scale = Vector2(2.5, 2.5)
+texture_normal = ExtResource("4_bm7pn")
+
+[node name="FlecheDroite2" type="TextureButton" parent="MapChoice" unique_id=1133676778]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 260.0
+offset_top = 392.0
+offset_right = 267.0
+offset_bottom = 405.0
+scale = Vector2(2.5, 2.5)
+texture_normal = ExtResource("5_wyohf")
+
+[node name="Bandeau2" type="TextureRect" parent="MapChoice" unique_id=1216702522]
+layout_mode = 0
+offset_left = 113.0
+offset_top = 363.0
+offset_right = 278.0
+offset_bottom = 388.0
+texture = ExtResource("6_vrggs")
+
+[node name="Titre2" type="Label" parent="MapChoice" unique_id=2068732882]
+layout_mode = 0
+offset_left = 131.0
+offset_top = 361.0
+offset_right = 260.0
+offset_bottom = 388.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "UI_MAP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MapName" type="Label" parent="MapChoice" unique_id=605987487]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 130.0
+offset_top = 394.0
+offset_right = 260.0
+offset_bottom = 424.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "MAP_GREEN_ISLAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BackToMenu" type="TextureButton" parent="." unique_id=113863535]
+offset_left = 69.0
+offset_top = 584.0
+offset_right = 234.0
+offset_bottom = 609.0
+texture_normal = ExtResource("6_vrggs")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="BackToMenu" unique_id=1035590393]
+layout_mode = 0
+offset_left = 18.0
+offset_top = -2.0
+offset_right = 147.0
+offset_bottom = 25.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "UI_BACK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LaunchGame" type="TextureButton" parent="." unique_id=815103082]
+offset_left = 401.0
+offset_top = 557.0
+offset_right = 581.0
+offset_bottom = 592.0
+texture_normal = ExtResource("7_s7vnq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="LaunchGame" unique_id=1939558193]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 3.0
+offset_right = 178.0
+offset_bottom = 29.0
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "MENU_SOLO_START"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ImgMap" type="TextureRect" parent="." unique_id=1455095860]
+unique_name_in_owner = true
+offset_left = 385.0
+offset_top = 358.0
+offset_right = 594.0
+offset_bottom = 510.0
+texture = ExtResource("9_wfcox")
+
+[node name="NomMap" type="Label" parent="." unique_id=785218451]
+unique_name_in_owner = true
+offset_left = 441.0
+offset_top = 525.0
+offset_right = 531.0
+offset_bottom = 548.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("9_s7vnq")
+theme_override_font_sizes/font_size = 24
+text = "MAP_GREEN_ISLAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="LVL_IA/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]
+[connection signal="pressed" from="LVL_IA/FlecheDroite" to="." method="_on_fleche_droite_pressed"]
+[connection signal="pressed" from="MapChoice/FlecheGauche2" to="." method="_on_fleche_gauche_2_pressed"]
+[connection signal="pressed" from="MapChoice/FlecheDroite2" to="." method="_on_fleche_droite_2_pressed"]

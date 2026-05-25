@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bx2cesm1hee0v"
+path="res://.godot/imported/DEFEAT (Deep Voice) - Sound Effect.mp3-f72be22fff428e487e21b79d49b8af32.mp3str"
+
+[deps]
+
+source_file="res://assets/img-sur-mesure/Scene_panel_victory/DEFEAT (Deep Voice) - Sound Effect.mp3"
+dest_files=["res://.godot/imported/DEFEAT (Deep Voice) - Sound Effect.mp3-f72be22fff428e487e21b79d49b8af32.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
