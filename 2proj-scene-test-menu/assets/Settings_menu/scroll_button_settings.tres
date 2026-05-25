@@ -1,6 +1,0 @@
-[gd_resource type="LabelSettings" format=3 uid="uid://dtfjtw28xtiua"]
-
-[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/utils pour proj - Copie/fonts/m5x7.ttf" id="1_caioh"]
-
-[resource]
-font = ExtResource("1_caioh")

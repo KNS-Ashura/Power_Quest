@@ -1,7 +1,0 @@
-[gd_resource type="AtlasTexture" format=3 uid="uid://c0u885uhdxag2"]
-
-[ext_resource type="Texture2D" uid="uid://dtpr4b8fpihop" path="res://assets/utils pour proj - Copie/hud/book-green/PNG/details_90.png" id="1_n74c5"]
-
-[resource]
-atlas = ExtResource("1_n74c5")
-region = Rect2(251, 479, 32, 3)

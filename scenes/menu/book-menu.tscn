@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://wr4ve6h6g68f"]
 
-[ext_resource type="Texture2D" uid="uid://d4hvjsu2tejaa" path="res://assets/menu/book-ui/PNG/Open_book.png" id="1_kwy3m"]
+[ext_resource type="Texture2D" uid="uid://b5dgpc16rep5r" path="res://assets/menu/book-ui/PNG/Open_book.png" id="1_kwy3m"]
 [ext_resource type="Script" uid="uid://cja2fawnfedra" path="res://scripts/menu/book_menu_transition.gd" id="1_tyuks"]
 [ext_resource type="Texture2D" uid="uid://ba2h1xdwiqi6g" path="res://assets/menu/img-sur-mesure/Scene_book_menu/banniere.tres" id="2_mcy4f"]
 [ext_resource type="Texture2D" uid="uid://bbqwt5xi1wsnu" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton1.tres" id="3_0qj5p"]
-[ext_resource type="Texture2D" uid="uid://5gtj6l666d0r" path="res://assets/menu/book-ui/PNG/pages_apper.png" id="3_stbfh"]
-[ext_resource type="Texture2D" uid="uid://dbndua12c6gpe" path="res://assets/menu/book-ui/PNG/pages_desappear-Sheet.png" id="4_cmifk"]
+[ext_resource type="Texture2D" uid="uid://cti4meatxnoth" path="res://assets/menu/book-ui/PNG/pages_apper.png" id="3_stbfh"]
+[ext_resource type="Texture2D" uid="uid://b1acwktknhlj8" path="res://assets/menu/book-ui/PNG/pages_desappear-Sheet.png" id="4_cmifk"]
 [ext_resource type="LabelSettings" uid="uid://dtfjtw28xtiua" path="res://assets/menu/settings/scroll_button_settings.tres" id="5_0i8o1"]
-[ext_resource type="FontFile" uid="uid://b8hc3x2ya5op8" path="res://assets/menu/fonts/Jersey10-Regular.ttf" id="5_airtt"]
+[ext_resource type="FontFile" uid="uid://dakebd4j7bckm" path="res://assets/menu/fonts/Jersey10-Regular.ttf" id="5_airtt"]
 [ext_resource type="Texture2D" uid="uid://bl2xjuuuhcjy2" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton2.tres" id="5_i17nj"]
-[ext_resource type="Texture2D" uid="uid://l12cq0usr6vr" path="res://assets/menu/book-ui/PNG/Turning_pages_left.png" id="5_tyuks"]
+[ext_resource type="Texture2D" uid="uid://whmm0jl4qfnf" path="res://assets/menu/book-ui/PNG/Turning_pages_left.png" id="5_tyuks"]
 [ext_resource type="Texture2D" uid="uid://blsxs0mpjagub" path="res://assets/menu/img-sur-mesure/chevalier.tres" id="6_sgnfi"]
 [ext_resource type="Texture2D" uid="uid://brk8ducw0jydf" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton3.tres" id="7_vkhoe"]
 [ext_resource type="Texture2D" uid="uid://u7sunpk3ig23" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton4.tres" id="8_oedcg"]
 [ext_resource type="Texture2D" uid="uid://drxtqv2viui82" path="res://assets/menu/img-sur-mesure/demon.tres" id="9_0qj5p"]
 [ext_resource type="Texture2D" uid="uid://eaxdf7ja0oja" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton5.tres" id="9_7tbvn"]
-[ext_resource type="FontFile" uid="uid://da0o8e3dsclb0" path="res://assets/menu/fonts/m5x7.ttf" id="11_omw2x"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="11_omw2x"]
 [ext_resource type="Texture2D" uid="uid://num0npuwnhvv" path="res://assets/menu/img-sur-mesure/barre.tres" id="11_vkhoe"]
 [ext_resource type="Texture2D" uid="uid://bfk836876devf" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_solo.tres" id="16_d7gke"]
 [ext_resource type="Texture2D" uid="uid://bskg1xw1xufob" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_multi.tres" id="17_omw2x"]
@@ -284,7 +284,7 @@ animations = [{
 VScrollBar/styles/grabber = SubResource("StyleBoxFlat_cx6fd")
 
 [node name="BookMenu" type="Node2D" unique_id=550500115]
-position = Vector2(488, 42)
+position = Vector2(501, 30)
 script = ExtResource("1_tyuks")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2005095475]
