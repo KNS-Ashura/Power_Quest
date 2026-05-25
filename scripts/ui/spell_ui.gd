@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var btn_heal: Button = $Control/Panel/HBoxContainer/BtnHeal
 @onready var btn_boost: Button = $Control/Panel/HBoxContainer/BtnBoost
 @onready var btn_mortar_spell: Button = $Control/Panel/HBoxContainer/BtnMortarSpell
+@onready var btn_anti_armor: Button = $Control/Panel/HBoxContainer/BtnAntiArmor
 @onready var btn_water_transport: Button = $Control/Panel/HBoxContainer/BtnWaterTransport
 
 const SPELL_EFFECT_RADIUS: float = 150.0
@@ -14,6 +15,8 @@ const BOOST_BORDER_COLOR: Color = Color(0.25, 0.55, 1.0, 1.0)
 const BOOST_FILL_COLOR: Color = Color(0.25, 0.55, 1.0, 0.2)
 const MORTAR_BORDER_COLOR: Color = Color(1.0, 0.55, 0.15, 1.0)
 const MORTAR_FILL_COLOR: Color = Color(1.0, 0.55, 0.15, 0.2)
+const ANTI_ARMOR_BORDER_COLOR: Color = Color(1.0, 0.35, 0.75, 1.0)
+const ANTI_ARMOR_FILL_COLOR: Color = Color(1.0, 0.35, 0.75, 0.2)
 const TRANSPORT_BORDER_COLOR: Color = Color(0.2, 0.75, 1.0, 1.0)
 const TRANSPORT_FILL_COLOR: Color = Color(0.2, 0.75, 1.0, 0.22)
 const TRANSPORT_MARKED_MODULATE: Color = Color(0.55, 0.85, 1.0, 1.0)
@@ -22,6 +25,7 @@ const TRANSPORT_CARRYING_MODULATE: Color = Color(0.35, 1.0, 0.65, 1.0)
 var _selected_healer_count: int = 0
 var _selected_support_count: int = 0
 var _selected_mortar_count: int = 0
+var _selected_anti_armor_count: int = 0
 var _selected_transporter_count: int = 0
 
 
@@ -29,6 +33,7 @@ func _ready() -> void:
 	btn_heal.disabled = true
 	btn_boost.disabled = true
 	btn_mortar_spell.disabled = true
+	btn_anti_armor.disabled = true
 	btn_water_transport.disabled = true
 
 
@@ -45,6 +50,7 @@ func _refresh_button_state() -> void:
 	var healers := 0
 	var supports := 0
 	var mortars := 0
+	var anti_armors := 0
 	var transporters := 0
 
 	for unit in get_tree().get_nodes_in_group("soldiers"):
@@ -62,12 +68,15 @@ func _refresh_button_state() -> void:
 				healers += 1
 			6:
 				mortars += 1
+			5:
+				anti_armors += 1
 			7:
 				transporters += 1
 
 	if healers == _selected_healer_count \
 			and supports == _selected_support_count \
 			and mortars == _selected_mortar_count \
+			and anti_armors == _selected_anti_armor_count \
 			and transporters == _selected_transporter_count:
 		_update_transport_button_visuals()
 		return
@@ -75,11 +84,13 @@ func _refresh_button_state() -> void:
 	_selected_healer_count = healers
 	_selected_support_count = supports
 	_selected_mortar_count = mortars
+	_selected_anti_armor_count = anti_armors
 	_selected_transporter_count = transporters
 
 	btn_heal.disabled = _selected_healer_count <= 0
 	btn_boost.disabled = _selected_support_count <= 0
 	btn_mortar_spell.disabled = _selected_mortar_count <= 0
+	btn_anti_armor.disabled = _selected_anti_armor_count <= 0
 	_update_transport_button_visuals()
 
 
@@ -147,6 +158,17 @@ func _on_btn_mortar_spell_pressed() -> void:
 			casts += 1
 			_show_effect_zone(mortar.global_position, SPELL_EFFECT_RADIUS, MORTAR_BORDER_COLOR, MORTAR_FILL_COLOR)
 	print("%d mortar(s) selected, %d spell(s) cast" % [_selected_mortar_count, casts])
+
+
+func _on_btn_anti_armor_pressed() -> void:
+	var anti_armors: Array = _get_selected_units_by_type(5)
+	var casts := 0
+	for anti_armor in anti_armors:
+		if _try_cast_spell(anti_armor):
+			casts += 1
+			var radius: float = anti_armor.get_anti_armor_spell_radius() if anti_armor.has_method("get_anti_armor_spell_radius") else SPELL_EFFECT_RADIUS
+			_show_effect_zone(anti_armor.global_position, radius, ANTI_ARMOR_BORDER_COLOR, ANTI_ARMOR_FILL_COLOR)
+	print("%d anti-armor(s) selected, %d spell(s) cast" % [_selected_anti_armor_count, casts])
 
 
 func _on_btn_water_transport_pressed() -> void:

@@ -24,11 +24,18 @@ const BONUS_INVULN_PAR_NIVEAU := 5.0
 const BONUS_BOOST_PAR_NIVEAU := 10.0
 const SCENE_PORT_GUARDIAN_PROJECTILE_LOOP = preload("res://scenes/personnages/port_guardian/gardian-port-loop-projectile.tscn")
 const SCENE_CAMP_GUARDIAN_PROJECTILE_LOOP = preload("uid://ofkkgjehycuj")
+const SCENE_ANTI_ARMOR_PROJECTILE_LOOP = preload("res://scenes/personnages/anti_armor/anti-armor-loop-projectile.tscn")
 const RAYON_TIR_PASSIF_PORT_GARDIEN := 420.0
 const VITESSE_PROJECTILE_PORT_GARDIEN := 320.0
 const VITESSE_PROJECTILE_CAMP_GARDIEN := 380.0
+const VITESSE_PROJECTILE_ANTI_ARMOR_SORT := 120.0
 const DUREE_EFFET_SOIN_DEFAUT := 4.0
 const NOM_NOEUD_EFFET_BUFF := "BuffEffectVfx"
+const MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT := 2.0
+const DUREE_SORT_ANTI_ARMOR_NIVEAU_1 := 10.0
+const BONUS_DUREE_SORT_ANTI_ARMOR_PAR_NIVEAU := 2.0
+const RAYON_SORT_ANTI_ARMOR_NIVEAU_1 := 150.0
+const BONUS_RAYON_SORT_ANTI_ARMOR_PAR_NIVEAU := 30.0
 const FACTEUR_ZONE_RANGE := 0.65
 const FACTEUR_ZONE_HEALER := 0.6
 const FACTEUR_ZONE_GARDIEN_CAMP := 0.85
@@ -84,6 +91,9 @@ var temps_restant_boost : float = 0.0
 var boost_actif : bool = false
 var invulnerabilite_actif : bool = false
 var temps_restant_invulnerabilite : float = 0.0
+var anti_armor_sort_actif : bool = false
+var temps_restant_anti_armor_sort : float = 0.0
+var multiplicateur_degats_subis : float = 1.0
 var attack_rate_multiplier: float = 1.0
 var is_dying : bool = false
 var cycle_explosion_mortar : int = 0
@@ -241,6 +251,14 @@ func _physics_process(_delta):
 			invulnerabilite_actif = false
 			_appliquer_couleur_unite()
 			_mettre_a_jour_effet_visuel(self)
+
+	if anti_armor_sort_actif:
+		temps_restant_anti_armor_sort -= _delta
+		if temps_restant_anti_armor_sort <= 0:
+			anti_armor_sort_actif = false
+			temps_restant_anti_armor_sort = 0.0
+			multiplicateur_degats_subis = 1.0
+			_appliquer_couleur_unite()
 	
 	if is_instance_valid(attack_target_node) and not _cible_combat_valide(attack_target_node):
 		_arreter_combat()
@@ -361,6 +379,9 @@ func _est_water_range_unite() -> bool:
 
 func _est_mortar() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.MORTAR
+
+func _est_anti_armor() -> bool:
+	return stats != null and stats.unit_type == UnitStats.UnitType.ANTI_ARMOR
 
 func _tirer_projectile_range(cible: Node2D):
 	if not _cible_combat_valide(cible):
@@ -692,6 +713,8 @@ func take_damage(montant : int, auteur = null, auteur_team : int = -1):
 	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null:
 		if auteur.stats.unit_type == 5:
 			degats_finaux = degats_finaux * 3 if (stats and stats.unit_type == 2) else int(float(degats_finaux) * 0.5)
+	if anti_armor_sort_actif:
+		degats_finaux = int(round(float(degats_finaux) * multiplicateur_degats_subis))
 				
 	current_hp -= degats_finaux
 	
@@ -865,6 +888,10 @@ func get_water_transport_cooldown_remaining() -> float:
 
 func get_water_transport_phase() -> int:
 	return int(water_transport_phase)
+
+
+func get_anti_armor_spell_radius() -> float:
+	return _rayon_sort_anti_armor()
 
 
 func can_use_water_transport() -> bool:
@@ -1214,7 +1241,7 @@ func can_cast_spell() -> bool:
 		return false
 	if cooldown_actuel_sort > 0.0:
 		return false
-	if _est_mortar() or _est_healer() or (stats.unit_type == UnitStats.UnitType.SUPPORT):
+	if _est_mortar() or _est_healer() or (stats.unit_type == UnitStats.UnitType.SUPPORT) or _est_anti_armor():
 		return true
 	return stats.spell_cooldown > 0.0
 
@@ -1223,6 +1250,11 @@ func cast_spell() -> bool:
 		return false
 	if _est_mortar():
 		if _cast_spell_mortar_ult():
+			cooldown_actuel_sort = COOLDOWN_SORT_SECONDES
+			return true
+		return false
+	if _est_anti_armor():
+		if _cast_spell_anti_armor():
 			cooldown_actuel_sort = COOLDOWN_SORT_SECONDES
 			return true
 		return false
@@ -1275,6 +1307,82 @@ func _cast_spell_mortar_ult() -> bool:
 		_appliquer_degats_zone(position_impact, 112.0, degats_sort)
 	return true
 
+
+func _rayon_sort_anti_armor() -> float:
+	return RAYON_SORT_ANTI_ARMOR_NIVEAU_1 + float(_niveau_unite() - 1) * BONUS_RAYON_SORT_ANTI_ARMOR_PAR_NIVEAU
+
+
+func _duree_sort_anti_armor() -> float:
+	if stats and stats.spell_duration > 0.0:
+		return stats.spell_duration
+	return DUREE_SORT_ANTI_ARMOR_NIVEAU_1 + float(_niveau_unite() - 1) * BONUS_DUREE_SORT_ANTI_ARMOR_PAR_NIVEAU
+
+
+func _cast_spell_anti_armor() -> bool:
+	var cibles := _cibles_ennemies_sort_anti_armor()
+	if cibles.is_empty():
+		return false
+	var cible := _cible_plus_de_pv_sort_anti_armor(cibles)
+	if not is_instance_valid(cible):
+		return false
+	_tirer_projectile_sort_anti_armor(cible)
+	return true
+
+
+func _cibles_ennemies_sort_anti_armor() -> Array[Node2D]:
+	var requete := PhysicsShapeQueryParameters2D.new()
+	var cercle := CircleShape2D.new()
+	cercle.radius = _rayon_sort_anti_armor()
+	requete.shape = cercle
+	requete.transform = Transform2D(0, global_position)
+	requete.collide_with_areas = false
+	requete.collide_with_bodies = true
+	var resultat: Array[Node2D] = []
+	for res in get_world_2d().direct_space_state.intersect_shape(requete):
+		var obj := res.collider as Node2D
+		if obj == null or obj == self:
+			continue
+		if obj.is_in_group("camps"):
+			continue
+		if obj.get("team") == null or obj.team == team:
+			continue
+		if not obj.has_method("take_damage"):
+			continue
+		resultat.append(obj)
+	return resultat
+
+
+func _cible_plus_de_pv_sort_anti_armor(cibles: Array[Node2D]) -> Node2D:
+	var meilleure_cible: Node2D = null
+	var meilleur_pv := -1
+	for cible in cibles:
+		if not is_instance_valid(cible):
+			continue
+		var pv := int(cible.get("current_hp")) if cible.get("current_hp") != null else int(cible.get("hp_max"))
+		if meilleure_cible == null or pv > meilleur_pv:
+			meilleure_cible = cible
+			meilleur_pv = pv
+	return meilleure_cible
+
+
+func _tirer_projectile_sort_anti_armor(cible: Node2D) -> void:
+	if not is_instance_valid(cible):
+		return
+	var parent_node := get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var proj = SCENE_ANTI_ARMOR_PROJECTILE_LOOP.instantiate()
+	parent_node.add_child(proj)
+	proj.global_position = global_position
+	if proj.has_method("launch"):
+		proj.launch(
+			cible,
+			_duree_sort_anti_armor(),
+			MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT,
+			self,
+			VITESSE_PROJECTILE_ANTI_ARMOR_SORT
+		)
+
 func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
 	var cibles: Array = zone_detection.get_overlapping_bodies().filter(func(c):
 		return c != self and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != team
@@ -1311,6 +1419,15 @@ func receive_boost(duree: float):
 	_appliquer_couleur_unite()
 	_mettre_a_jour_effet_visuel(self)
 
+
+func receive_anti_armor_spell(duree: float, multiplicateur: float = MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT) -> void:
+	if duree <= 0.0 or multiplicateur <= 1.0 or not stats:
+		return
+	anti_armor_sort_actif = true
+	temps_restant_anti_armor_sort = maxf(temps_restant_anti_armor_sort, duree)
+	multiplicateur_degats_subis = maxf(multiplicateur_degats_subis, multiplicateur)
+	_appliquer_couleur_unite()
+
 func _attack_rate_actuelle() -> float:
 	var cadence_base = stats.attack_rate if stats and "attack_rate" in stats else 1.0
 	return cadence_base * attack_rate_multiplier
@@ -1322,6 +1439,8 @@ func _couleur_unite() -> Color:
 		return Color(0.35, 1.0, 0.45)
 	if boost_actif:
 		return Color(1.0, 0.95, 0.25)
+	if anti_armor_sort_actif:
+		return Color(1.0, 0.45, 0.85)
 	if team == Owner.ENEMY:
 		return Color(1.0, 0.2, 0.2)
 	return Color.WHITE
