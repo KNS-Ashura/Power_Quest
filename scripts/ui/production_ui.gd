@@ -63,11 +63,13 @@ func _on_building_changed(building) -> void:
 
 func _apply_production_button_layout() -> void:
 	if _port_production_mode:
+		btn_support.hide()
 		btn_heal.hide()
 		btn_anti_armor.hide()
 		btn_mortar.hide()
 		_set_port_button_labels()
 	else:
+		btn_support.show()
 		btn_heal.show()
 		btn_anti_armor.show()
 		btn_mortar.show()
@@ -86,9 +88,9 @@ func _set_port_button_labels() -> void:
 	var catalog: Dictionary = selected_building.get("unit_catalog")
 	if catalog.is_empty():
 		return
-	var ids := [0, 1, 2, 3]
-	var buttons := [btn_inf, btn_arc, btn_heavy, btn_support]
-	var defaults := ["Water Transport", "Heal", "Water Tank", "Water Range"]
+	var ids := [0, 1, 2]
+	var buttons := [btn_inf, btn_arc, btn_heavy]
+	var defaults := ["Water Transport", "Water Tank", "Water Range"]
 	for i in ids.size():
 		var stat: UnitStats = catalog.get(ids[i])
 		if stat:

@@ -166,9 +166,8 @@ static func land_unit_catalog(camp_level: int) -> Dictionary:
 static func port_unit_catalog(camp_level: int) -> Dictionary:
 	return {
 		0: stats_for_level(STATS_WATER_TRANSPORTER, camp_level),
-		1: stats_for_level(STATS_HEAL, camp_level),
-		2: stats_for_level(STATS_WATER_TANK, camp_level),
-		3: stats_for_level(STATS_WATER_RANGE, camp_level),
+		1: stats_for_level(STATS_WATER_TANK, camp_level),
+		2: stats_for_level(STATS_WATER_RANGE, camp_level),
 	}
 
 

@@ -60,10 +60,8 @@ const WATER_TRANSPORT_DISEMBARK_SPREAD := 14.0
 const WATER_TRANSPORT_CAP_BY_LEVEL := {1: 5, 2: 8, 3: 11}
 ## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
 ## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
-## layer 3 (valeur 4) = ground-and-water-unit (mesh combiné sol+eau pour support/healer)
 const NAV_LAYER_GROUND := 1
 const NAV_LAYER_WATER := 2
-const NAV_LAYER_GROUND_AND_WATER := 4
 
 ## Calques physique : alliés ne se bloquent pas entre eux (glissement latéral).
 const COLLISION_LAYER_WORLD := 1
@@ -75,7 +73,6 @@ const SEPARATION_RADIUS := 52.0
 const SEPARATION_FORCE := 95.0
 
 @export var force_water_navigation: bool = false
-@export var force_amphibious_navigation: bool = false
 
 @onready var agent_navigation = $NavigationAgent2D
 var attack_target_node : Node2D = null
@@ -143,24 +140,12 @@ func _ready():
 func _configurer_calques_navigation() -> void:
 	if not is_instance_valid(agent_navigation):
 		return
-	if _is_amphibious_unit():
-		agent_navigation.navigation_layers = NAV_LAYER_GROUND_AND_WATER
-	elif _is_naval_unit():
+	if _is_naval_unit():
 		agent_navigation.navigation_layers = NAV_LAYER_WATER
 	else:
 		agent_navigation.navigation_layers = NAV_LAYER_GROUND
 
-func _is_amphibious_unit() -> bool:
-	if force_amphibious_navigation:
-		return true
-	if stats != null:
-		return stats.unit_type == UnitStats.UnitType.SUPPORT or stats.unit_type == UnitStats.UnitType.HEAL
-	var chemin_scene := scene_file_path
-	return chemin_scene.contains("/support/") or chemin_scene.contains("/healer/")
-
 func _is_naval_unit() -> bool:
-	if _is_amphibious_unit():
-		return false
 	if force_water_navigation:
 		return true
 	if stats != null:

@@ -28,7 +28,7 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 
-	var dir := global_position.direction_to(target.global_position)
+	var dir: Vector2 = global_position.direction_to(target.global_position)
 	global_position += dir * speed * delta
 	_set_direction_animation()
 
@@ -49,8 +49,8 @@ func _impact() -> void:
 func _set_direction_animation() -> void:
 	if not is_instance_valid(sprite):
 		return
-	var delta_vec := (target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN
-	var dir := _direction_from_vector(delta_vec)
+	var delta_vec: Vector2 = (target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN
+	var dir: String = _direction_from_vector(delta_vec)
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(dir):
 		sprite.play(dir)
 
