@@ -369,16 +369,18 @@ func next_upgrade_cost() -> int:
 			return -1
 
 
-func can_upgrade() -> bool:
-	return team == Owner.PLAYER and camp_level < 3
+func can_upgrade(owner_required: int = Owner.PLAYER) -> bool:
+	return team == owner_required and camp_level < 3
 
 
-func upgrade_camp() -> bool:
-	if not can_upgrade():
+func upgrade_camp(use_economy: bool = true, owner_required: int = Owner.PLAYER) -> bool:
+	if not can_upgrade(owner_required):
 		return false
 
 	var cost = next_upgrade_cost()
-	if cost <= 0 or not Economy.spend_gold(cost):
+	if cost <= 0:
+		return false
+	if use_economy and not Economy.spend_gold(cost):
 		return false
 
 	camp_level += 1

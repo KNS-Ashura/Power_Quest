@@ -56,6 +56,9 @@ const PORT_WEIGHTS_HARD := {
 const PROFILE_SIMPLE := {
 	"think_interval": 4.0,
 	"reserve_gold": 140,
+	"upgrade_reserve_gold": 180,
+	"upgrade_chance": 0.25,
+	"max_upgrades_per_think": 1,
 	"queue_limit": 1,
 	"use_ports": true,
 	"allow_transport": false,
@@ -66,6 +69,9 @@ const PROFILE_SIMPLE := {
 const PROFILE_NORMAL := {
 	"think_interval": 2.5,
 	"reserve_gold": 90,
+	"upgrade_reserve_gold": 120,
+	"upgrade_chance": 0.5,
+	"max_upgrades_per_think": 1,
 	"queue_limit": 1,
 	"use_ports": true,
 	"allow_transport": true,
@@ -76,6 +82,9 @@ const PROFILE_NORMAL := {
 const PROFILE_HARD := {
 	"think_interval": 1.7,
 	"reserve_gold": 40,
+	"upgrade_reserve_gold": 70,
+	"upgrade_chance": 0.8,
+	"max_upgrades_per_think": 2,
 	"queue_limit": 2,
 	"use_ports": true,
 	"allow_transport": true,
@@ -130,6 +139,7 @@ func _on_think() -> void:
 	if owned_camps.is_empty():
 		return
 
+	_handle_upgrades(owned_camps)
 	_handle_production(owned_camps)
 	_handle_military()
 
@@ -170,6 +180,57 @@ func _handle_production(owned_camps: Array) -> void:
 		if camp.production_queue.size() == 1:
 			camp.current_unit_total_time = camp.unit_build_time(chosen_unit) if camp.has_method("unit_build_time") else data.build_time
 			camp.remaining_time = camp.current_unit_total_time
+
+
+func _handle_upgrades(owned_camps: Array) -> void:
+	var reserve_gold: int = int(_profile.get("upgrade_reserve_gold", 120))
+	var upgrade_chance: float = float(_profile.get("upgrade_chance", 0.5))
+	var max_upgrades: int = int(_profile.get("max_upgrades_per_think", 1))
+	var candidates: Array[Dictionary] = []
+
+	for camp in owned_camps:
+		if not is_instance_valid(camp):
+			continue
+		if not camp.has_method("next_upgrade_cost") or not camp.has_method("upgrade_camp"):
+			continue
+		if camp.has_method("can_upgrade") and not camp.can_upgrade(TEAM_AI):
+			continue
+
+		var cost: int = int(camp.next_upgrade_cost())
+		if cost <= 0:
+			continue
+		if ai_gold - cost < reserve_gold:
+			continue
+
+		var level: int = int(camp.get("camp_level"))
+		var score: float = float(4 - level)
+		var is_port_site: bool = camp.has_method("is_port") and camp.is_port()
+		if is_port_site:
+			score += 0.9
+		if current_difficulty == MapSession.AIDifficulty.HARD and is_port_site:
+			score += 0.6
+		candidates.append({"camp": camp, "cost": cost, "score": score})
+
+	if candidates.is_empty():
+		return
+
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["score"]) > float(b["score"]))
+
+	var upgraded_count: int = 0
+	for entry in candidates:
+		if upgraded_count >= max_upgrades:
+			break
+		if randf() > upgrade_chance:
+			continue
+		var camp: Node = entry["camp"]
+		var cost: int = int(entry["cost"])
+		if ai_gold < cost:
+			continue
+		if not is_instance_valid(camp):
+			continue
+		if camp.upgrade_camp(false, TEAM_AI):
+			ai_gold -= cost
+			upgraded_count += 1
 
 
 func _handle_military() -> void:
