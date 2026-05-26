@@ -94,7 +94,7 @@ offset_right = 260.0
 offset_bottom = 388.0
 theme_override_fonts/font = ExtResource("9_s7vnq")
 theme_override_font_sizes/font_size = 24
-text = "AI_BEGINNER"
+text = "AI"
 horizontal_alignment = 1
 vertical_alignment = 1
 

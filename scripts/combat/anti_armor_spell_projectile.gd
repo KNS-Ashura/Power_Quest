@@ -57,5 +57,5 @@ func _set_direction_animation() -> void:
 
 func _direction_from_vector(delta_vec: Vector2) -> String:
 	if abs(delta_vec.y) >= abs(delta_vec.x):
-		return "b" if delta_vec.y < 0 else "f"
-	return "l" if delta_vec.x < 0 else "r"
+		return "f" if delta_vec.y < 0 else "b"
+	return "r" if delta_vec.x < 0 else "l"
