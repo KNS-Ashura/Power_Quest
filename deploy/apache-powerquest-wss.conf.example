@@ -1,0 +1,31 @@
+# Fragment VirtualHost SSL — powerquest.robinmatelot.codes
+# sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
+# sudo apache2ctl configtest && sudo systemctl reload apache2
+#
+# Prérequis : serveur Godot sur 127.0.0.1:9080 (systemctl status powerquest-game)
+
+# --- Nakama (API HTTP, même domaine que le jeu) ---
+ProxyPass /v2 http://127.0.0.1:7350/v2
+ProxyPassReverse /v2 http://127.0.0.1:7350/v2
+
+# --- WebSocket jeu Godot (WSS → WS) ---
+# Le client Godot utilise : wss://powerquest.robinmatelot.codes/game/
+ProxyRequests Off
+ProxyPreserveHost On
+SSLProxyEngine On
+
+# /game sans slash → /game/
+RedirectMatch 301 ^/game$ /game/
+
+RewriteEngine On
+RewriteCond %{HTTP:Upgrade} =websocket [NC,OR]
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC,OR]
+RewriteCond %{HTTP:Connection} Upgrade [NC]
+RewriteRule ^/game/?(.*)$ ws://127.0.0.1:9080/$1 [P,L]
+
+ProxyPass /game/ ws://127.0.0.1:9080/
+ProxyPassReverse /game/ ws://127.0.0.1:9080/
+
+# Fichiers statiques du export Web (si servis par ce vhost)
+# DocumentRoot /var/www/powerquest

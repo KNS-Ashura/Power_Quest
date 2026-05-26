@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://dlsbp28ol6lc4"]
 
+[ext_resource type="Script" path="res://scripts/menu/multi_menu_network.gd" id="1_net"]
 [ext_resource type="Texture2D" uid="uid://cp7gii0ayr331" path="res://assets/menu/img-sur-mesure/scene_multi/banniere.tres" id="2_yg7dg"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="3_jewfo"]
 [ext_resource type="Texture2D" uid="uid://b53sso5tv5meb" path="res://assets/menu/img-sur-mesure/scene_multi/bandeau.tres" id="4_den0h"]
@@ -13,6 +14,7 @@
 texture = ExtResource("9_g2llk")
 
 [node name="Multi" type="Node2D" unique_id=312905313]
+script = ExtResource("1_net")
 
 [node name="Banniere" type="Control" parent="." unique_id=2118874893]
 layout_mode = 3

@@ -13,7 +13,8 @@ func _ready() -> void:
 	global_timer.wait_time = cycle_time
 	global_timer.timeout.connect(_on_global_timer_timeout)
 	global_timer.start()
-	call_deferred("_assign_initial_camps")
+	if not MapSession.is_online_match:
+		call_deferred("_assign_initial_camps")
 
 
 func init_match() -> void:
@@ -21,6 +22,9 @@ func init_match() -> void:
 	if not global_timer.is_stopped():
 		global_timer.stop()
 	global_timer.start()
+	if MapSession.is_online_match:
+		OnlineMatch.begin_setup_after_main_loaded()
+		return
 	_assign_initial_camps()
 
 
@@ -55,20 +59,22 @@ func _process(_delta: float) -> void:
 	if all_camps.size() == 0:
 		return
 
-	var player_count = 0
-	var enemy_count = 0
+	var local_camps := 0
+	var hostile_camps := 0
 
 	for camp in all_camps:
-		var t = camp.get("team")
-		if t == 0:
-			player_count += 1
-		elif t == 1:
-			enemy_count += 1
+		var t: int = int(camp.get("team"))
+		if MapSession.is_neutral_team(t):
+			continue
+		if MapSession.is_local_team(t):
+			local_camps += 1
+		else:
+			hostile_camps += 1
 
-	if player_count == 0:
+	if local_camps == 0:
 		match_over = true
 		print("DEFEAT")
-	elif enemy_count == 0:
+	elif hostile_camps == 0:
 		match_over = true
 		print("VICTORY")
 
@@ -80,6 +86,6 @@ func _on_global_timer_timeout() -> void:
 	Economy.add_gold(cycle_gold_bonus)
 
 	for camp in get_tree().get_nodes_in_group("camps"):
-		if camp.get("team") == 0:
+		if MapSession.is_local_team(int(camp.get("team"))):
 			camp.receive_reinforcements(reinforcement_count)
 			break

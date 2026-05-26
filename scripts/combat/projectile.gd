@@ -36,9 +36,28 @@ func _apply_damage() -> void:
 	if is_instance_valid(shooter) and "stats" in shooter and shooter.stats != null and shooter.stats.unit_type == 6:
 		_mortar_explosion()
 	else:
-		if is_instance_valid(target) and target.has_method("take_damage"):
-			target.take_damage(damage, shooter, shooter_team)
+		if is_instance_valid(target):
+			_apply_synced_damage(target, damage)
 	queue_free()
+
+
+func _apply_synced_damage(cible: Node, degats: int) -> void:
+	if not cible.has_method("take_damage"):
+		return
+	if MapSession.is_online_match and OnlineGameSync.is_online_active():
+		var attacker_id := -1
+		if is_instance_valid(shooter) and shooter.get("net_sync_id") != null:
+			attacker_id = int(shooter.net_sync_id)
+		if MapSession.is_local_team(shooter_team):
+			var target_id := int(cible.get("net_sync_id")) if cible.get("net_sync_id") != null else -1
+			if target_id >= 0:
+				cible.take_damage(degats, shooter, shooter_team)
+				if attacker_id >= 0:
+					OnlineGameSync.report_damage(attacker_id, target_id, degats, shooter_team)
+				return
+		if bool(cible.get("net_remote_proxy")):
+			return
+	cible.take_damage(degats, shooter, shooter_team)
 
 
 func _mortar_explosion() -> void:
@@ -58,4 +77,4 @@ func _mortar_explosion() -> void:
 		if obj and obj.has_method("take_damage") and not obj.is_in_group("camps"):
 			if obj.get("team") != null and obj.get("team") != shooter_team:
 				var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / explosion_radius, 0.0, 1.0))
-				obj.take_damage(int(float(damage) * ratio), shooter, shooter_team)
+				_apply_synced_damage(obj, int(float(damage) * ratio))

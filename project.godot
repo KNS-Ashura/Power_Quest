@@ -27,6 +27,11 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 AIManager="*res://scripts/autoload/ai_manager.gd"
 Sound="*uid://c6u57jpr1208q"
 ScreenAdapter="*res://scripts/autoload/screen_adapter.gd"
+ServerMode="*res://scripts/server/server_mode.gd"
+NetworkConfig="*res://scripts/network/network_config.gd"
+NetworkSession="*res://scripts/network/network_session.gd"
+OnlineMatch="*res://scripts/network/online_match.gd"
+OnlineGameSync="*res://scripts/network/online_game_sync.gd"
 
 [display]
 

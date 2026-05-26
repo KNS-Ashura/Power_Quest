@@ -1,0 +1,60 @@
+# Power Quest — Nakama + base de données (MVP : 1 partie à la fois côté jeu)
+# Usage sur le VPS : cd deploy && docker compose up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pq-postgres
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: nakama
+      POSTGRES_PASSWORD: nakama_local_change_me
+    volumes:
+      - pq_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nakama -d nakama"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  nakama:
+    image: heroiclabs/nakama:3.22.0
+    container_name: pq-nakama
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -ecx
+      - |
+        /nakama/nakama migrate up --database.address nakama:nakama_local_change_me@postgres:5432/nakama &&
+        exec /nakama/nakama --name powerquest \
+          --database.address nakama:nakama_local_change_me@postgres:5432/nakama \
+          --logger.level INFO \
+          --session.token_expiry_sec 7200 \
+          --runtime.path /nakama/data/modules \
+          --socket.server_key defaultkey \
+          --socket.cors_allowed_origins "https://powerquest.robinmatelot.codes"
+    environment:
+      - GAME_WS_URL=wss://powerquest.robinmatelot.codes/game/
+    volumes:
+      - ./nakama/modules:/nakama/data/modules:ro
+    ports:
+      # Ports hôte 7360/7361 : évite conflit si un autre Nakama occupe déjà 7350
+      - "127.0.0.1:7360:7350"   # API → Apache ProxyPass /v2 vers 7360
+      - "127.0.0.1:7361:7351"   # Console admin (optionnel)
+    restart: unless-stopped
+
+  # MVP : serveur de jeu Godot (binaire exporté Linux headless)
+  # Décommenter quand le binaire est buildé et copié dans deploy/game-server/
+  # game-server:
+  #   build: ./game-server
+  #   container_name: pq-game-server
+  #   ports:
+  #     - "127.0.0.1:9080:9080"
+  #   command: ["./power_quest_server", "--headless", "--server", "--port", "9080"]
+  #   restart: unless-stopped
+
+volumes:
+  pq_pg_data:

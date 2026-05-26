@@ -25,6 +25,9 @@ var current_unit_total_time: float = 1.0
 
 @onready var spawn_point = $Marker2D
 var income_timer: Timer
+var _guardian_spawn_timer: float = 0.0
+
+const GUARDIAN_DELAY_ONLINE := 1.0
 
 signal production_updated(queue_size, progress)
 signal camp_upgradedd(new_level)
@@ -48,6 +51,17 @@ func _ready() -> void:
 	income_timer.wait_time = 1.0
 	income_timer.timeout.connect(_on_income_timer_timeout)
 	income_timer.start()
+
+	if MapSession.is_online_match:
+		_guardian_spawn_timer = 999.0
+		if not OnlineMatch.setup_complete.is_connected(_on_online_camps_ready):
+			OnlineMatch.setup_complete.connect(_on_online_camps_ready, CONNECT_ONE_SHOT)
+	else:
+		_schedule_guardian_spawn()
+
+
+func _on_online_camps_ready() -> void:
+	_schedule_guardian_spawn()
 
 
 func _detect_site_type() -> void:
@@ -182,7 +196,9 @@ func _build_time_for(data: UnitStats) -> float:
 
 
 func _process(delta: float) -> void:
-	if not is_instance_valid(guardian):
+	if _guardian_spawn_timer > 0.0:
+		_guardian_spawn_timer -= delta
+	if not is_instance_valid(guardian) and _can_spawn_guardian():
 		_spawn_guardian()
 
 	if production_queue.size() > 0:
@@ -190,6 +206,25 @@ func _process(delta: float) -> void:
 		production_updated.emit(production_queue.size(), 1.0 - (remaining_time / current_unit_total_time))
 		if remaining_time <= 0:
 			_finish_production()
+
+
+func _can_spawn_guardian() -> bool:
+	if not MapSession.is_online_match:
+		return true
+	if not MapSession.online_camps_ready:
+		return false
+	if _guardian_spawn_timer > 0.0:
+		return false
+	if MapSession.is_neutral_team(team):
+		return false
+	return true
+
+
+func _schedule_guardian_spawn() -> void:
+	if MapSession.is_online_match:
+		_guardian_spawn_timer = GUARDIAN_DELAY_ONLINE
+	else:
+		_guardian_spawn_timer = 0.0
 
 
 func _spawn_guardian() -> void:
@@ -205,9 +240,9 @@ func _spawn_guardian() -> void:
 	var spawn_position = _guardian_spawn_position()
 	new_guardian.team = team
 
-	if team == Owner.PLAYER:
+	if MapSession.is_local_team(team):
 		new_guardian.add_to_group("soldiers")
-	elif team == Owner.ENEMY:
+	else:
 		if new_guardian.is_in_group("soldiers"):
 			new_guardian.remove_from_group("soldiers")
 		new_guardian.add_to_group("enemies")
@@ -282,8 +317,12 @@ func _capture_by_team(new_team: int) -> void:
 	team = new_team
 	current_hp = hp_max
 	production_queue.clear()
+	if is_instance_valid(guardian):
+		guardian.queue_free()
+		guardian = null
 	_update_groups_and_visuals()
 	_notify_capture()
+	_schedule_guardian_spawn()
 
 
 func _notify_capture() -> void:
@@ -292,13 +331,13 @@ func _notify_capture() -> void:
 
 
 func _on_income_timer_timeout() -> void:
-	if team == Owner.PLAYER:
+	if MapSession.is_local_team(team):
 		var bonus: int = RegionManager.bonus_income_for_site(self)
 		Economy.add_gold(income_per_second + bonus)
 
 
 func request_production(id: int = 0) -> void:
-	if team != Owner.PLAYER or not unit_catalog.has(id):
+	if not MapSession.is_local_team(team) or not unit_catalog.has(id):
 		return
 	var data = unit_catalog[id]
 	if Economy.spend_gold(data.price):
@@ -331,7 +370,7 @@ func _finish_production() -> void:
 	var spawn_position = _water_spawn_position() if is_port() else _unit_spawn_position()
 	unit.team = team
 
-	if team == Owner.PLAYER:
+	if MapSession.is_local_team(team):
 		unit.add_to_group("soldiers")
 	else:
 		if unit.is_in_group("soldiers"):
@@ -348,7 +387,54 @@ func _finish_production() -> void:
 		unit._apply_stats_to_unit()
 	if unit.has_method("_configurer_calques_navigation"):
 		unit._configurer_calques_navigation()
+	_notify_network_spawn(unit, unit_id, spawn_position)
 	_advance_queue_after_failure()
+
+
+func _notify_network_spawn(unit: Node, unit_id: int, spawn_position: Vector2) -> void:
+	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
+		return
+	if multiplayer.is_server():
+		return
+	OnlineGameSync.notify_unit_spawned(self, unit, unit_id, spawn_position)
+
+
+func spawn_unite_reseau(
+	unit_id: int, spawn_position: Vector2, spawn_team: int, sync_id: int = -1
+) -> Node:
+	if not unit_catalog.has(unit_id):
+		return null
+	var stat = unit_catalog[unit_id]
+	var scene := CampCatalogue.scene_for_unit(stat, unit_id, camp_level)
+	if scene == null:
+		return null
+	var unit = scene.instantiate()
+	if not ("stats" in unit):
+		unit.queue_free()
+		return null
+	unit.stats = stat
+	unit.team = spawn_team
+	if MapSession.is_local_team(spawn_team):
+		unit.add_to_group("soldiers")
+	else:
+		if unit.is_in_group("soldiers"):
+			unit.remove_from_group("soldiers")
+		unit.add_to_group("enemies")
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		unit.queue_free()
+		return null
+	parent_node.add_child(unit)
+	unit.global_position = spawn_position
+	if unit.has_method("_apply_stats_to_unit"):
+		unit._apply_stats_to_unit()
+	if unit.has_method("_configurer_calques_navigation"):
+		unit._configurer_calques_navigation()
+	if sync_id >= 0:
+		unit.net_sync_id = sync_id
+		unit.net_remote_proxy = true
+		OnlineGameSync.register_unit(sync_id, unit)
+	return unit
 
 
 func _advance_queue_after_failure() -> void:
@@ -370,6 +456,8 @@ func next_upgrade_cost() -> int:
 
 
 func can_upgrade(owner_required: int = Owner.PLAYER) -> bool:
+	if MapSession.is_online_match:
+		return MapSession.is_local_team(team) and camp_level < 3
 	return team == owner_required and camp_level < 3
 
 
@@ -420,8 +508,12 @@ func _capture(attacker: Node2D, attacker_team: int = -1) -> void:
 		team = attacker.team
 	else:
 		team = Owner.NEUTRAL
+	if is_instance_valid(guardian):
+		guardian.queue_free()
+		guardian = null
 	_update_groups_and_visuals()
 	_notify_capture()
+	_schedule_guardian_spawn()
 
 
 func _update_groups_and_visuals() -> void:

@@ -7,6 +7,12 @@ signal killed_by(tueur, tueur_team)
 enum Owner { PLAYER, ENEMY, NEUTRAL }
 @export var team: Owner = Owner.PLAYER
 
+var net_sync_id: int = -1
+var net_remote_proxy: bool = false
+var _net_target_position: Vector2 = Vector2.ZERO
+var _net_lerp_active: bool = false
+var _network_damage: bool = false
+
 var hp_max : int = 100
 var current_hp : int = 100
 var unit_speed : float = 150.0
@@ -160,6 +166,8 @@ func set_selection(etat : bool):
 	self.modulate = Color(1.2, 1.2, 1.2) if is_selected else Color(1, 1, 1)
 
 func move_to(cible : Vector2):
+	if net_remote_proxy:
+		return
 	if is_camp_guardian:
 		return
 	attack_target_node = null
@@ -195,6 +203,8 @@ func _cible_combat_valide(cible: Node) -> bool:
 	return false
 
 func attack_target(cible : Node2D):
+	if net_remote_proxy:
+		return
 	if not _cible_combat_valide(cible):
 		return
 	if is_camp_guardian and is_instance_valid(cible):
@@ -208,6 +218,9 @@ var dernier_regard : String = "f"
 
 func _physics_process(_delta):
 	if is_dying:
+		return
+	if net_remote_proxy:
+		_physics_process_network_proxy(_delta)
 		return
 
 	if is_camp_guardian and (_est_gardien_port() or _est_gardien_camp()):
@@ -309,7 +322,7 @@ func _on_timer_attaque_timeout():
 		return
 	if attack_target_node.has_method("take_damage"):
 		_jouer_animation_attaque(attack_target_node)
-		attack_target_node.take_damage(unit_damage, self)
+		_deal_combat_damage(attack_target_node, unit_damage)
 		_animer_attaque_melee()
 
 func _animer_attaque_melee():
@@ -653,7 +666,7 @@ func _appliquer_degats_zone(centre: Vector2, rayon: float, degats: int):
 			continue
 		if obj.is_in_group("camps"):
 			continue
-		obj.take_damage(degats, self)
+		_deal_combat_damage(obj, degats)
 
 func _appliquer_soin_cible(cible: Node2D):
 	if not _cible_combat_valide(cible):
@@ -692,6 +705,14 @@ func update_animation():
 func take_damage(montant : int, auteur = null, auteur_team : int = -1):
 	if is_dying or invulnerabilite_actif:
 		return
+	if (
+		MapSession.is_online_match
+		and OnlineGameSync.is_online_active()
+		and not _network_damage
+		and MapSession.is_local_team(team)
+		and net_sync_id >= 0
+	):
+		return
 
 	var degats_finaux = montant
 	
@@ -715,6 +736,14 @@ func take_damage(montant : int, auteur = null, auteur_team : int = -1):
 func die(tueur : Node2D = null, tueur_team : int = -1):
 	if is_dying:
 		return
+	if (
+		MapSession.is_online_match
+		and OnlineGameSync.is_online_active()
+		and MapSession.is_local_team(team)
+		and net_sync_id >= 0
+		and not _network_damage
+	):
+		OnlineGameSync.report_unit_death(net_sync_id)
 
 	if _est_water_transporter():
 		if water_transport_boarded.size() > 0:
@@ -1538,9 +1567,69 @@ func _calculer_vitesse_desiree(prochain_point: Vector2) -> Vector2:
 	return vitesse
 
 
+func _deal_combat_damage(cible: Node, degats: int) -> void:
+	if not cible.has_method("take_damage"):
+		return
+	if MapSession.is_online_match and OnlineGameSync.is_online_active():
+		if MapSession.is_local_team(team):
+			var target_sync: int = int(cible.get("net_sync_id")) if cible.get("net_sync_id") != null else -1
+			if target_sync >= 0:
+				cible.take_damage(degats, self, team)
+				if net_sync_id >= 0:
+					OnlineGameSync.report_damage(net_sync_id, target_sync, degats, int(team))
+				return
+		if bool(cible.get("net_remote_proxy")):
+			return
+	cible.take_damage(degats, self, team)
+
+
+func take_damage_network_remote(montant: int, auteur_team: int) -> void:
+	_network_damage = true
+	take_damage(montant, null, auteur_team)
+	_network_damage = false
+
+
+func apply_network_order(move_to: Vector2, target: Node) -> void:
+	net_remote_proxy = true
+	if is_instance_valid(target) and target.has_method("take_damage"):
+		attack_target_node = target as Node2D
+		agent_navigation.target_position = target.global_position
+	else:
+		attack_target_node = null
+		agent_navigation.target_position = move_to
+
+
+func apply_network_state(pos: Vector2, vel: Vector2, hp: int) -> void:
+	_net_target_position = pos
+	_net_lerp_active = true
+	velocity = vel
+	if hp >= 0:
+		current_hp = mini(hp, hp_max)
+		if has_node("ProgressBar"):
+			$ProgressBar.value = current_hp
+
+
+func force_network_death() -> void:
+	if is_dying:
+		return
+	die(null, -1)
+
+
+func _physics_process_network_proxy(delta: float) -> void:
+	if _net_lerp_active:
+		global_position = global_position.lerp(_net_target_position, clampf(delta * 9.0, 0.0, 1.0))
+		if global_position.distance_to(_net_target_position) < 4.0:
+			_net_lerp_active = false
+	if is_instance_valid(attack_target_node):
+		agent_navigation.target_position = attack_target_node.global_position
+		if attack_target_node in zone_detection.get_overlapping_bodies():
+			_on_timer_attaque_timeout()
+	update_animation()
+
+
 func _calculer_repulsion_allies() -> Vector2:
 	var repulsion := Vector2.ZERO
-	var groupe := "soldiers" if team == Owner.PLAYER else "enemies"
+	var groupe := "soldiers" if MapSession.is_local_team(team) else "enemies"
 	for node in get_tree().get_nodes_in_group(groupe):
 		if node == self or not (node is CharacterBody2D):
 			continue

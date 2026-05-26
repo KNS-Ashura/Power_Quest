@@ -1,0 +1,14 @@
+# À inclure dans le VirtualHost SSL de powerquest.robinmatelot.codes
+# sudo a2enmod proxy proxy_http proxy_wstunnel headers
+
+# Nakama (si /v2 est sur le même vhost)
+# ProxyPass /v2 http://127.0.0.1:7350/v2
+# ProxyPassReverse /v2 http://127.0.0.1:7350/v2
+
+# Serveur Godot WebSocket (obligatoire pour sortir de « Connexion WebSocket… »)
+ProxyPass /game/ ws://127.0.0.1:9080/
+ProxyPassReverse /game/ ws://127.0.0.1:9080/
+
+# Variante si le client utilise wss://domain/game sans slash final :
+# ProxyPass /game ws://127.0.0.1:9080/
+# ProxyPassReverse /game ws://127.0.0.1:9080/

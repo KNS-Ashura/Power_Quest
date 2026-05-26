@@ -1,0 +1,44 @@
+# À inclure dans le VirtualHost HTTPS de api.powerquest.robinmatelot.codes
+# Corrige : "Access-Control-Allow-Origin contains multiple values ... powerquest..., *"
+#
+# Cause : Nakama envoie souvent "*" ET Apache ajoute votre domaine → Chrome refuse.
+# Solution : supprimer les en-têtes CORS de Nakama côté proxy, n'en garder qu'UN seul.
+
+# Modules requis (une fois sur le VPS) :
+#   sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
+#   sudo systemctl reload apache2
+
+# --- Nakama HTTP API ---
+# Adapter 7360 si votre docker-compose mappe 7360:7350 (voir deploy/docker-compose.yml)
+
+<Location /v2>
+    ProxyPass http://127.0.0.1:7360/v2
+    ProxyPassReverse http://127.0.0.1:7360/v2
+
+    # Enlever TOUS les CORS renvoyés par Nakama (évite le doublon avec *)
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Methods
+    Header always unset Access-Control-Allow-Headers
+    Header always unset Access-Control-Allow-Credentials
+    Header always unset Access-Control-Expose-Headers
+
+    # Un seul origin (obligatoire pour fetch depuis powerquest.robinmatelot.codes)
+    Header always set Access-Control-Allow-Origin "https://powerquest.robinmatelot.codes"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Authorization, Content-Type, Accept, X-Requested-With"
+    Header always set Access-Control-Max-Age "86400"
+
+    # Preflight OPTIONS (le navigateur l'envoie avant POST authenticate)
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} =OPTIONS
+    RewriteRule ^ - [R=204,L]
+</Location>
+
+# --- Serveur de jeu Godot (WebSocket) — port systemd powerquest-game (9080) ---
+ProxyPass /game ws://127.0.0.1:9080/
+ProxyPassReverse /game ws://127.0.0.1:9080/
+
+# NE PAS ajouter ailleurs dans le même vhost :
+#   Header always set Access-Control-Allow-Origin "..."
+#   Header always set Access-Control-Allow-Origin "*"
+# (sinon doublon garanti)

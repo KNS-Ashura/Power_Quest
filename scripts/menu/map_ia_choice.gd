@@ -83,4 +83,5 @@ func _on_launch_game_pressed() -> void:
 	if not MapSession.is_map_available(map_index):
 		push_warning(MSG_MAP_MISSING % map_index)
 		return
+	MapSession.reset_online_state()
 	get_tree().change_scene_to_file(MapSession.GAME_SHELL_SCENE)

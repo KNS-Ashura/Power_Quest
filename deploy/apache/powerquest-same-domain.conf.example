@@ -1,0 +1,35 @@
+# VirtualHost HTTPS : powerquest.robinmatelot.codes
+# Stratégie CORS : Nakama + jeu sur le MÊME domaine que le client Web
+# (voir scripts/network/network_config.gd — nakama_host = powerquest…, pas api.…)
+#
+# Modules : sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
+# Nakama docker : 127.0.0.1:7360 (voir deploy/docker-compose.yml)
+# Jeu Godot     : 127.0.0.1:9080 (systemd powerquest-game)
+
+# Healthcheck Nakama (optionnel, debug)
+ProxyPass /healthcheck http://127.0.0.1:7360/healthcheck
+ProxyPassReverse /healthcheck http://127.0.0.1:7360/healthcheck
+
+<Location /v2>
+    ProxyPass http://127.0.0.1:7360/v2
+    ProxyPassReverse http://127.0.0.1:7360/v2
+
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Methods
+    Header always unset Access-Control-Allow-Headers
+    Header always unset Access-Control-Allow-Credentials
+
+    Header always set Access-Control-Allow-Origin "https://powerquest.robinmatelot.codes"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Authorization, Content-Type, Accept, X-Requested-With"
+    Header always set Access-Control-Max-Age "86400"
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} =OPTIONS
+    RewriteRule ^ - [R=204,L]
+</Location>
+
+ProxyPass /game ws://127.0.0.1:9080/
+ProxyPassReverse /game ws://127.0.0.1:9080/
+
+# Fichiers export Web Godot : DocumentRoot habituel du vhost (hors de ce snippet)

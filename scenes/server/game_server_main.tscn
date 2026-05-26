@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://pqgameserver01"]
+
+[ext_resource type="Script" path="res://scripts/server/game_server_main.gd" id="1_srv"]
+
+[node name="GameServerMain" type="Node"]
+script = ExtResource("1_srv")

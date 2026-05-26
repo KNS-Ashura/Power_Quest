@@ -106,7 +106,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var obj = res.collider
 			if obj and obj.has_method("take_damage") and not obj.is_in_group("camps"):
 				var t = obj.get("team")
-				if t != null and t != 0:
+				if t != null and MapSession.is_hostile_team(int(t)):
 					target = obj
 					break
 
@@ -123,13 +123,30 @@ func _unhandled_input(event: InputEvent) -> void:
 					(i / int(cols)) * spacing - (ceil(float(count) / cols) - 1) * spacing / 2.0
 				)
 				selection[i].move_to(dest + offset)
+		_send_network_orders(selection, dest, target)
 
 
 func select_units() -> void:
 	var zone = Rect2(selection_box.global_position, selection_box.size)
 	for soldier in get_tree().get_nodes_in_group("soldiers"):
 		if soldier.has_method("set_selection"):
-			soldier.set_selection(soldier.get("team") == 0 and zone.has_point(soldier.global_position))
+			var can_select := MapSession.is_local_team(int(soldier.get("team")))
+			soldier.set_selection(can_select and zone.has_point(soldier.global_position))
+
+
+func _send_network_orders(selection: Array, move_to: Vector2, attack_target: Node) -> void:
+	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
+		return
+	var sync_ids: Array = []
+	for unit in selection:
+		if unit.get("net_sync_id") != null and int(unit.net_sync_id) >= 0:
+			sync_ids.append(int(unit.net_sync_id))
+	if sync_ids.is_empty():
+		return
+	var attack_sync_id := -1
+	if attack_target != null and attack_target.get("net_sync_id") != null:
+		attack_sync_id = int(attack_target.net_sync_id)
+	OnlineGameSync.report_player_orders(sync_ids, move_to, attack_sync_id)
 
 
 func _handle_building_click() -> void:

@@ -13,6 +13,8 @@ func _ready() -> void:
 func _init_match_systems() -> void:
 	if GameManager.has_method("init_match"):
 		GameManager.init_match()
+	if MapSession.is_online_match:
+		return
 	if AIManager.has_method("init_match"):
 		AIManager.init_match()
 

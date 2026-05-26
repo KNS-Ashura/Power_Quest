@@ -1,0 +1,27 @@
+# /etc/systemd/system/powerquest-game.service
+# Copier : sudo cp deploy/powerquest-game.service.example /etc/systemd/system/powerquest-game.service
+# Puis   : sudo systemctl daemon-reload && sudo systemctl enable --now powerquest-game
+
+[Unit]
+Description=Power Quest Game Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/deploy
+Environment=GODOT_SILENCE_ROOT_WARNING=1
+# Chemin ABSOLU obligatoire — 203/EXEC si fichier absent ou non exécutable
+ExecStart=/root/deploy/power_quest_server.x86_64 --headless -- --server --port 9080
+Restart=on-failure
+RestartSec=5
+# Éviter boucle infinie si binaire cassé (optionnel)
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
+
+# Après édition :
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart powerquest-game
+#   ss -tlnp | grep 9080

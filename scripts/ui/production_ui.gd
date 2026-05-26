@@ -43,7 +43,7 @@ func _on_building_changed(building) -> void:
 
 	selected_building = building
 
-	if selected_building and selected_building.get("team") == 0:
+	if selected_building and MapSession.is_local_team(int(selected_building.get("team"))):
 		_port_production_mode = selected_building.has_method("is_port") and selected_building.is_port()
 		panel.show()
 		_apply_production_button_layout()
