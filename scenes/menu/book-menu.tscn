@@ -290,8 +290,8 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("1_tyuks")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1584117811]
-position = Vector2(362, 456.66666)
-scale = Vector2(0.6196297, 0.5688889)
+position = Vector2(349.1667, 452.00003)
+scale = Vector2(0.6338889, 0.57666665)
 texture = ExtResource("2_j816d")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2005095475]
