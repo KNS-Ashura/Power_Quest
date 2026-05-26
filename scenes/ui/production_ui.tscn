@@ -4,9 +4,14 @@
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://bmkelnvyln5pm" path="res://assets/menu/img-sur-mesure/menu_bouton.tres" id="3_button"]
 [ext_resource type="Texture2D" uid="uid://b53sso5tv5meb" path="res://assets/menu/img-sur-mesure/scene_multi/bandeau.tres" id="4_panel"]
+[ext_resource type="Texture2D" uid="uid://bdwtv2mtupcdq" path="res://assets/menu/icons/Icons.png" id="5_icons"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 texture = ExtResource("4_panel")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
+atlas = ExtResource("5_icons")
+region = Rect2(20.00073, 35.727226, 23.561487, 23.921211)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_button"]
 texture = ExtResource("3_button")
@@ -23,20 +28,37 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="LabelArgent" type="Label" parent="Control" unique_id=1309799976]
+[node name="GoldPanel" type="PanelContainer" parent="Control" unique_id=1103510580]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
-offset_top = 14.0
-offset_right = -20.0
-offset_bottom = 38.0
+offset_left = -198.0
+offset_top = 10.0
+offset_right = -16.0
+offset_bottom = 42.0
 grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+
+[node name="GoldRow" type="HBoxContainer" parent="Control/GoldPanel" unique_id=1698614824]
+layout_mode = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="GoldIcon" type="TextureRect" parent="Control/GoldPanel/GoldRow" unique_id=11882630]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+texture = SubResource("AtlasTexture_gold_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LabelArgent" type="Label" parent="Control/GoldPanel/GoldRow" unique_id=905351232]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 24
-text = "OR : 0"
-horizontal_alignment = 2
+theme_override_font_sizes/font_size = 22
+text = "GOLD: 0"
+vertical_alignment = 1
 
 [node name="Panel" type="Panel" parent="Control" unique_id=164534520]
 layout_mode = 1

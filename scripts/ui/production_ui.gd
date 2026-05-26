@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 @onready var panel = $Control/Panel
-@onready var gold_label = $Control/LabelArgent
+@onready var gold_label = $Control/GoldPanel/GoldRow/LabelArgent
 @onready var queue_label = $Control/Panel/LabelQueue
 @onready var level_label = $Control/Panel/LabelNiveau
 @onready var btn_upgrade = $Control/Panel/GridContainer/BtnUpgrade
@@ -201,5 +201,5 @@ func _on_camp_upgradedd(_new_level) -> void:
 
 
 func _on_gold_changed(value) -> void:
-	gold_label.text = "GOLD: " + str(value)
+	gold_label.text = str(value)
 	_refresh_upgrade_button()

@@ -1,8 +1,9 @@
 extends Node2D
 
 const MSG_MAP_MISSING := "Map %d is not available yet (missing scene file)."
+const IA_LEVELS: Array[String] = ["Simple", "Normal", "Difficile"]
 
-var difficultes: Array[String] = ["Debutant", "Avance", "Expert"]
+var difficultes: Array[String] = IA_LEVELS
 var index_ia_actuel: int = 0
 
 
@@ -38,6 +39,7 @@ var index_carte_actuelle: int = 0
 func _ready() -> void:
 	if btn_launch_game and not btn_launch_game.pressed.is_connected(_on_launch_game_pressed):
 		btn_launch_game.pressed.connect(_on_launch_game_pressed)
+	index_ia_actuel = MapSession.get_ai_difficulty()
 	update_display_ia()
 	update_display_map()
 
@@ -76,6 +78,7 @@ func _on_fleche_gauche_2_pressed() -> void:
 
 func _on_launch_game_pressed() -> void:
 	var map_index: int = int(liste_des_cartes[index_carte_actuelle].get("map_index", 1))
+	MapSession.active_ai_difficulty = index_ia_actuel
 	MapSession.active_map_index = map_index
 	if not MapSession.is_map_available(map_index):
 		push_warning(MSG_MAP_MISSING % map_index)

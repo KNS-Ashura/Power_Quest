@@ -2,6 +2,14 @@ extends Node
 
 ## Active map for this session (1 = Undead Land, 2 = Desert Land, 3 = TBD).
 var active_map_index: int = 1
+## AI difficulty for Solo vs IA (0 = simple, 1 = normal, 2 = hard).
+var active_ai_difficulty: int = 1
+
+enum AIDifficulty {
+	SIMPLE,
+	NORMAL,
+	HARD,
+}
 
 const MAP_SCENE_PATHS: Dictionary = {
 	1: "res://scenes/map/Map1.scn",
@@ -19,3 +27,9 @@ func get_map_scene_path(map_index: int = -1) -> String:
 
 func is_map_available(map_index: int = -1) -> bool:
 	return ResourceLoader.exists(get_map_scene_path(map_index))
+
+
+func get_ai_difficulty() -> int:
+	if active_ai_difficulty < AIDifficulty.SIMPLE or active_ai_difficulty > AIDifficulty.HARD:
+		return AIDifficulty.NORMAL
+	return active_ai_difficulty
