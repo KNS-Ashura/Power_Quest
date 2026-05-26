@@ -33,10 +33,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -198.0
-offset_top = 10.0
-offset_right = -16.0
-offset_bottom = 42.0
+offset_left = -1668.0
+offset_top = 20.0
+offset_right = -1486.0
+offset_bottom = 52.0
 grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 
