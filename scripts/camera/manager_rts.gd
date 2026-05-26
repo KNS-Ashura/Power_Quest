@@ -1,11 +1,15 @@
 extends Node2D
 
+const MobileCameraJoystickScript = preload("res://scripts/mobile/mobile_camera_joystick.gd")
+
 @onready var selection_box = $BoiteSelection
 @onready var camera = $Camera2D
 
 var is_selecting: bool = false
 var start_point: Vector2 = Vector2.ZERO
 var selected_building: Node2D = null
+var _virtual_camera_input: Vector2 = Vector2.ZERO
+var _mobile_joystick: CanvasLayer = null
 
 signal selected_building_changed(building)
 
@@ -21,6 +25,7 @@ func _ready() -> void:
 	add_to_group("manager_rts")
 	if camera:
 		camera.make_current()
+	_setup_mobile_controls()
 	if MapSession.is_online_match:
 		if not OnlineMatch.setup_complete.is_connected(_on_online_camps_ready_for_camera):
 			OnlineMatch.setup_complete.connect(_on_online_camps_ready_for_camera, CONNECT_ONE_SHOT)
@@ -65,8 +70,33 @@ func _handle_camera_movement(delta: float) -> void:
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		dir.x += 1
 
+	if _virtual_camera_input != Vector2.ZERO:
+		dir += _virtual_camera_input
+
 	if dir != Vector2.ZERO:
 		camera.global_position += dir.normalized() * camera_speed * delta * (1.0 / camera.zoom.x)
+
+
+func set_virtual_camera_input(direction: Vector2) -> void:
+	_virtual_camera_input = direction.limit_length(1.0)
+
+
+func _setup_mobile_controls() -> void:
+	if not _is_mobile_runtime():
+		return
+	if _mobile_joystick != null and is_instance_valid(_mobile_joystick):
+		return
+	var joystick_instance := MobileCameraJoystickScript.new()
+	if joystick_instance is CanvasLayer:
+		_mobile_joystick = joystick_instance as CanvasLayer
+		add_child(_mobile_joystick)
+
+
+func _is_mobile_runtime() -> bool:
+	if OS.has_feature("mobile"):
+		return true
+	var os_name := OS.get_name()
+	return os_name == "Android" or os_name == "iOS"
 
 
 func _handle_camera_zoom(delta: float) -> void:
