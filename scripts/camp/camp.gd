@@ -519,8 +519,10 @@ func _capture(attacker: Node2D, attacker_team: int = -1) -> void:
 func _update_groups_and_visuals() -> void:
 	var color_rect = get_node_or_null("ColorRect") as ColorRect
 	var label_node = get_node_or_null("Label") as Label
+	var is_friendly := MapSession.is_local_team(team)
+	var is_neutral := MapSession.is_neutral_team(team)
 
-	if team != Owner.PLAYER:
+	if not is_friendly:
 		if color_rect == null:
 			color_rect = ColorRect.new()
 			color_rect.name = "ColorRect"
@@ -542,27 +544,28 @@ func _update_groups_and_visuals() -> void:
 
 	if is_in_group("enemies"):
 		remove_from_group("enemies")
-	match team:
-		Owner.PLAYER:
-			if color_rect:
-				color_rect.visible = false
-			if label_node:
-				label_node.visible = false
-		Owner.ENEMY:
+
+	if is_friendly:
+		if color_rect:
+			color_rect.visible = false
+		if label_node:
+			label_node.visible = false
+	elif is_neutral:
+		if color_rect:
+			color_rect.visible = true
+			color_rect.color = Color(0.5, 0.5, 0.5, 0.3)
+		if label_node:
+			label_node.visible = true
+			label_node.text = "NEUTRE" if not is_port() else "PORT NEUTRE"
+	else:
+		if MapSession.is_hostile_team(team):
 			add_to_group("enemies")
-			if color_rect:
-				color_rect.visible = true
-				color_rect.color = Color(0.8, 0.1, 0.1, 0.3)
-			if label_node:
-				label_node.visible = true
-				label_node.text = "ENEMY" if not is_port() else "ENEMY PORT"
-		Owner.NEUTRAL:
-			if color_rect:
-				color_rect.visible = true
-				color_rect.color = Color(0.5, 0.5, 0.5, 0.3)
-			if label_node:
-				label_node.visible = true
-				label_node.text = "NEUTRAL" if not is_port() else "NEUTRAL PORT"
+		if color_rect:
+			color_rect.visible = true
+			color_rect.color = Color(0.8, 0.1, 0.1, 0.3)
+		if label_node:
+			label_node.visible = true
+			label_node.text = "ENNEMI" if not is_port() else "PORT ENNEMI"
 	queue_redraw()
 
 

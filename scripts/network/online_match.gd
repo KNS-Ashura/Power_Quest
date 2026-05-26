@@ -101,5 +101,12 @@ func rpc_match_player_setup(
 	MapSession.online_player_count = player_count
 	_apply_camp_assignments(paths, teams)
 	MapSession.online_camps_ready = true
+	_refresh_all_camp_visuals()
 	print("[OnlineMatch] Client prêt — équipe locale %d / %d joueurs." % [team, player_count])
 	setup_complete.emit()
+
+
+func _refresh_all_camp_visuals() -> void:
+	for camp in get_tree().get_nodes_in_group("camps"):
+		if camp.has_method("_update_groups_and_visuals"):
+			camp._update_groups_and_visuals()

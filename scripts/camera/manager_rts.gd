@@ -21,6 +21,32 @@ func _ready() -> void:
 	add_to_group("manager_rts")
 	if camera:
 		camera.make_current()
+	if MapSession.is_online_match:
+		if not OnlineMatch.setup_complete.is_connected(_on_online_camps_ready_for_camera):
+			OnlineMatch.setup_complete.connect(_on_online_camps_ready_for_camera, CONNECT_ONE_SHOT)
+	else:
+		call_deferred("focus_on_local_camps")
+
+
+func _on_online_camps_ready_for_camera() -> void:
+	await get_tree().process_frame
+	focus_on_local_camps()
+
+
+func focus_on_local_camps() -> void:
+	if camera == null:
+		return
+	var local_camps: Array[Node2D] = []
+	for camp in get_tree().get_nodes_in_group("camps"):
+		if MapSession.is_local_team(int(camp.get("team"))):
+			local_camps.append(camp as Node2D)
+	if local_camps.is_empty():
+		return
+	var center := Vector2.ZERO
+	for camp in local_camps:
+		center += camp.global_position
+	center /= float(local_camps.size())
+	camera.global_position = center
 
 
 func _process(delta: float) -> void:

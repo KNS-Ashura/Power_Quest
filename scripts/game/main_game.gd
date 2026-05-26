@@ -17,6 +17,13 @@ func _init_match_systems() -> void:
 		return
 	if AIManager.has_method("init_match"):
 		AIManager.init_match()
+	call_deferred("_focus_camera_on_local_camps")
+
+
+func _focus_camera_on_local_camps() -> void:
+	var manager := get_tree().get_first_node_in_group("manager_rts")
+	if manager != null and manager.has_method("focus_on_local_camps"):
+		manager.focus_on_local_camps()
 
 
 func _remove_legacy_embedded_maps() -> void:
