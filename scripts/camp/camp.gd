@@ -101,6 +101,10 @@ func _apply_level_visuals() -> void:
 	if sprite_base:
 		sprite_base.play("animation_camp_V")
 
+	if sprite_base == null and _has_static_sprite_visuals():
+		_apply_full_visual_from_template()
+		return
+
 	for n in OVERLAY_VISUAL_NODE_NAMES:
 		var old_node = get_node_or_null(n)
 		if old_node:
@@ -136,6 +140,13 @@ func _apply_level_visuals() -> void:
 			if s.sprite_frames and s.animation != StringName("") and s.sprite_frames.has_animation(s.animation):
 				s.play(s.animation)
 	template_root.free()
+
+
+func _has_static_sprite_visuals() -> bool:
+	for child in get_children():
+		if child is Sprite2D:
+			return true
+	return false
 
 
 func _apply_full_visual_from_template() -> void:
@@ -314,7 +325,7 @@ func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
 
 
 func _capture_by_team(new_team: int) -> void:
-	team = new_team
+	team = new_team as Owner
 	current_hp = hp_max
 	production_queue.clear()
 	if is_instance_valid(guardian):
@@ -404,7 +415,7 @@ func spawn_unite_reseau(
 ) -> Node:
 	if not unit_catalog.has(unit_id):
 		return null
-	var stat = unit_catalog[unit_id]
+	var stat: UnitStats = unit_catalog[unit_id]
 	var scene := CampCatalogue.scene_for_unit(stat, unit_id, camp_level)
 	if scene == null:
 		return null
@@ -413,7 +424,7 @@ func spawn_unite_reseau(
 		unit.queue_free()
 		return null
 	unit.stats = stat
-	unit.team = spawn_team
+	unit.team = spawn_team as Owner
 	if MapSession.is_local_team(spawn_team):
 		unit.add_to_group("soldiers")
 	else:
@@ -503,9 +514,9 @@ func _capture(attacker: Node2D, attacker_team: int = -1) -> void:
 	current_hp = hp_max
 	production_queue.clear()
 	if attacker_team != -1:
-		team = attacker_team
+		team = attacker_team as Owner
 	elif is_instance_valid(attacker) and attacker.get("team") != null:
-		team = attacker.team
+		team = int(attacker.team) as Owner
 	else:
 		team = Owner.NEUTRAL
 	if is_instance_valid(guardian):

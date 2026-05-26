@@ -1,57 +1,7 @@
 [gd_scene format=3 uid="uid://den01020biy2y"]
 
 [ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/port_nv2.gd" id="1_iqeto"]
-[ext_resource type="Texture2D" uid="uid://dlf71xeovi3jx" path="res://assets/objects/map1/Objects_animated.png" id="2_iyl6x"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_stol8"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(21, 315, 85, 105)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_5j30k"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(133, 315, 85, 105)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_lfpy8"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(245, 315, 85, 105)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_boffh"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(357, 315, 85, 105)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_m34xq"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(469, 315, 85, 105)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_uwkrd"]
-atlas = ExtResource("2_iyl6x")
-region = Rect2(581, 315, 85, 105)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_pwn8b"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_stol8")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_5j30k")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lfpy8")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_boffh")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m34xq")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_uwkrd")
-}],
-"loop": true,
-"name": &"animation_camp_V",
-"speed": 11.0
-}]
+[ext_resource type="Texture2D" uid="uid://mds878v4e061" path="res://assets/objects/map1/Objects_source.png" id="3_lwcvr"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
 radius = 25.0
@@ -61,11 +11,16 @@ height = 88.0
 script = ExtResource("1_iqeto")
 team = 0
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1028446195]
-rotation = -0.00797035
-sprite_frames = SubResource("SpriteFrames_pwn8b")
-animation = &"animation_camp_V"
-frame_progress = 0.0070738103
+[node name="Sprite2D3" type="Sprite2D" parent="." unique_id=1499208638]
+position = Vector2(-35, -37)
+texture = ExtResource("3_lwcvr")
+region_enabled = true
+region_rect = Rect2(335.57062, 663.4972, 82.969055, 86.9787)
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=1227599666]
+texture = ExtResource("3_lwcvr")
+region_enabled = true
+region_rect = Rect2(-0.65682983, 656.6507, 110.59357, 89.5567)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
 position = Vector2(0, 1)

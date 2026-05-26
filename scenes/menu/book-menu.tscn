@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://wr4ve6h6g68f"]
 
 [ext_resource type="Texture2D" uid="uid://b5dgpc16rep5r" path="res://assets/menu/book-ui/PNG/Open_book.png" id="1_kwy3m"]
-[ext_resource type="Script" uid="uid://cja2fawnfedra" path="res://scripts/menu/book_menu_transition.gd" id="1_tyuks"]
-[ext_resource type="Texture2D" uid="uid://bk16o5o6woyvj" path="res://assets/menu/img-sur-mesure/menubackground.png" id="2_j816d"]
+[ext_resource type="Script" uid="uid://cja2fawnfedra" path="res://scripts/menu/transition.gd" id="1_tyuks"]
+[ext_resource type="Texture2D" uid="uid://dvgohh6acunsg" path="res://assets/menu/img-sur-mesure/undead.jpg" id="2_j816d"]
 [ext_resource type="Texture2D" uid="uid://ba2h1xdwiqi6g" path="res://assets/menu/img-sur-mesure/Scene_book_menu/banniere.tres" id="2_mcy4f"]
 [ext_resource type="Texture2D" uid="uid://bbqwt5xi1wsnu" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton1.tres" id="3_0qj5p"]
 [ext_resource type="Texture2D" uid="uid://cti4meatxnoth" path="res://assets/menu/book-ui/PNG/pages_apper.png" id="3_stbfh"]
@@ -290,8 +290,8 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("1_tyuks")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1584117811]
-position = Vector2(344.6667, 428.6667)
-scale = Vector2(0.7508681, 0.64322925)
+position = Vector2(362, 456.66666)
+scale = Vector2(0.6196297, 0.5688889)
 texture = ExtResource("2_j816d")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2005095475]
