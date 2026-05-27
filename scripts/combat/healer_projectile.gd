@@ -55,6 +55,15 @@ func _impact() -> void:
 					target.get_node("ProgressBar").value = target.current_hp
 				if shooter.has_method("_attacher_effet_soin_sur"):
 					shooter._attacher_effet_soin_sur(target)
+				if (
+					MapSession.is_online_match
+					and OnlineGameSync.is_online_active()
+					and MapSession.is_local_team(int(shooter.team))
+				):
+					var target_sync: int = int(target.get("net_sync_id")) if target.get("net_sync_id") != null else -1
+					var caster_sync: int = int(shooter.get("net_sync_id")) if shooter.get("net_sync_id") != null else -1
+					if target_sync >= 0 and caster_sync >= 0:
+						OnlineGameSync.report_heal(caster_sync, target_sync, heal_amount)
 	queue_free()
 
 

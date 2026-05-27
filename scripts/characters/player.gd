@@ -809,6 +809,14 @@ func apply_network_state(pos: Vector2, vel: Vector2, hp: int) -> void:
 	PlayerNetworkControllerRef.apply_network_state(self, pos, vel, hp)
 
 
+func apply_heal_network_remote(amount: int, caster_sync_id: int) -> void:
+	PlayerNetworkControllerRef.apply_heal_network_remote(self, amount, caster_sync_id)
+
+
+func apply_spell_network_remote(spell_type: int, target_sync_ids: Array, params: Dictionary) -> void:
+	PlayerSpellControllerRef.apply_spell_network_remote(self, spell_type, target_sync_ids, params)
+
+
 func force_network_death() -> void:
 	PlayerNetworkControllerRef.force_network_death(self)
 

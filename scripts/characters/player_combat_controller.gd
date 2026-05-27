@@ -297,7 +297,23 @@ static func appliquer_soin_cible(owner: Node, cible: Node2D) -> void:
 		return
 
 	var soin: int = montant_soin(owner)
+	_appliquer_soin_local(owner, cible, soin)
+	_rapport_soin_reseau(owner, cible, soin)
+
+
+static func _appliquer_soin_local(owner: Node, cible: Node2D, soin: int) -> void:
 	cible.current_hp = min(cible.hp_max, cible.current_hp + soin)
 	if cible.has_node("ProgressBar"):
 		cible.get_node("ProgressBar").value = cible.current_hp
 	owner._attacher_effet_soin_sur(cible)
+
+
+static func _rapport_soin_reseau(owner: Node, cible: Node, soin: int) -> void:
+	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
+		return
+	if not MapSession.is_local_team(int(owner.team)):
+		return
+	var target_sync: int = int(cible.get("net_sync_id")) if cible.get("net_sync_id") != null else -1
+	if target_sync < 0 or owner.net_sync_id < 0:
+		return
+	OnlineGameSync.report_heal(owner.net_sync_id, target_sync, soin)
