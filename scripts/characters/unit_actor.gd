@@ -1,5 +1,5 @@
 extends CharacterBody2D
-	
+
 const UnitNameUtilsRef = preload("res://scripts/common/unit_name_utils.gd")
 const PlayerAnimationControllerRef = preload("res://scripts/characters/player_animation_controller.gd")
 const PlayerTransportControllerRef = preload("res://scripts/characters/player_transport_controller.gd")

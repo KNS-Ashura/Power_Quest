@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const DirectionUtilsRef = preload("res://scripts/common/direction_utils.gd")
+
 var target: Node2D = null
 var heal_amount: int = 0
 const SPEED_DEFAULT := 820.0
@@ -59,13 +61,7 @@ func _impact() -> void:
 func _set_direction_animation() -> void:
 	if not is_instance_valid(sprite):
 		return
-	var delta_vec = (target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN
-	var dir = _direction_from_vector(delta_vec)
+	var delta_vec: Vector2 = (target.global_position - global_position) if is_instance_valid(target) else Vector2.DOWN
+	var dir: String = DirectionUtilsRef.direction_from_vector(delta_vec)
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(dir):
 		sprite.play(dir)
-
-
-func _direction_from_vector(delta_vec: Vector2) -> String:
-	if abs(delta_vec.y) >= abs(delta_vec.x):
-		return "b" if delta_vec.y < 0 else "f"
-	return "l" if delta_vec.x < 0 else "r"
