@@ -14,7 +14,7 @@ static func on_timer_attaque_timeout(owner: Node) -> void:
 		owner._programmer_tir_projectile(owner.attack_target_node, owner.PROJECTILE_ATTACK_ANIM_DELAY_HEAL, true)
 		return
 	if owner._est_mortar():
-		tirer_mortar_distance(owner, owner.attack_target_node)
+		tirer_mortar_attaque_base(owner, owner.attack_target_node)
 		return
 	if owner._est_range() or owner._est_water_range_unite() or (owner.stats != null and owner.stats.is_ranged):
 		owner._jouer_animation_attaque(owner.attack_target_node)
@@ -59,14 +59,19 @@ static func rechercher_cible_automatique(owner: Node) -> void:
 		cibles = cibles.filter(func(c): return c.global_position.distance_to(owner.guard_position) <= owner.guard_defense_radius)
 
 	if cibles.size() > 0:
-		cibles.sort_custom(func(a, b):
-			var a_est_soldat: bool = not a.is_in_group("camps")
-			var b_est_soldat: bool = not b.is_in_group("camps")
-			if a_est_soldat != b_est_soldat:
-				return a_est_soldat
-			return owner.global_position.distance_to(a.global_position) < owner.global_position.distance_to(b.global_position)
-		)
-		owner.attack_target(cibles[0])
+		var meilleure_cible: Node2D = cibles[0]
+		for cible in cibles:
+			var meilleure_est_soldat: bool = not meilleure_cible.is_in_group("camps")
+			var cible_est_soldat: bool = not cible.is_in_group("camps")
+			if cible_est_soldat and not meilleure_est_soldat:
+				meilleure_cible = cible
+				continue
+			if cible_est_soldat == meilleure_est_soldat:
+				var dist_meilleure: float = owner.global_position.distance_to(meilleure_cible.global_position)
+				var dist_cible: float = owner.global_position.distance_to(cible.global_position)
+				if dist_cible < dist_meilleure:
+					meilleure_cible = cible
+		owner.attack_target(meilleure_cible)
 
 
 static func tirer_projectile_range(owner: Node, cible: Node2D) -> void:
@@ -190,6 +195,15 @@ static func tirer_projectile_gardien_passif(owner: Node, cible: Node2D) -> void:
 	proj.global_position = owner.global_position
 	if proj.has_method("launch"):
 		proj.launch(cible, owner.unit_damage, owner, vitesse_projectile_gardien_passif(owner))
+
+
+static func tirer_mortar_attaque_base(owner: Node, cible: Node2D) -> void:
+	if not owner._cible_combat_valide(cible):
+		owner._arreter_combat()
+		return
+	owner._jouer_animation_attaque(cible)
+	owner._deal_combat_damage(cible, owner.unit_damage)
+	animer_attaque_melee(owner)
 
 
 static func tirer_mortar_distance(owner: Node, cible: Node2D) -> void:

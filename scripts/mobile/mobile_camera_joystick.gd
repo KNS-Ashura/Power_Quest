@@ -132,5 +132,18 @@ func _reset_input() -> void:
 func _is_mobile_runtime() -> bool:
 	if OS.has_feature("mobile"):
 		return true
+	if OS.has_feature("web"):
+		if DisplayServer.is_touchscreen_available():
+			return true
+		if ClassDB.class_exists("JavaScriptBridge"):
+			var js := (
+				"(function(){"
+				+ "const ua=(navigator.userAgent||'').toLowerCase();"
+				+ "return /android|iphone|ipad|ipod|mobile|windows phone/.test(ua);"
+				+ "})()"
+			)
+			var result: Variant = JavaScriptBridge.eval(js, true)
+			if result != null and bool(result):
+				return true
 	var os_name := OS.get_name()
 	return os_name == "Android" or os_name == "iOS"

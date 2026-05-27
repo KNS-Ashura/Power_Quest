@@ -57,10 +57,10 @@ const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/exp
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_ULT = preload("res://scenes/personnages/mortar/explosion-ult.tscn")
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_1 = 4.8
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_2 = 3.9
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_3 = 3.2
-const MORTAR_SORT_COOLDOWN_DEFAUT = 12.0
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_1: float = 4.8
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_2: float = 3.9
+const MORTAR_ATTACK_COOLDOWN_NIVEAU_3: float = 3.2
+const MORTAR_SORT_COOLDOWN_DEFAUT: float = 12.0
 const COOLDOWN_SORT_SECONDES := 60.0
 const SCENE_WATER_TRANSPORT_MARK_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect.tscn")
 const SCENE_WATER_TRANSPORT_BOARD_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect-2.tscn")
@@ -286,7 +286,6 @@ func _physics_process(_delta):
 				doit_avancer = false
 				if timer_attaque.is_stopped():
 					if _est_mortar():
-						_tirer_mortar_distance(attack_target_node)
 						timer_attaque.start(_cooldown_mortar_niveau())
 					else:
 						var cadence = _attack_rate_actuelle()
