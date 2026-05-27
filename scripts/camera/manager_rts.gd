@@ -6,6 +6,7 @@ const MobileCameraJoystickScript = preload("res://scripts/mobile/mobile_camera_j
 @onready var camera = $Camera2D
 
 var is_selecting: bool = false
+var _is_middle_panning: bool = false
 var start_point: Vector2 = Vector2.ZERO
 var selected_building: Node2D = null
 var _virtual_camera_input: Vector2 = Vector2.ZERO
@@ -117,6 +118,14 @@ func _handle_camera_zoom(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_MIDDLE:
+		_is_middle_panning = event.pressed
+		if _is_middle_panning:
+			is_selecting = false
+			selection_box.hide()
+		get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			is_selecting = true
@@ -155,6 +164,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		selection_box.size = Vector2(abs(pos.x - start_point.x), abs(pos.y - start_point.y))
 		if selection_box.size.length() > 10:
 			deselect_building()
+	elif event is InputEventMouseMotion and _is_middle_panning:
+		var motion: InputEventMouseMotion = event as InputEventMouseMotion
+		if camera != null:
+			camera.global_position -= motion.relative * (1.0 / camera.zoom.x)
+		get_viewport().set_input_as_handled()
+		return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		var dest = get_global_mouse_position()
