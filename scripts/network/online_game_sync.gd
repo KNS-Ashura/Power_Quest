@@ -5,6 +5,13 @@ extends Node
 const TEAM_NEUTRAL := 2
 const SYNC_INTERVAL := 0.12
 
+## Types de sort synchronisés (visuels + effets sur cibles connues).
+const SPELL_INVULN := 0
+const SPELL_BOOST := 1
+const SPELL_MORTAR := 2
+const SPELL_ANTI_ARMOR := 3
+const SPELL_HEAL_PROJECTILE := 4
+
 var _peer_to_team: Dictionary = {}
 var _next_sync_id: int = 1
 var _owner_peer_for_id: Dictionary = {}
@@ -280,6 +287,8 @@ func rpc_report_damage(
 	if int(_owner_peer_for_id.get(attacker_sync_id, -1)) != sender:
 		return
 	for peer_id in multiplayer.get_peers():
+		if peer_id == sender:
+			continue
 		rpc_apply_damage.rpc_id(peer_id, target_sync_id, damage, attacker_team)
 
 
@@ -290,6 +299,72 @@ func rpc_apply_damage(target_sync_id: int, damage: int, attacker_team: int) -> v
 	var unit: Node = get_unit(target_sync_id)
 	if unit != null and unit.has_method("take_damage_network_remote"):
 		unit.take_damage_network_remote(damage, attacker_team)
+
+
+func report_heal(caster_sync_id: int, target_sync_id: int, amount: int) -> void:
+	if not is_online_active() or target_sync_id < 0 or amount <= 0:
+		return
+	if multiplayer.is_server():
+		return
+	rpc_report_heal.rpc_id(1, caster_sync_id, target_sync_id, amount)
+
+
+@rpc("any_peer", "reliable")
+func rpc_report_heal(caster_sync_id: int, target_sync_id: int, amount: int) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	if int(_owner_peer_for_id.get(caster_sync_id, -1)) != sender:
+		return
+	for peer_id in multiplayer.get_peers():
+		if peer_id == sender:
+			continue
+		rpc_apply_heal.rpc_id(peer_id, caster_sync_id, target_sync_id, amount)
+
+
+@rpc("authority", "call_remote", "reliable")
+func rpc_apply_heal(caster_sync_id: int, target_sync_id: int, amount: int) -> void:
+	if ServerMode.is_dedicated_server:
+		return
+	var unit: Node = get_unit(target_sync_id)
+	if unit != null and unit.has_method("apply_heal_network_remote"):
+		unit.apply_heal_network_remote(amount, caster_sync_id)
+
+
+func report_spell_cast(
+	caster_sync_id: int, spell_type: int, target_sync_ids: Array, params: Dictionary = {}
+) -> void:
+	if not is_online_active() or caster_sync_id < 0:
+		return
+	if multiplayer.is_server():
+		return
+	rpc_report_spell_cast.rpc_id(1, caster_sync_id, spell_type, target_sync_ids, params)
+
+
+@rpc("any_peer", "reliable")
+func rpc_report_spell_cast(
+	caster_sync_id: int, spell_type: int, target_sync_ids: Array, params: Dictionary
+) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	if int(_owner_peer_for_id.get(caster_sync_id, -1)) != sender:
+		return
+	for peer_id in multiplayer.get_peers():
+		if peer_id == sender:
+			continue
+		rpc_apply_spell_cast.rpc_id(peer_id, caster_sync_id, spell_type, target_sync_ids, params)
+
+
+@rpc("authority", "call_remote", "reliable")
+func rpc_apply_spell_cast(
+	caster_sync_id: int, spell_type: int, target_sync_ids: Array, params: Dictionary
+) -> void:
+	if ServerMode.is_dedicated_server:
+		return
+	var caster: Node = get_unit(caster_sync_id)
+	if caster != null and caster.has_method("apply_spell_network_remote"):
+		caster.apply_spell_network_remote(spell_type, target_sync_ids, params)
 
 
 func report_unit_death(sync_id: int) -> void:

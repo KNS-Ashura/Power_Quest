@@ -5,6 +5,7 @@ extends Node
 signal setup_complete
 
 const TEAM_NEUTRAL := 2
+const CAMPS_PER_PLAYER := 2
 
 
 func is_game_server() -> bool:
@@ -35,18 +36,20 @@ func _server_setup() -> void:
 
 	MapSession.online_player_count = player_count
 
-	var per_player: int = maxi(1, camps.size() / player_count)
+	camps.shuffle()
 	var paths: PackedStringArray = PackedStringArray()
 	var teams: PackedInt32Array = PackedInt32Array()
 	var index: int = 0
+	var assigned_player: int = 0
 
 	for slot in range(player_count):
-		for _j in range(per_player):
+		for _j in range(CAMPS_PER_PLAYER):
 			if index >= camps.size():
 				break
 			paths.append(_camp_path(camps[index]))
 			teams.append(slot)
 			index += 1
+			assigned_player += 1
 
 	while index < camps.size():
 		paths.append(_camp_path(camps[index]))
@@ -55,8 +58,8 @@ func _server_setup() -> void:
 
 	_apply_camp_assignments(paths, teams)
 	print(
-		"[OnlineMatch] %d joueurs, %d camps (%d/camp par joueur, %d neutres)."
-		% [player_count, paths.size(), per_player, paths.size() - player_count * per_player]
+		"[OnlineMatch] %d joueurs, %d camps (%d aléatoires/joueur, %d neutres)."
+		% [player_count, paths.size(), CAMPS_PER_PLAYER, paths.size() - assigned_player]
 	)
 
 	for i in range(player_count):

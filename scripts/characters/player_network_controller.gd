@@ -39,9 +39,20 @@ static func apply_network_state(owner: Node, pos: Vector2, vel: Vector2, hp: int
 	owner._net_lerp_active = true
 	owner.velocity = vel
 	if hp >= 0:
-		owner.current_hp = mini(hp, owner.hp_max)
+		owner.current_hp = clampi(hp, 0, owner.hp_max)
 		if owner.has_node("ProgressBar"):
 			owner.get_node("ProgressBar").value = owner.current_hp
+
+
+static func apply_heal_network_remote(owner: Node, amount: int, caster_sync_id: int) -> void:
+	if amount <= 0 or owner.is_dying:
+		return
+	owner.current_hp = mini(owner.hp_max, owner.current_hp + amount)
+	if owner.has_node("ProgressBar"):
+		owner.get_node("ProgressBar").value = owner.current_hp
+	var caster: Node = OnlineGameSync.get_unit(caster_sync_id)
+	if is_instance_valid(caster) and caster.has_method("_attacher_effet_soin_sur"):
+		caster._attacher_effet_soin_sur(owner)
 
 
 static func force_network_death(owner: Node) -> void:
