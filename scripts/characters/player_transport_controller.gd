@@ -4,6 +4,7 @@ class_name PlayerTransportController
 const PHASE_IDLE := 0
 const PHASE_MARKED := 1
 const PHASE_CARRYING := 2
+const BOARD_FX_FLASH := 0.25
 
 
 static func is_water_transporter(owner: Node) -> bool:
@@ -121,8 +122,8 @@ static func board_marked(owner: Node) -> bool:
 		owner.water_transport_origin[unit] = unit.global_position
 		owner.water_transport_boarded.append(unit)
 		remove_transport_fx(owner, unit)
-		spawn_board_fx_world(owner, unit.global_position)
-		hide_unit(owner, unit)
+		owner._attacher_effet_sur_cible(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, BOARD_FX_FLASH)
+		hide_unit_after_delay(owner, unit, BOARD_FX_FLASH)
 	owner.water_transport_marked.clear()
 	if owner.water_transport_boarded.is_empty():
 		owner.water_transport_phase = PHASE_IDLE
@@ -237,22 +238,16 @@ static func remove_transport_fx(owner: Node, unit: Node2D) -> void:
 		fx.queue_free()
 
 
-static func spawn_board_fx_world(owner: Node, world_pos: Vector2) -> void:
-	if not is_instance_valid(owner) or owner.SCENE_WATER_TRANSPORT_BOARD_FX == null:
+static func hide_unit_after_delay(owner: Node, unit: Node2D, delay_seconds: float) -> void:
+	if not is_instance_valid(owner) or not is_instance_valid(unit):
 		return
-	var parent_node: Node = owner.get_tree().current_scene
-	if not is_instance_valid(parent_node):
-		parent_node = owner.get_parent()
-	if not is_instance_valid(parent_node):
+	if delay_seconds <= 0.0:
+		hide_unit(owner, unit)
 		return
-	var fx: Node = owner.SCENE_WATER_TRANSPORT_BOARD_FX.instantiate()
-	parent_node.add_child(fx)
-	if fx is Node2D:
-		(fx as Node2D).global_position = world_pos
-	var timer: SceneTreeTimer = owner.get_tree().create_timer(0.55)
+	var timer: SceneTreeTimer = owner.get_tree().create_timer(delay_seconds)
 	timer.timeout.connect(func():
-		if is_instance_valid(fx):
-			fx.queue_free(),
+		if is_instance_valid(unit):
+			hide_unit(owner, unit),
 		CONNECT_ONE_SHOT
 	)
 

@@ -54,9 +54,9 @@ animations = [{
 script = ExtResource("1_bsjfn")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
-position = Vector2(0, 1.9073486e-06)
+position = Vector2(-1.0000001, 2.3464963e-10)
 rotation = 0.0038198903
-scale = Vector2(0.3360252, 0.31076244)
+scale = Vector2(0.9865766, 0.98763996)
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"effect"
-frame_progress = 0.20930654
+frame_progress = 0.4495623
