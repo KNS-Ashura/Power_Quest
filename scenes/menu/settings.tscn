@@ -115,7 +115,8 @@ offset_left = 141.0
 offset_top = 458.0
 offset_right = 291.0
 offset_bottom = 496.0
-theme_override_constants/separation = 28
+scale = Vector2(1.0077736, 3.0078921)
+theme_override_constants/separation = 5
 
 [node name="MusicSlider" type="HSlider" parent="Music" unique_id=469285279]
 layout_mode = 2

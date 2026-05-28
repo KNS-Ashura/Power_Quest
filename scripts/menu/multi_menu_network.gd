@@ -20,7 +20,6 @@ func _ready() -> void:
 	add_child(_status_label)
 	_status_label.text = ""
 	_create_lobby.pressed.connect(_on_create_lobby_pressed)
-	_join_room.pressed.connect(_on_join_room_pressed)
 	_connect_network_signals()
 	visibility_changed.connect(_on_visibility_changed)
 	# Multi2 est instancié dès le menu livre : ne pas lancer Nakama tant que la page n'est pas visible.
