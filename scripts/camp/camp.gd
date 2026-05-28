@@ -1,6 +1,7 @@
 extends StaticBody2D
 
 const CampCatalogue = preload("res://scripts/camp/camp_catalogue.gd")
+const BUILDING_CLICK_LAYER := 8
 
 enum Owner { PLAYER, ENEMY, NEUTRAL }
 enum SiteType { CAMP, PORT }
@@ -35,6 +36,8 @@ signal site_captured(new_team)
 
 
 func _ready() -> void:
+	collision_layer = BUILDING_CLICK_LAYER
+	collision_mask = 0
 	_detect_site_type()
 	_detect_visual_variant()
 	_apply_level_config()

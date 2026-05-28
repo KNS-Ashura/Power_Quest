@@ -19,6 +19,7 @@ signal selected_building_changed(building)
 var target_zoom: float = 1.0
 var zoom_min: float = 0.5
 var zoom_max: float = 2.0
+const BUILDING_CLICK_LAYER := 8
 
 
 func _ready() -> void:
@@ -238,6 +239,7 @@ func _handle_building_click() -> void:
 	query.position = selection_box.global_position
 	query.collide_with_areas = false
 	query.collide_with_bodies = true
+	query.collision_mask = BUILDING_CLICK_LAYER
 	var hits = get_world_2d().direct_space_state.intersect_point(query)
 
 	for res in hits:
