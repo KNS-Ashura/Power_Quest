@@ -63,6 +63,10 @@ func _on_join_room_pressed() -> void:
 func _start_lobby() -> void:
 	if _lobby_active:
 		return
+	if not NetworkSession.is_account_logged_in():
+		_status_label.modulate = Color(1, 0.45, 0.45)
+		_status_label.text = "Connecte-toi dans Profil avant de lancer le multijoueur."
+		return
 	_lobby_active = true
 	_connecting_game = false
 	_status_label.modulate = Color.WHITE

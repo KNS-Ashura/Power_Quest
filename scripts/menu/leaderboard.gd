@@ -1,70 +1,65 @@
 extends VBoxContainer
 
-
 var template_ligne = preload("res://scenes/menu/leader_board_template.tscn")
 
+func _ready() -> void:
+	NetworkSession.profile_updated.connect(_on_profile_updated)
+	NetworkSession.session_closed.connect(_rebuild)
+	NetworkSession.auth_ready.connect(_on_auth_ready)
+	_rebuild()
 
-var data_joueurs = [
-	{"nom": "Robilol", "temps": "12h", "points": "9999"},
-	{"nom": "PixelKing", "temps": "08h", "points": "8500"},
-	{"nom": "GodotMaster", "temps": "24h", "points": "7200"},
-	{"nom": "Shadow", "temps": "02h", "points": "6500"},
-	{"nom": "Blainville", "temps": "15h", "points": "5000"},
-	{"nom": "DarkKnight", "temps": "10h", "points": "4200"},
-	{"nom": "Luna", "temps": "05h", "points": "3000"},
-	{"nom": "OldPlayer", "temps": "99h", "points": "2500"}
-]
 
-func _ready():
-	
+func _on_auth_ready() -> void:
+	NetworkSession.request_leaderboard()
+
+
+func _on_profile_updated(_profile: Dictionary) -> void:
+	_rebuild()
+
+
+func _rebuild() -> void:
 	for child in get_children():
 		child.queue_free()
-		
-	generer_classement()
 
-func generer_classement():
+	var data_joueurs: Array = NetworkSession.leaderboard_cache
+	if data_joueurs.is_empty():
+		return
+
 	for i in range(data_joueurs.size()):
-		
 		var ligne = template_ligne.instantiate()
-		
-		
 		var node_rank = ligne.get_node_or_null("Rank")
 		var node_name = ligne.get_node_or_null("PlayerName")
-		var node_time = ligne.get_node_or_null("PlayTime") # Le nœud qui posait problème
+		var node_time = ligne.get_node_or_null("PlayTime")
 		var node_score = ligne.get_node_or_null("Score")
+		var entry: Dictionary = data_joueurs[i]
 
-		
-		if node_rank: 
+		if node_rank:
 			node_rank.text = str(i + 1) + "."
-		
-		if node_name: 
-			node_name.text = data_joueurs[i]["nom"]
-			
-		
-
-		if node_score: 
-			node_score.text = data_joueurs[i]["points"]
-		
+		if node_name:
+			node_name.text = str(entry.get("username", "player"))
+		if node_time:
+			var total_sec := int(entry.get("total_seconds", 0))
+			var h := total_sec / 3600
+			var m := (total_sec % 3600) / 60
+			node_time.text = "%02dh%02d" % [h, m]
+		if node_score:
+			node_score.text = "%.1f%%" % float(entry.get("winrate", 0.0))
 
 		if node_rank:
 			match i:
-				0: 
+				0:
 					node_rank.add_theme_color_override("font_color", Color("#d4af37"))
-					
-					if node_name: node_name.add_theme_color_override("font_color", Color("#d4af37"))
-				
-				1: 
+					if node_name:
+						node_name.add_theme_color_override("font_color", Color("#d4af37"))
+				1:
 					node_rank.add_theme_color_override("font_color", Color("#4a5568"))
-					if node_name: node_name.add_theme_color_override("font_color", Color("#4a5568"))
-				
-				2: 
+					if node_name:
+						node_name.add_theme_color_override("font_color", Color("#4a5568"))
+				2:
 					node_rank.add_theme_color_override("font_color", Color("#cd7f32"))
-					if node_name: node_name.add_theme_color_override("font_color", Color("#cd7f32"))
-				
-				_: 
-					node_rank.add_theme_color_override("font_color", Color("#3a2010")) # Marron foncé
-
+					if node_name:
+						node_name.add_theme_color_override("font_color", Color("#cd7f32"))
+				_:
+					node_rank.add_theme_color_override("font_color", Color("#3a2010"))
 
 		add_child(ligne)
-
-	print("Leaderboard généré avec ", data_joueurs.size(), " joueurs.")

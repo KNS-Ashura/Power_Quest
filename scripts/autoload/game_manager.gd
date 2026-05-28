@@ -4,6 +4,8 @@ var cycle_time: float = 30.0
 var cycle_gold_bonus: int = 100
 var reinforcement_count: int = 2
 var match_over: bool = false
+var _match_started_at: int = 0
+var _result_reported: bool = false
 
 @onready var global_timer = Timer.new()
 
@@ -19,6 +21,8 @@ func _ready() -> void:
 
 func init_match() -> void:
 	match_over = false
+	_result_reported = false
+	_match_started_at = Time.get_unix_time_from_system()
 	if not global_timer.is_stopped():
 		global_timer.stop()
 	global_timer.start()
@@ -74,9 +78,11 @@ func _process(_delta: float) -> void:
 	if local_camps == 0:
 		match_over = true
 		print("DEFEAT")
+		_report_match_result(false)
 	elif hostile_camps == 0:
 		match_over = true
 		print("VICTORY")
+		_report_match_result(true)
 
 
 func _on_global_timer_timeout() -> void:
@@ -89,3 +95,13 @@ func _on_global_timer_timeout() -> void:
 		if MapSession.is_local_team(int(camp.get("team"))):
 			camp.receive_reinforcements(reinforcement_count)
 			break
+
+
+func _report_match_result(win: bool) -> void:
+	if _result_reported:
+		return
+	_result_reported = true
+	if not NetworkSession.is_account_logged_in():
+		return
+	var elapsed := int(maxi(0, Time.get_unix_time_from_system() - _match_started_at))
+	NetworkSession.submit_match_result(win, elapsed)

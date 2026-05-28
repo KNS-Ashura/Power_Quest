@@ -5,6 +5,8 @@ extends Node
 
 signal auth_ready
 signal auth_failed(message: String)
+signal session_closed
+signal profile_updated(profile: Dictionary)
 signal queue_updated(players: int, max_players: int, seconds_left: int)
 signal match_ready(match_id: String, game_ws_url: String)
 signal match_failed(message: String)
@@ -22,6 +24,13 @@ var is_authenticated: bool = false
 var session_token: String = ""
 var user_id: String = ""
 var device_id: String = ""
+var account_email: String = ""
+var account_username: String = ""
+var profile_cache: Dictionary = {}
+var leaderboard_cache: Array = []
+var _auth_mode: String = "" # "account" or "device"
+var _pending_auth_email: String = ""
+var _pending_auth_password: String = ""
 
 var _http: HTTPRequest
 var _http_queue: Array = []
@@ -47,6 +56,109 @@ func _ready() -> void:
 	add_child(_http)
 	_http.request_completed.connect(_on_http_completed)
 	_load_or_create_device_id()
+
+
+func is_account_logged_in() -> bool:
+	return is_authenticated and _auth_mode == "account" and session_token != ""
+
+
+func register_account(email: String, password: String, username: String) -> void:
+	var e := email.strip_edges().to_lower()
+	var p := password
+	var u := username.strip_edges()
+	if e == "" or p == "" or u == "":
+		auth_failed.emit("Email, pseudo et mot de passe requis.")
+		return
+	_pending_auth_email = e
+	_pending_auth_password = p
+	_enqueue_http({
+		"kind": "auth_account",
+		"url": "%s/v2/account/authenticate/email?create=true" % NetworkConfig.nakama_base_url(),
+		"headers": _nakama_headers(false),
+		"body": JSON.stringify({"email": e, "password": p, "username": u})
+	})
+
+
+func login_account(email: String, password: String) -> void:
+	var e := email.strip_edges().to_lower()
+	var p := password
+	if e == "" or p == "":
+		auth_failed.emit("Email et mot de passe requis.")
+		return
+	_pending_auth_email = e
+	_pending_auth_password = p
+	_enqueue_http({
+		"kind": "auth_account",
+		"url": "%s/v2/account/authenticate/email?create=false" % NetworkConfig.nakama_base_url(),
+		"headers": _nakama_headers(false),
+		"body": JSON.stringify({"email": e, "password": p})
+	})
+
+
+func logout_account() -> void:
+	leave_ranked_queue()
+	is_authenticated = false
+	session_token = ""
+	user_id = ""
+	account_email = ""
+	account_username = ""
+	_auth_mode = ""
+	_pending_auth_email = ""
+	_pending_auth_password = ""
+	profile_cache.clear()
+	leaderboard_cache.clear()
+	_delete_saved_credentials()
+	if _match_peer != null:
+		_match_peer.close()
+		_match_peer = null
+	session_closed.emit()
+
+
+func submit_match_result(win: bool, duration_seconds: int) -> void:
+	if not is_account_logged_in():
+		return
+	var payload := JSON.stringify({
+		"win": win,
+		"duration_seconds": maxi(0, duration_seconds)
+	})
+	_rpc("submit_match_result", payload)
+
+
+func request_player_profile() -> void:
+	if not is_authenticated:
+		return
+	_rpc("get_player_profile")
+
+
+func request_account_info() -> void:
+	if not is_authenticated:
+		return
+	_enqueue_http({
+		"kind": "account_info",
+		"url": "%s/v2/account" % NetworkConfig.nakama_base_url(),
+		"headers": _nakama_headers(true),
+		"method": HTTPClient.METHOD_GET,
+		"body": ""
+	})
+
+
+func request_leaderboard(limit: int = 20) -> void:
+	if not is_authenticated:
+		return
+	var payload := JSON.stringify({"limit": clampi(limit, 1, 100)})
+	_rpc("get_leaderboard", payload)
+
+
+func _save_credentials(email: String, password: String) -> void:
+	var f := FileAccess.open("user://account_credentials.json", FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(JSON.stringify({"email": email, "password": password}))
+
+
+func _delete_saved_credentials() -> void:
+	if FileAccess.file_exists("user://account_credentials.json"):
+		DirAccess.remove_absolute("user://account_credentials.json")
 
 
 func _load_or_create_device_id() -> void:
@@ -89,20 +201,23 @@ func _web_device_id() -> String:
 
 
 func authenticate() -> void:
-	if is_authenticated:
+	if is_account_logged_in():
 		auth_ready.emit()
 		return
-	_enqueue_http({
-		"kind": "auth",
-		"url": "%s/v2/account/authenticate/device?create=true" % NetworkConfig.nakama_base_url(),
-		"headers": _nakama_headers(false),
-		"body": JSON.stringify({"id": device_id}),
-	})
+	if not FileAccess.file_exists("user://account_credentials.json"):
+		auth_failed.emit("Connecte-toi ou crée un compte avant de lancer une partie.")
+		return
+	var raw := FileAccess.get_file_as_string("user://account_credentials.json")
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		auth_failed.emit("Identifiants locaux invalides. Reconnecte-toi.")
+		return
+	login_account(str(parsed.get("email", "")), str(parsed.get("password", "")))
 
 
 func join_ranked_queue() -> void:
-	if not is_authenticated:
-		match_failed.emit("Non connecté à Nakama")
+	if not is_account_logged_in():
+		match_failed.emit("Connecte-toi avec un compte avant de jouer en ligne.")
 		return
 	_in_queue = true
 	_rpc("join_queue")
@@ -135,6 +250,7 @@ func _pump_http_queue() -> void:
 		return
 	var job: Dictionary = _http_queue.pop_front()
 	_http_busy = true
+	_http.set_meta("http_kind", str(job.get("kind", "")))
 	if job.get("kind") == "rpc":
 		_http.set_meta("rpc_id", str(job.get("rpc_id", "")))
 	else:
@@ -143,7 +259,7 @@ func _pump_http_queue() -> void:
 	var err := _http.request(
 		str(job.get("url", "")),
 		job.get("headers", PackedStringArray()),
-		HTTPClient.METHOD_POST,
+		int(job.get("method", HTTPClient.METHOD_POST)),
 		str(job.get("body", ""))
 	)
 	if err != OK:
@@ -168,6 +284,9 @@ func _nakama_headers(with_session: bool) -> PackedStringArray:
 
 func _on_http_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_http_busy = false
+	var http_kind := str(_http.get_meta("http_kind", ""))
+	if _http.has_meta("http_kind"):
+		_http.remove_meta("http_kind")
 	if result != HTTPRequest.RESULT_SUCCESS:
 		_handle_error(_http_result_message(result))
 		return
@@ -186,6 +305,17 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		_pump_http_queue()
 		return
 
+	if http_kind == "account_info":
+		if response_code == 200 and typeof(parsed) == TYPE_DICTIONARY:
+			account_email = str(parsed.get("email", account_email))
+			account_username = str(parsed.get("username", account_username))
+			if profile_cache.is_empty():
+				profile_cache = {}
+			profile_cache["username"] = account_username
+			profile_updated.emit(profile_cache)
+		_pump_http_queue()
+		return
+
 	# Auth device
 	if response_code == 200 and typeof(parsed) == TYPE_DICTIONARY:
 		if parsed.has("token"):
@@ -193,6 +323,20 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		if parsed.has("user_id"):
 			user_id = str(parsed["user_id"])
 		is_authenticated = true
+		if http_kind == "auth_account":
+			_auth_mode = "account"
+			var token_payload = _parse_jwt_payload(session_token)
+			account_email = str(token_payload.get("email", _pending_auth_email))
+			account_username = str(token_payload.get("usn", ""))
+			if _pending_auth_email != "" and _pending_auth_password != "":
+				_save_credentials(_pending_auth_email, _pending_auth_password)
+			_pending_auth_email = ""
+			_pending_auth_password = ""
+			request_account_info()
+			request_player_profile()
+			request_leaderboard()
+		else:
+			_auth_mode = "device"
 		auth_ready.emit()
 	else:
 		auth_failed.emit("Auth échouée (%s): %s" % [str(response_code), text])
@@ -215,6 +359,15 @@ func _handle_rpc_response(rpc_id: String, code: int, parsed, raw_text: String) -
 
 	if rpc_id == "join_queue" or rpc_id == "queue_status":
 		_apply_queue_payload(payload)
+	elif rpc_id == "get_player_profile":
+		profile_cache = payload.duplicate(true)
+		profile_updated.emit(profile_cache)
+	elif rpc_id == "get_leaderboard":
+		leaderboard_cache = payload.get("entries", [])
+		profile_updated.emit(profile_cache)
+	elif rpc_id == "submit_match_result":
+		request_player_profile()
+		request_leaderboard()
 
 
 func _apply_queue_payload(payload: Dictionary) -> void:
@@ -441,7 +594,23 @@ func _format_nakama_error(parsed, raw_text: String) -> String:
 	return raw_text
 
 
+func _parse_jwt_payload(token: String) -> Dictionary:
+	var parts := token.split(".")
+	if parts.size() < 2:
+		return {}
+	var b64 := parts[1].replace("-", "+").replace("_", "/")
+	while b64.length() % 4 != 0:
+		b64 += "="
+	var decoded := Marshalls.base64_to_utf8(b64)
+	var parsed = JSON.parse_string(decoded)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		return parsed
+	return {}
+
+
 func _handle_error(msg: String) -> void:
+	_pending_auth_email = ""
+	_pending_auth_password = ""
 	_pump_http_queue()
 	if _in_queue:
 		match_failed.emit(msg)
