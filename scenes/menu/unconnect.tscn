@@ -24,7 +24,8 @@ offset_right = 285.0
 offset_bottom = 321.0
 theme_override_fonts/font = ExtResource("3_ew5vq")
 theme_override_font_sizes/font_size = 32
-text = "MENU_PROFILE"
+text = "Connexion
+"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -52,17 +53,17 @@ placeholder_text = "Email"
 
 [node name="LoginPassword" type="LineEdit" parent="LoginContainer" unique_id=1797424618]
 layout_mode = 0
-offset_left = 104.0
-offset_top = 471.0
-offset_right = 293.0
-offset_bottom = 502.0
+offset_left = 107.0
+offset_top = 470.0
+offset_right = 296.0
+offset_bottom = 501.0
 placeholder_text = "Password"
 
 [node name="BtnLogin" type="TextureButton" parent="." unique_id=1512441400]
-offset_left = 127.0
-offset_top = 543.0
-offset_right = 276.0
-offset_bottom = 558.0
+offset_left = 124.0
+offset_top = 566.0
+offset_right = 273.0
+offset_bottom = 581.0
 texture_normal = ExtResource("4_fuwkr")
 stretch_mode = 0
 
@@ -93,10 +94,10 @@ text = "INSCRIPTION"
 
 [node name="RegisterEmail" type="LineEdit" parent="RegisterContainer" unique_id=625913043]
 layout_mode = 0
-offset_left = 402.0
-offset_top = 422.0
-offset_right = 591.0
-offset_bottom = 453.0
+offset_left = 404.0
+offset_top = 423.0
+offset_right = 593.0
+offset_bottom = 454.0
 placeholder_text = "Email"
 
 [node name="RegisterPassword" type="LineEdit" parent="RegisterContainer" unique_id=1324560237]
@@ -109,10 +110,10 @@ placeholder_text = "Password"
 
 [node name="RegisterUsername" type="LineEdit" parent="RegisterContainer" unique_id=1141336250]
 layout_mode = 0
-offset_left = 406.0
-offset_top = 465.0
-offset_right = 595.0
-offset_bottom = 496.0
+offset_left = 404.0
+offset_top = 467.0
+offset_right = 593.0
+offset_bottom = 498.0
 placeholder_text = "Pseudo"
 
 [node name="BtnRegister" type="TextureButton" parent="RegisterContainer" unique_id=1875013856]
@@ -135,10 +136,19 @@ theme_override_font_sizes/font_size = 16
 text = "S'INSCRIRE"
 horizontal_alignment = 1
 
-[node name="ErrorMessage" type="Label" parent="RegisterContainer" unique_id=1500172839]
+[node name="ErrorMessage" type="Label" parent="." unique_id=1500172839]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 90.0
+offset_top = 598.0
+offset_right = 590.0
+offset_bottom = 648.0
+theme_override_fonts/font = ExtResource("5_ja6yd")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.898039, 0.231373, 0.243137, 1)
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
 [connection signal="pressed" from="BtnLogin" to="." method="_on_btn_login_pressed"]
 [connection signal="pressed" from="RegisterContainer/BtnRegister" to="." method="_on_btn_register_pressed"]

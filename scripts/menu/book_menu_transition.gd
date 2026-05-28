@@ -22,10 +22,12 @@ extends Node2D
 @onready var mark_maps = $MenuInteractif/Maps
 @onready var mark_settings = $MenuInteractif/Settings
 @onready var mark_menu = $MenuInteractif/Menu 
+@onready var mark_unconnect = get_node_or_null("MenuInteractif/Unnconnect2")
 
 
 @onready var btn_back_settings = get_node_or_null("Settings2/BackToMenu")
 @onready var btn_back_profil = get_node_or_null("Profil2/BackToMenu")
+@onready var unconnect_menu = get_node_or_null("Unconnect2")
 @onready var btn_back_maps = get_node_or_null("Maps2/BackToMenu")
 @onready var btn_back_solo = get_node_or_null("SoloVsIa/BackToMenu")
 @onready var btn_back_multi = get_node_or_null("Multi2/PageGauche/BackToMenu") # Corrigé selon ton arbre précis !
@@ -190,7 +192,7 @@ func _on_multi_pressed() -> void:
 func _on_profile_pressed() -> void:
 	if is_transitioning: return 
 	_animer_marque_page(mark_profil)
-	_jouer_transition_complete($Profil2)
+	_open_profile_or_unconnect()
 
 func _on_maps_pressed() -> void:
 	if is_transitioning: return 
@@ -201,6 +203,23 @@ func _on_settings_pressed() -> void:
 	if is_transitioning: return 
 	_animer_marque_page(mark_settings)
 	_jouer_transition_complete($Settings2)
+
+
+func _on_unconnect_pressed() -> void:
+	if is_transitioning:
+		return
+	if mark_unconnect != null:
+		_animer_marque_page(mark_unconnect)
+	else:
+		_animer_marque_page(mark_profil)
+	_open_profile_or_unconnect()
+
+
+func _open_profile_or_unconnect() -> void:
+	if NetworkSession.is_account_logged_in():
+		_jouer_transition_complete($Profil2)
+	else:
+		_jouer_transition_complete($Unconnect2)
 
 
 
@@ -267,19 +286,30 @@ func _connecter_signaux():
 	mark_maps.pressed.connect(_on_maps_pressed)     
 	mark_settings.pressed.connect(_on_settings_pressed)
 	mark_menu.pressed.connect(_on_menu_principal_pressed)
+	if mark_unconnect != null:
+		mark_unconnect.pressed.connect(_on_unconnect_pressed)
 
 	if btn_back_settings: btn_back_settings.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_profil:   btn_back_profil.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_maps:     btn_back_maps.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_solo:     btn_back_solo.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_multi:    btn_back_multi.pressed.connect(_on_menu_principal_pressed)
+	if unconnect_menu != null and unconnect_menu.has_signal("auth_completed"):
+		unconnect_menu.auth_completed.connect(_on_unconnect_auth_completed)
+
+
+func _on_unconnect_auth_completed() -> void:
+	if is_transitioning:
+		return
+	_animer_marque_page(mark_profil)
+	_jouer_transition_complete($Profil2)
 
 func _sauvegarder_positions_initiales():
-	var marks = [mark_solo, mark_multi, mark_profil, mark_maps, mark_settings, mark_menu]
+	var marks = [mark_solo, mark_multi, mark_profil, mark_maps, mark_settings, mark_menu, mark_unconnect]
 	for m in marks:
 		if m: original_positions[m] = m.position.x
 
 func _cacher_tous_les_sous_menus():
-	var menus = ["SoloVsIa", "Multi2", "Profil2", "Maps2", "Settings2"]
+	var menus = ["SoloVsIa", "Multi2", "Profil2", "Unconnect2", "Maps2", "Settings2"]
 	for m in menus:
 		if has_node(m): get_node(m).visible = false

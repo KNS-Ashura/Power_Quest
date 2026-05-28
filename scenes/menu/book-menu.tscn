@@ -28,6 +28,7 @@
 [ext_resource type="PackedScene" uid="uid://bxl1ogeltlbvq" path="res://scenes/menu/profil.tscn" id="21_ry8bh"]
 [ext_resource type="PackedScene" uid="uid://ctcktsumn5tr0" path="res://scenes/menu/settings.tscn" id="22_bjixh"]
 [ext_resource type="PackedScene" uid="uid://3gyev7vui3ra" path="res://scenes/menu/solo_vs_ia.tscn" id="23_js3r3"]
+[ext_resource type="PackedScene" uid="uid://bq8k17c2vur8g" path="res://scenes/menu/unconnect.tscn" id="24_unconnect"]
 [ext_resource type="Texture2D" uid="uid://bqpyevn48enip" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/menu.tres" id="28_tyuks"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sgnfi"]
@@ -660,11 +661,15 @@ flip_h = true
 unique_name_in_owner = true
 visible = false
 
-[node name="Multi2" parent="." unique_id=312905313 instance=ExtResource("20_ljd70")]
+[node name="Multi2" parent="." unique_id=1979893785 instance=ExtResource("20_ljd70")]
 unique_name_in_owner = true
 visible = false
 
 [node name="Profil2" parent="." unique_id=1667979208 instance=ExtResource("21_ry8bh")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Unconnect2" parent="." unique_id=1082207714 instance=ExtResource("24_unconnect")]
 unique_name_in_owner = true
 visible = false
 
@@ -688,18 +693,20 @@ offset_bottom = 644.0
 
 [node name="Solo_vs_ia" type="TextureButton" parent="MenuInteractif" unique_id=1415594330]
 layout_mode = 0
-offset_top = 90.0
-offset_right = 14.0
-offset_bottom = 104.0
+offset_left = -4.0
+offset_top = 83.666664
+offset_right = 10.0
+offset_bottom = 97.666664
 scale = Vector2(3, 3)
 texture_normal = ExtResource("16_d7gke")
 texture_hover = ExtResource("16_d7gke")
 
 [node name="Multi" type="TextureButton" parent="MenuInteractif" unique_id=608902714]
 layout_mode = 0
-offset_top = 150.0
-offset_right = 14.0
-offset_bottom = 164.0
+offset_left = -2.6666667
+offset_top = 144.33333
+offset_right = 11.333333
+offset_bottom = 158.33333
 scale = Vector2(3, 3)
 texture_normal = ExtResource("17_omw2x")
 texture_pressed = ExtResource("17_omw2x")
@@ -707,9 +714,10 @@ texture_hover = ExtResource("17_omw2x")
 
 [node name="Profil" type="TextureButton" parent="MenuInteractif" unique_id=1854606221]
 layout_mode = 0
-offset_top = 270.0
-offset_right = 14.0
-offset_bottom = 284.0
+offset_left = -3.3333335
+offset_top = 264.3333
+offset_right = 10.666666
+offset_bottom = 278.3333
 scale = Vector2(3, 3)
 texture_normal = ExtResource("18_g3da1")
 texture_pressed = ExtResource("18_g3da1")
@@ -717,9 +725,10 @@ texture_hover = ExtResource("18_g3da1")
 
 [node name="Maps" type="TextureButton" parent="MenuInteractif" unique_id=535666516]
 layout_mode = 0
-offset_top = 210.0
-offset_right = 14.0
-offset_bottom = 224.0
+offset_left = -4.0
+offset_top = 203.00003
+offset_right = 10.0
+offset_bottom = 217.00003
 scale = Vector2(3, 3)
 texture_normal = ExtResource("19_215tk")
 texture_pressed = ExtResource("19_215tk")
@@ -727,9 +736,10 @@ texture_hover = ExtResource("19_215tk")
 
 [node name="Settings" type="TextureButton" parent="MenuInteractif" unique_id=594632551]
 layout_mode = 0
-offset_top = 330.0
-offset_right = 14.0
-offset_bottom = 344.0
+offset_left = -2.6666667
+offset_top = 322.33334
+offset_right = 11.333333
+offset_bottom = 336.33334
 scale = Vector2(3, 3)
 texture_normal = ExtResource("20_fd2mj")
 texture_pressed = ExtResource("20_fd2mj")
@@ -738,9 +748,10 @@ texture_hover = ExtResource("20_fd2mj")
 [node name="Menu" type="TextureButton" parent="MenuInteractif" unique_id=1645611496]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 30.0
-offset_right = 14.0
-offset_bottom = 44.0
+offset_left = -4.0
+offset_top = 27.0
+offset_right = 10.0
+offset_bottom = 41.0
 scale = Vector2(3, 3)
 texture_normal = ExtResource("28_tyuks")
 

@@ -3,20 +3,28 @@ extends Node2D
 
 var liste_des_cartes = [
 	{
-		"nom": "MAP_UNDEAD_LAND", 
-		"image_map": null, 
-		"portrait": null, 
-		"description": "MAP_DESC_TEST", 
-		"attr1": "MAP_CURSED_LAND", "attr2": "MAP_GLOWING_LAND",
-		"attr3": "MAP_CAVE_LAND", "attr4": "MAP_UNDEAD_LAND"
+		"nom": "THE GREEN ISLAND",
+		"image_map": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres"),
+		"portrait": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_generale/imgDroite.tres"),
+		"description": "VOILA DU TEXTE ET J'EN REJOUE POUR TESTER, C'EST COOL",
+		"attr1": "CURSED LAND", "attr2": "GLOWING LAND",
+		"attr3": "CAVE LAND", "attr4": "UNDEAD LAND"
 	},
 	{
-		"nom": "MAP_DESERT_LAND", 
-		"image_map": null, 
-		"portrait": null,  
-		"description": "MAP_DESC_DESERT", 
-		"attr1": "DESERT", "attr2": "ROCKY AREA", 
-		"attr3": "DRY LAND", "attr4": "ANCIENT RUINS"
+		"nom": "CHEVALIER TEST",
+		"image_map": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
+		"portrait": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
+		"description": "Je suis un chevalier super mega stylé",
+		"attr1": "ROCKY AREA", "attr2": "WINTER LAND",
+		"attr3": "SEABED LAND", "attr4": "FLYING ISLAND"
+	},
+	{
+		"nom": "FANTOME TEST",
+		"image_map": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
+		"portrait": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
+		"description": "Je suis un fantome super mega stylé",
+		"attr1": "FOREST", "attr2": "DESERT",
+		"attr3": "SWAMP LAND", "attr4": "GLADES LAND"
 	}
 ]
 
@@ -54,10 +62,10 @@ func update_display():
 	portrait_deco.texture = d["portrait"]
 	
 	
-	attr1.text = tr(d["attr1"])
-	attr2.text = tr(d["attr2"])
-	attr3.text = tr(d["attr3"])
-	attr4.text = tr(d["attr4"])
+	attr1.text = tr(str(d.get("attr1", "")))
+	attr2.text = tr(str(d.get("attr2", "")))
+	attr3.text = tr(str(d.get("attr3", "")))
+	attr4.text = tr(str(d.get("attr4", "")))
 
 
 func _on_fleche_droite_pressed():

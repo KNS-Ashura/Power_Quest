@@ -1,131 +1,141 @@
 extends Node2D
 
-# Références aux nœuds de l'interface
-@onready var login_email = $LoginContainer/LoginEmail
-@onready var login_password = $LoginContainer/LoginPassword
-@onready var register_username = $RegisterContainer/RegisterUsername
-@onready var register_email = $RegisterContainer/RegisterEmail
-@onready var register_password = $RegisterContainer/RegisterPassword
-@onready var error_message = $RegisterContainer/ErrorMessage
+signal auth_completed
 
-# Configuration du client Nakama
-var client : NakamaClient
-var session : NakamaSession
+@onready var login_email: LineEdit = $LoginContainer/LoginEmail
+@onready var login_password: LineEdit = $LoginContainer/LoginPassword
+@onready var register_username: LineEdit = $RegisterContainer/RegisterUsername
+@onready var register_email: LineEdit = $RegisterContainer/RegisterEmail
+@onready var register_password: LineEdit = $RegisterContainer/RegisterPassword
+@onready var error_message: Label = $ErrorMessage
+@onready var login_button: BaseButton = get_node_or_null("BtnLogin")
+@onready var register_button: BaseButton = get_node_or_null("RegisterContainer/BtnRegister")
 
-func _ready():
-	print("[DEBUG INIT] Lancement de la scène. Initialisation du client Nakama...")
-	# Initialisation du client (identique à ton proxy VPS)
-	client = Nakama.create_client("defaultkey", "api.powerquest.robinmatelot.codes", 443, "https")
-	error_message.text = ""
-	print("[DEBUG INIT] Client Nakama initialisé avec succès.")
+var _auth_pending: bool = false
 
-# ==============================================================================
-# SECTION 1 : CONNEXION (PAGE DE GAUCHE)
-# ==============================================================================
-func _on_btn_login_pressed():
-	print("\n[DEBUG LOGIN] --- Bouton Connexion cliqué ---")
-	
-	var email = login_email.text.strip_edges()
-	var password = login_password.text.strip_edges()
-	
-	print("[DEBUG LOGIN] Valeurs lues -> Email: '", email, "' | Password length: ", password.length())
-	
-	if email.is_empty() or password.is_empty():
-		print("[DEBUG LOGIN] Échec : Un ou plusieurs champs sont vides.")
-		show_error("Veuillez remplir tous les champs de connexion.")
+
+func _ready() -> void:
+	_show_status("")
+	login_password.secret = true
+	register_password.secret = true
+	_set_button_clickable(login_button)
+	_set_button_clickable(register_button)
+	_bind_button(login_button, _on_btn_login_pressed)
+	_bind_button(register_button, _on_btn_register_pressed)
+	if not NetworkSession.auth_ready.is_connected(_on_auth_ready):
+		NetworkSession.auth_ready.connect(_on_auth_ready)
+	if not NetworkSession.auth_failed.is_connected(_on_auth_failed):
+		NetworkSession.auth_failed.connect(_on_auth_failed)
+
+
+func _set_button_clickable(btn: BaseButton) -> void:
+	if btn == null:
 		return
-		
-	error_message.text = "Connexion en cours..."
-	print("[DEBUG LOGIN] Envoi de la requête d'authentification à Nakama...")
-	
-	# Authentification par Email via Nakama
-	# create = false signifie qu'on refuse de créer un compte s'il n'existe pas
-	var auth_result = await client.authenticate_email_async(email, password, "", false)
-	
-	print("[DEBUG LOGIN] Réponse de Nakama reçue !")
-	
-	if auth_result.is_exception():
-		print("[DEBUG LOGIN] Nakama a renvoyé une exception.")
-		var err_msg = auth_result.get_exception().message
-		print("[DEBUG LOGIN] Détails complets de l'erreur : ", err_msg)
-		show_error("Échec de la connexion : Email ou mot de passe incorrect.")
-	else:
-		print("[DEBUG LOGIN] Authentification réussie. Session récupérée.")
-		session = auth_result
-		show_success("Connecté avec succès !")
-		_on_login_success()
+	btn.disabled = false
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	for child in btn.get_children():
+		if child is Control:
+			child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-# ==============================================================================
-# SECTION 2 : INSCRIPTION (PAGE DE DROITE - CHECK DB AUTOMATIQUE)
-# ==============================================================================
-func _on_btn_register_pressed():
-	print("\n[DEBUG REGISTER] --- Bouton Inscription cliqué ---")
-	
-	var username = register_username.text.strip_edges()
-	var email = register_email.text.strip_edges()
-	var password = register_password.text.strip_edges()
-	
-	print("[DEBUG REGISTER] Valeurs lues -> Pseudo: '", username, "' | Email: '", email, "' | Password length: ", password.length())
-	
-	if username.is_empty() or email.is_empty() or password.is_empty():
-		print("[DEBUG REGISTER] Échec : Un ou plusieurs champs sont vides.")
-		show_error("Veuillez remplir tous les champs d'inscription.")
+
+func _bind_button(btn: BaseButton, callback: Callable) -> void:
+	if btn == null:
 		return
-		
-	if password.length() < 6:
-		print("[DEBUG REGISTER] Échec : Mot de passe trop court (", password.length(), " caractères).")
-		show_error("Le mot de passe doit faire au moins 6 caractères.")
+	if not btn.pressed.is_connected(callback):
+		btn.pressed.connect(callback)
+	if not btn.gui_input.is_connected(_on_button_gui_input.bind(callback)):
+		btn.gui_input.connect(_on_button_gui_input.bind(callback))
+
+
+func _on_button_gui_input(event: InputEvent, callback: Callable) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			callback.call()
+
+
+func _on_btn_login_pressed() -> void:
+	if _auth_pending:
 		return
+	var email := AuthValidation.sanitize_email(login_email.text)
+	var password := login_password.text
+	if email == "" or password == "":
+		_show_error("Remplis l'email et le mot de passe.")
+		return
+	if not AuthValidation.is_valid_email(email):
+		_show_error("Adresse email invalide (ex: nom@domaine.com).")
+		return
+	var pwd_err := AuthValidation.is_valid_password(password)
+	if pwd_err != "":
+		_show_error(pwd_err)
+		return
+	_auth_pending = true
+	_show_status("Connexion en cours...", false)
+	NetworkSession.login_account(email, password)
 
-	error_message.text = "Création du compte..."
-	print("[DEBUG REGISTER] Validation des inputs OK. Envoi de la requête de création à Nakama...")
-	
-	# Authentification par Email avec create = true pour forcer l'inscription
-	# On passe le 'username' pour que Nakama l'enregistre
-	var auth_result = await client.authenticate_email_async(email, password, username, true)
-	
-	print("[DEBUG REGISTER] Réponse de Nakama reçue !")
-	
-	if auth_result.is_exception():
-		print("[DEBUG REGISTER] Nakama a renvoyé une exception.")
-		var msg_err = auth_result.get_exception().message
-		print("[DEBUG REGISTER] Détails complets de l'erreur : ", msg_err)
-		
-		# Nakama interroge directement les contraintes de ta DB PostgreSQL.
-		# Si le pseudo ou l'email existent déjà, il renvoie une exception.
-		if "username" in msg_err.to_lower() or "unique" in msg_err.to_lower():
-			print("[DEBUG REGISTER] Analyse : Pseudo ou email déjà pris.")
-			show_error("Ce pseudo ou cet email est déjà utilisé par un autre joueur.")
-		else:
-			print("[DEBUG REGISTER] Analyse : Erreur non identifiée.")
-			show_error("Erreur lors de l'inscription. Vérifiez le format de vos saisies.")
-	else:
-		print("[DEBUG REGISTER] Création de compte réussie ! Session récupérée.")
-		session = auth_result
-		show_success("Compte créé avec succès !")
-		
-		# OPTIONNEL: Ici, tu peux aussi déclencher un script RPC 
-		# pour ajouter une ligne synchro dans ta table custom 'players' si nécessaire
-		
-		_on_login_success()
 
-# ==============================================================================
-# UTILITAIRES
-# ==============================================================================
-func show_error(text: String):
-	print("[DEBUG UI] Affichage d'une ERREUR : '", text, "'")
-	error_message.add_theme_color_override("font_color", Color("#e53e3e")) # Rouge
+func _on_btn_register_pressed() -> void:
+	if _auth_pending:
+		return
+	var username := AuthValidation.sanitize_username(register_username.text)
+	var email := AuthValidation.sanitize_email(register_email.text)
+	var password := register_password.text
+	if username == "" or email == "" or password == "":
+		_show_error("Remplis pseudo, email et mot de passe.")
+		return
+	if not AuthValidation.is_valid_email(email):
+		_show_error("Adresse email invalide (ex: nom@domaine.com).")
+		return
+	if not AuthValidation.is_valid_username(username):
+		_show_error("Pseudo invalide : 3-20 caractères, lettres/chiffres/_ uniquement.")
+		return
+	var pwd_err := AuthValidation.is_valid_password(password)
+	if pwd_err != "":
+		_show_error(pwd_err)
+		return
+	_auth_pending = true
+	_show_status("Création du compte...", false)
+	NetworkSession.register_account(email, password, username)
+
+
+func _on_auth_ready() -> void:
+	if not NetworkSession.is_account_logged_in():
+		return
+	_auth_pending = false
+	_show_success("Connecté ! Redirection vers le profil...")
+	auth_completed.emit()
+	await get_tree().create_timer(0.2).timeout
+	var book := get_parent()
+	if book != null and book.has_method("_on_unconnect_auth_completed"):
+		book.call_deferred("_on_unconnect_auth_completed")
+
+
+func _on_auth_failed(message: String) -> void:
+	_auth_pending = false
+	_show_error(message)
+
+
+func _show_error(text: String) -> void:
+	if error_message == null:
+		push_warning("[Unconnect] %s" % text)
+		return
+	error_message.add_theme_color_override("font_color", Color("#e53e3e"))
 	error_message.text = text
 
-func show_success(text: String):
-	print("[DEBUG UI] Affichage d'un SUCCÈS : '", text, "'")
-	error_message.add_theme_color_override("font_color", Color("#38a169")) # Vert
+
+func _show_success(text: String) -> void:
+	if error_message == null:
+		return
+	error_message.add_theme_color_override("font_color", Color("#38a169"))
 	error_message.text = text
 
-func _on_login_success():
-	print("[DEBUG ROUTING] Lancement du timer (1.5s) avant changement de scène...")
-	# Sauvegarder la session quelque part globalement (ex: Autoload Autoload_Nakama.session = session)
-	# Puis changer de scène vers ton vrai profil utilisateur autonome !
-	await get_tree().create_timer(1.5).timeout
-	print("[DEBUG ROUTING] Changement de scène vers : res://scenes/menu/profil.tscn")
-	get_tree().change_scene_to_file("res://scenes/menu/profil.tscn")
+
+func _show_status(text: String, is_error: bool = false) -> void:
+	if text == "":
+		error_message.text = ""
+		return
+	if is_error:
+		_show_error(text)
+	else:
+		error_message.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+		error_message.text = text

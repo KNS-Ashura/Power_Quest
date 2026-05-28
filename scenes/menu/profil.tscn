@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://byujsq25i6i1t" path="res://assets/menu/img-sur-mesure/scene_profil/lvl.tres" id="10_5b6v1"]
 [ext_resource type="Script" uid="uid://b0j5p82rtwfq4" path="res://scripts/menu/leaderboard.gd" id="11_5b6v1"]
 [ext_resource type="Script" uid="uid://b2ote4ki4seq0" path="res://scripts/menu/last_10_games.gd" id="11_eb6hr"]
+[ext_resource type="Script" path="res://scripts/menu/profile_auth_panel.gd" id="13_auth"]
 
 [sub_resource type="GDScript" id="GDScript_2ord4"]
 
@@ -158,6 +159,7 @@ cache/0/50/0/glyphs/126/uv_rect = Rect2(59, 1, 21, 29)
 cache/0/50/0/glyphs/126/texture_idx = 0
 
 [node name="Profil" type="Node2D" unique_id=1667979208]
+script = ExtResource("13_auth")
 
 [node name="Banniere" type="Control" parent="." unique_id=543370625]
 layout_mode = 3
@@ -218,7 +220,7 @@ offset_right = 283.0
 offset_bottom = 379.0
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "Robilol"
+text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -420,7 +422,7 @@ offset_right = 454.0
 offset_bottom = 376.0
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "17"
+text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
