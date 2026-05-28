@@ -300,15 +300,32 @@ func _water_spawn_position() -> Vector2:
 	for region in regions:
 		if (region.navigation_layers & NAV_LAYER_WATER) == 0:
 			continue
-		var closest: Vector2 = NavigationServer2D.map_get_closest_point(region.get_navigation_map(), origin)
-		var d2: float = origin.distance_squared_to(closest)
-		if d2 < best_d2:
-			best_d2 = d2
-			best = closest
+		var nav_polygon: NavigationPolygon = region.navigation_polygon
+		if nav_polygon == null:
+			continue
+		var vertices: PackedVector2Array = nav_polygon.get_vertices()
+		var local_pos: Vector2 = region.to_local(origin)
+		for polygon_idx in range(nav_polygon.get_polygon_count()):
+			var polygon_indices: PackedInt32Array = nav_polygon.get_polygon(polygon_idx)
+			if polygon_indices.size() < 3:
+				continue
+			var polygon_local := PackedVector2Array()
+			var polygon_world := PackedVector2Array()
+			for vertex_idx in polygon_indices:
+				var local_vertex: Vector2 = vertices[vertex_idx]
+				polygon_local.append(local_vertex)
+				polygon_world.append(region.to_global(local_vertex))
+			var closest: Vector2 = origin if Geometry2D.is_point_in_polygon(local_pos, polygon_local) else _closest_point_on_polygon(origin, polygon_world)
+			if closest == Vector2.INF:
+				continue
+			var d2: float = origin.distance_squared_to(closest)
+			if d2 < best_d2:
+				best_d2 = d2
+				best = closest
 	if best_d2 == INF:
 		push_warning("Port: no NavigationRegion2D on water layer (2). Spawning at port point.")
 		return _unit_spawn_position()
-	return best + Vector2(randf_range(-28, 28), randf_range(-28, 28))
+	return best
 
 
 func _collect_navigation_regions(node: Node, out: Array) -> void:
@@ -316,6 +333,31 @@ func _collect_navigation_regions(node: Node, out: Array) -> void:
 		out.append(node)
 	for child in node.get_children():
 		_collect_navigation_regions(child, out)
+
+
+func _closest_point_on_segment(point: Vector2, a: Vector2, b: Vector2) -> Vector2:
+	var ab: Vector2 = b - a
+	var ab_len_sq: float = ab.length_squared()
+	if ab_len_sq <= 0.0001:
+		return a
+	var t: float = clampf((point - a).dot(ab) / ab_len_sq, 0.0, 1.0)
+	return a + ab * t
+
+
+func _closest_point_on_polygon(point: Vector2, polygon: PackedVector2Array) -> Vector2:
+	if polygon.size() < 3:
+		return Vector2.INF
+	var best: Vector2 = Vector2.INF
+	var best_d2: float = INF
+	for i in range(polygon.size()):
+		var a: Vector2 = polygon[i]
+		var b: Vector2 = polygon[(i + 1) % polygon.size()]
+		var candidate: Vector2 = _closest_point_on_segment(point, a, b)
+		var d2: float = point.distance_squared_to(candidate)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = candidate
+	return best
 
 
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:

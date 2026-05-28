@@ -47,15 +47,16 @@ animations = [{
 }],
 "loop": true,
 "name": &"effect",
-"speed": 11.0
+"speed": 9.0
 }]
 
 [node name="HealerEffect" type="Node2D" unique_id=43047137]
 script = ExtResource("1_bsjfn")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
+position = Vector2(0, 1.9073486e-06)
 rotation = 0.0038198903
-scale = Vector2(0.13274868, 0.13579302)
+scale = Vector2(0.3360252, 0.31076244)
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"effect"
-frame_progress = 0.73625666
+frame_progress = 0.20930654
