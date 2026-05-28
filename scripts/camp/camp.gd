@@ -273,9 +273,9 @@ func _spawn_guardian() -> void:
 
 func _guardian_spawn_position() -> Vector2:
 	var base = spawn_point.global_position if is_instance_valid(spawn_point) else (global_position + Vector2(0, 90))
-	base.y = max(base.y, global_position.y + 90.0)
-	# Slightly offset from unit spawn to reduce initial blocking.
-	return base + Vector2(randf_range(-22, 22), randf_range(-8, 18))
+	base.y = max(base.y, global_position.y + 82.0)
+	# Slightly closer and in front of the camp.
+	return base + Vector2(randf_range(-14, 14), randf_range(4, 14))
 
 
 func _unit_spawn_position() -> Vector2:
@@ -284,6 +284,7 @@ func _unit_spawn_position() -> Vector2:
 	return base + Vector2(randf_range(-48, 48), randf_range(52, 88))
 
 
+const NAV_LAYER_GROUND := 1
 const NAV_LAYER_WATER := 2
 
 
@@ -333,6 +334,30 @@ func _collect_navigation_regions(node: Node, out: Array) -> void:
 		_collect_navigation_regions(child, out)
 
 
+func _land_spawn_around_site(min_radius: float, max_radius: float, attempts: int) -> Vector2:
+	var anchor: Vector2 = spawn_point.global_position if is_instance_valid(spawn_point) else global_position
+	var best: Vector2 = Vector2.INF
+	var best_score: float = INF
+	for _i in range(attempts):
+		var angle: float = randf_range(0.0, TAU)
+		var radius: float = randf_range(min_radius, max_radius)
+		var candidate: Vector2 = anchor + Vector2(cos(angle), sin(angle)) * radius
+		var land_point: Vector2 = _closest_point_on_layer(candidate, NAV_LAYER_GROUND)
+		if land_point == Vector2.INF or not _is_valid_land_point(land_point):
+			continue
+		# Prefer the closest valid land point around the camp.
+		var score: float = anchor.distance_squared_to(land_point)
+		if score < best_score:
+			best_score = score
+			best = land_point
+	if best != Vector2.INF:
+		return best
+	var fallback: Vector2 = _closest_point_on_layer(anchor, NAV_LAYER_GROUND)
+	if fallback != Vector2.INF and _is_valid_land_point(fallback):
+		return fallback
+	return Vector2.INF
+
+
 func _closest_point_on_segment(point: Vector2, a: Vector2, b: Vector2) -> Vector2:
 	var ab: Vector2 = b - a
 	var ab_len_sq: float = ab.length_squared()
@@ -356,6 +381,73 @@ func _closest_point_on_polygon(point: Vector2, polygon: PackedVector2Array) -> V
 			best_d2 = d2
 			best = candidate
 	return best
+
+
+func _closest_point_on_layer(origin: Vector2, layer_mask: int) -> Vector2:
+	var best: Vector2 = Vector2.INF
+	var best_d2: float = INF
+	var regions: Array[NavigationRegion2D] = []
+	var root := get_tree().current_scene
+	if is_instance_valid(root):
+		_collect_navigation_regions(root, regions)
+	for region in regions:
+		if (region.navigation_layers & layer_mask) == 0:
+			continue
+		var nav_polygon: NavigationPolygon = region.navigation_polygon
+		if nav_polygon == null:
+			continue
+		var vertices: PackedVector2Array = nav_polygon.get_vertices()
+		var local_pos: Vector2 = region.to_local(origin)
+		for polygon_idx in range(nav_polygon.get_polygon_count()):
+			var polygon_indices: PackedInt32Array = nav_polygon.get_polygon(polygon_idx)
+			if polygon_indices.size() < 3:
+				continue
+			var polygon_local := PackedVector2Array()
+			var polygon_world := PackedVector2Array()
+			for vertex_idx in polygon_indices:
+				var local_vertex: Vector2 = vertices[vertex_idx]
+				polygon_local.append(local_vertex)
+				polygon_world.append(region.to_global(local_vertex))
+			var closest: Vector2 = origin if Geometry2D.is_point_in_polygon(local_pos, polygon_local) else _closest_point_on_polygon(origin, polygon_world)
+			if closest == Vector2.INF:
+				continue
+			var d2: float = origin.distance_squared_to(closest)
+			if d2 < best_d2:
+				best_d2 = d2
+				best = closest
+	return best
+
+
+func _surface_mask_at(world_pos: Vector2) -> int:
+	var surface_mask: int = 0
+	var regions: Array[NavigationRegion2D] = []
+	var root := get_tree().current_scene
+	if is_instance_valid(root):
+		_collect_navigation_regions(root, regions)
+	for region in regions:
+		if not is_instance_valid(region):
+			continue
+		var nav_polygon: NavigationPolygon = region.navigation_polygon
+		if nav_polygon == null:
+			continue
+		var vertices: PackedVector2Array = nav_polygon.get_vertices()
+		var local_pos: Vector2 = region.to_local(world_pos)
+		for polygon_idx in range(nav_polygon.get_polygon_count()):
+			var polygon_indices: PackedInt32Array = nav_polygon.get_polygon(polygon_idx)
+			if polygon_indices.size() < 3:
+				continue
+			var polygon_local := PackedVector2Array()
+			for vertex_idx in polygon_indices:
+				polygon_local.append(vertices[vertex_idx])
+			if Geometry2D.is_point_in_polygon(local_pos, polygon_local):
+				surface_mask |= region.navigation_layers
+				break
+	return surface_mask
+
+
+func _is_valid_land_point(world_pos: Vector2) -> bool:
+	var mask: int = _surface_mask_at(world_pos)
+	return (mask & NAV_LAYER_GROUND) != 0 and (mask & NAV_LAYER_WATER) == 0
 
 
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:

@@ -101,6 +101,10 @@ var _transporter_targets: Dictionary = {}
 var _cached_navigation_regions: Array[NavigationRegion2D] = []
 var _cached_ground_nav_map: RID = RID()
 var _cached_water_nav_map: RID = RID()
+var _land_command_cursor: int = 0
+var _naval_command_cursor: int = 0
+var _reachability_cache: Dictionary = {}
+var _think_count: int = 0
 
 
 func _ready() -> void:
@@ -134,7 +138,10 @@ func _on_think() -> void:
 		return
 	if current_difficulty != MapSession.get_ai_difficulty():
 		_set_difficulty(MapSession.get_ai_difficulty())
-	_refresh_navigation_caches()
+	_think_count += 1
+	if _think_count % 3 == 1 or not _cached_ground_nav_map.is_valid() or not _cached_water_nav_map.is_valid():
+		_refresh_navigation_caches()
+	_reachability_cache.clear()
 	var owned_camps = _get_owned_camps()
 	if owned_camps.is_empty():
 		return
@@ -355,15 +362,52 @@ func _unit_type_of(troop: Node2D) -> int:
 func _command_troop_group(troops: Array[Node2D], prefer_ports: bool, required_layer: int) -> void:
 	if troops.is_empty():
 		return
-	for troop in troops:
+	var batch_size: int = _military_batch_size()
+	if troops.size() <= batch_size:
+		for troop in troops:
+			if not is_instance_valid(troop):
+				continue
+			var target_camp: Node2D = _pick_target_camp_for(troop.global_position, prefer_ports, required_layer)
+			if target_camp == null:
+				if required_layer == NAV_LAYER_GROUND and troop.has_method("move_to"):
+					troop.move_to(_best_embark_point(troop.global_position))
+				continue
+			_issue_attack_order(troop, target_camp)
+		return
+
+	var use_land_cursor: bool = required_layer == NAV_LAYER_GROUND
+	var cursor: int = _land_command_cursor if use_land_cursor else _naval_command_cursor
+	cursor = posmod(cursor, troops.size())
+	var processed: int = 0
+	while processed < batch_size:
+		var idx: int = (cursor + processed) % troops.size()
+		var troop: Node2D = troops[idx]
 		if not is_instance_valid(troop):
+			processed += 1
 			continue
 		var target_camp: Node2D = _pick_target_camp_for(troop.global_position, prefer_ports, required_layer)
 		if target_camp == null:
 			if required_layer == NAV_LAYER_GROUND and troop.has_method("move_to"):
 				troop.move_to(_best_embark_point(troop.global_position))
+			processed += 1
 			continue
 		_issue_attack_order(troop, target_camp)
+		processed += 1
+	var next_cursor: int = (cursor + batch_size) % troops.size()
+	if use_land_cursor:
+		_land_command_cursor = next_cursor
+	else:
+		_naval_command_cursor = next_cursor
+
+
+func _military_batch_size() -> int:
+	match current_difficulty:
+		MapSession.AIDifficulty.SIMPLE:
+			return 8
+		MapSession.AIDifficulty.HARD:
+			return 20
+		_:
+			return 12
 
 
 func _pick_target_camp_for(from_pos: Vector2, prefer_ports: bool, required_layer: int = 0) -> Node2D:
@@ -539,14 +583,26 @@ func _find_nav_map_for_layer(layer_mask: int) -> RID:
 
 
 func _is_reachable_on_layer(from_pos: Vector2, to_pos: Vector2, layer_mask: int) -> bool:
+	var from_qx: int = int(round(from_pos.x / 48.0))
+	var from_qy: int = int(round(from_pos.y / 48.0))
+	var to_qx: int = int(round(to_pos.x / 48.0))
+	var to_qy: int = int(round(to_pos.y / 48.0))
+	var key: String = "%d|%d|%d|%d|%d" % [layer_mask, from_qx, from_qy, to_qx, to_qy]
+	if _reachability_cache.has(key):
+		return bool(_reachability_cache[key])
+
 	var nav_map: RID = RID()
 	if layer_mask == NAV_LAYER_GROUND:
 		nav_map = _cached_ground_nav_map
 	elif layer_mask == NAV_LAYER_WATER:
 		nav_map = _cached_water_nav_map
 	if not nav_map.is_valid():
+		_reachability_cache[key] = false
 		return false
 	var path: PackedVector2Array = NavigationServer2D.map_get_path(nav_map, from_pos, to_pos, true, layer_mask)
 	if path.size() < 2:
+		_reachability_cache[key] = false
 		return false
-	return path[path.size() - 1].distance_to(to_pos) <= 120.0
+	var reachable: bool = path[path.size() - 1].distance_to(to_pos) <= 120.0
+	_reachability_cache[key] = reachable
+	return reachable
