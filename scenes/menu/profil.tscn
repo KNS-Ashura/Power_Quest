@@ -220,7 +220,7 @@ offset_right = 283.0
 offset_bottom = 379.0
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "Robilol"
+text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -422,7 +422,7 @@ offset_right = 454.0
 offset_bottom = 376.0
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "17"
+text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 

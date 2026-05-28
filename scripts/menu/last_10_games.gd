@@ -15,10 +15,18 @@ func _ready() -> void:
 
 
 func _on_profile_updated(profile: Dictionary) -> void:
-	var recent: Array = profile.get("recent", [])
+	var recent_value: Variant = profile.get("recent", [])
+	var recent: Array = []
+	if typeof(recent_value) == TYPE_ARRAY:
+		recent = recent_value
+	elif typeof(recent_value) == TYPE_DICTIONARY:
+		recent = recent_value.get("items", [])
 	historique.clear()
 	for item in recent:
-		historique.append("V" if str(item).to_upper() == "W" else "D")
+		var value: Variant = item
+		if typeof(item) == TYPE_DICTIONARY:
+			value = item.get("result", item.get("outcome", ""))
+		historique.append("V" if str(value).to_upper() == "W" else "D")
 	remplir_l_historique()
 
 

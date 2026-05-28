@@ -1,72 +1,35 @@
 extends Node2D
 
-@onready var _logout_button: BaseButton = $Deconnexion
-@onready var _status_label: Label = $TextureRect/Label
-@onready var _pseudo_label: Label = $SectionInfo/Pseudo
-@onready var _winrate_label: Label = $StatsDroite/Fond4/NbrWinrate
-@onready var _matches_label: Label = $StatsDroite/Fond5/NbrMatchs
-@onready var _time_label: Label = $StatsDroite/Fond6/NbrApm
-
-var _auth_panel: VBoxContainer
-var _email_input: LineEdit
-var _username_input: LineEdit
-var _password_input: LineEdit
+@onready var _logout_button: BaseButton = get_node_or_null("Deconnexion")
+@onready var _logout_label: Control = get_node_or_null("Deconnexion/Label")
+@onready var _status_label: Label = get_node_or_null("TextureRect/Label")
+@onready var _pseudo_label: Label = get_node_or_null("SectionInfo/Pseudo")
+@onready var _level_label: Label = get_node_or_null("LevelControl/LVLNbr")
+@onready var _winrate_label: Label = get_node_or_null("StatsDroite/NbrWinrate")
+@onready var _matches_label: Label = get_node_or_null("StatsDroite/Fond5/NbrMatchs")
+@onready var _time_label: Label = get_node_or_null("StatsDroite/NbrApm")
 
 
 func _ready() -> void:
-	_build_auth_panel()
-	_logout_button.pressed.connect(_on_logout_pressed)
-	NetworkSession.auth_ready.connect(_refresh_profile_ui)
-	NetworkSession.auth_failed.connect(_on_auth_failed)
-	NetworkSession.session_closed.connect(_on_session_closed)
-	NetworkSession.profile_updated.connect(_on_profile_updated)
+	_bind_logout_button()
+	if not NetworkSession.auth_ready.is_connected(_refresh_profile_ui):
+		NetworkSession.auth_ready.connect(_refresh_profile_ui)
+	if not NetworkSession.session_closed.is_connected(_on_session_closed):
+		NetworkSession.session_closed.connect(_on_session_closed)
+	if not NetworkSession.profile_updated.is_connected(_on_profile_updated):
+		NetworkSession.profile_updated.connect(_on_profile_updated)
 	_refresh_profile_ui()
 
 
-func _build_auth_panel() -> void:
-	_auth_panel = VBoxContainer.new()
-	_auth_panel.name = "AuthPanel"
-	_auth_panel.position = Vector2(385, 445)
-	_auth_panel.custom_minimum_size = Vector2(220, 130)
-	_auth_panel.add_theme_constant_override("separation", 4)
-	add_child(_auth_panel)
-
-	_email_input = LineEdit.new()
-	_email_input.placeholder_text = "Email"
-	_auth_panel.add_child(_email_input)
-
-	_username_input = LineEdit.new()
-	_username_input.placeholder_text = "Pseudo (inscription)"
-	_auth_panel.add_child(_username_input)
-
-	_password_input = LineEdit.new()
-	_password_input.placeholder_text = "Mot de passe"
-	_password_input.secret = true
-	_auth_panel.add_child(_password_input)
-
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 6)
-	_auth_panel.add_child(buttons)
-
-	var login_btn := Button.new()
-	login_btn.text = "Se connecter"
-	login_btn.pressed.connect(_on_login_pressed)
-	buttons.add_child(login_btn)
-
-	var register_btn := Button.new()
-	register_btn.text = "Créer compte"
-	register_btn.pressed.connect(_on_register_pressed)
-	buttons.add_child(register_btn)
-
-
-func _on_login_pressed() -> void:
-	_status_label.text = "Connexion..."
-	NetworkSession.login_account(_email_input.text, _password_input.text)
-
-
-func _on_register_pressed() -> void:
-	_status_label.text = "Inscription..."
-	NetworkSession.register_account(_email_input.text, _password_input.text, _username_input.text)
+func _bind_logout_button() -> void:
+	if _logout_button == null:
+		return
+	_logout_button.disabled = false
+	_logout_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	if _logout_label != null:
+		_logout_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if not _logout_button.pressed.is_connected(_on_logout_pressed):
+		_logout_button.pressed.connect(_on_logout_pressed)
 
 
 func _on_logout_pressed() -> void:
@@ -75,38 +38,59 @@ func _on_logout_pressed() -> void:
 
 func _refresh_profile_ui() -> void:
 	var logged := NetworkSession.is_account_logged_in()
-	_auth_panel.visible = not logged
-	_logout_button.visible = logged
+	if _logout_button != null:
+		_logout_button.visible = logged
 	if not logged:
-		_status_label.text = "Connecte-toi pour jouer en ligne."
-		_pseudo_label.text = "NON CONNECTE"
-		_winrate_label.text = "--"
-		_matches_label.text = "--"
-		_time_label.text = "--"
+		_clear_profile_display()
 		return
+	NetworkSession.request_account_info()
 	NetworkSession.request_player_profile()
 	NetworkSession.request_leaderboard()
-	_status_label.text = "Connecté"
-	_pseudo_label.text = NetworkSession.account_username
+	if _status_label != null:
+		_status_label.text = "Connecté"
+	_apply_username_display(NetworkSession.profile_cache)
 
 
 func _on_profile_updated(profile: Dictionary) -> void:
 	if not NetworkSession.is_account_logged_in():
 		return
-	_pseudo_label.text = str(profile.get("username", NetworkSession.account_username))
-	_winrate_label.text = "%.1f%%" % float(profile.get("winrate", 0.0))
-	_matches_label.text = str(int(profile.get("games", 0)))
+	_apply_username_display(profile)
+	if _winrate_label != null:
+		_winrate_label.text = "%.1f%%" % float(profile.get("winrate", 0.0))
+	if _matches_label != null:
+		_matches_label.text = str(int(profile.get("games", 0)))
 	var total_sec := int(profile.get("total_seconds", 0))
-	_time_label.text = _format_time(total_sec)
-	_status_label.text = "Connecté"
+	if _time_label != null:
+		_time_label.text = _format_time(total_sec)
+	if _level_label != null:
+		_level_label.text = str(int(profile.get("level", 0)))
+	if _status_label != null:
+		_status_label.text = "Connecté"
 
 
-func _on_auth_failed(message: String) -> void:
-	_status_label.text = message
+func _apply_username_display(_profile: Dictionary) -> void:
+	if _pseudo_label == null:
+		return
+	_pseudo_label.text = NetworkSession.get_display_username()
+
+
+func _clear_profile_display() -> void:
+	if _status_label != null:
+		_status_label.text = "Profil indisponible sans connexion."
+	if _pseudo_label != null:
+		_pseudo_label.text = "--"
+	if _level_label != null:
+		_level_label.text = "0"
+	if _winrate_label != null:
+		_winrate_label.text = "--"
+	if _matches_label != null:
+		_matches_label.text = "--"
+	if _time_label != null:
+		_time_label.text = "--"
 
 
 func _on_session_closed() -> void:
-	_refresh_profile_ui()
+	_clear_profile_display()
 
 
 func _format_time(total_sec: int) -> String:

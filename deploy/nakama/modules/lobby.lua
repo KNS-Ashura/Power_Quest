@@ -227,6 +227,7 @@ local function default_stats(user_id)
 	return {
 		user_id = user_id,
 		username = "",
+		level = 0,
 		games = 0,
 		wins = 0,
 		losses = 0,
@@ -250,6 +251,7 @@ local function read_stats(user_id)
 	value.wins = tonumber(value.wins or 0) or 0
 	value.losses = tonumber(value.losses or 0) or 0
 	value.total_seconds = tonumber(value.total_seconds or 0) or 0
+	value.level = tonumber(value.level or 0) or 0
 	value.recent = value.recent or {}
 	value.winrate = 0.0
 	if value.games > 0 then
@@ -338,7 +340,14 @@ end
 
 local function rpc_get_player_profile(context, payload)
 	local stats = read_stats(context.user_id)
-	stats.username = context.username or stats.username or ""
+	local username = context.username or ""
+	if username == "" then
+		username = stats.username or ""
+	end
+	if username == context.user_id then
+		username = ""
+	end
+	stats.username = username
 	write_stats(context.user_id, stats)
 	return nk.json_encode(stats)
 end
