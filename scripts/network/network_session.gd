@@ -424,7 +424,7 @@ func _parse_json_safe(text: String) -> Variant:
 func _extract_auth_fields_from_text(text: String) -> Dictionary:
 	var parsed: Variant = _parse_json_safe(text)
 	if typeof(parsed) == TYPE_DICTIONARY:
-		return parsed
+		return parsed as Dictionary
 	var out := {}
 	var token_re := RegEx.new()
 	if token_re.compile("\"token\"\\s*:\\s*\"([^\"]+)\"") == OK:
@@ -508,7 +508,11 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		var was_registration := bool(_http.get_meta("is_registration", false)) if _http.has_meta("is_registration") else false
 		if _http.has_meta("is_registration"):
 			_http.remove_meta("is_registration")
-		var fields: Dictionary = parsed if typeof(parsed) == TYPE_DICTIONARY else _extract_auth_fields_from_text(text)
+		var fields: Dictionary
+		if typeof(parsed) == TYPE_DICTIONARY:
+			fields = parsed as Dictionary
+		else:
+			fields = _extract_auth_fields_from_text(text)
 		if _apply_auth_session_from_fields(fields, was_registration):
 			_pump_http_queue()
 			return
@@ -536,7 +540,7 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		var rpc_id: String = str(_http.get_meta("rpc_id"))
 		_http.remove_meta("rpc_id")
 		if parsed == null and _http_is_success(response_code):
-			var rpc_payload := _decode_nakama_rpc_payload_from_text(text)
+			var rpc_payload: Variant = _decode_nakama_rpc_payload_from_text(text)
 			if typeof(rpc_payload) == TYPE_DICTIONARY:
 				_handle_rpc_response(rpc_id, response_code, rpc_payload, text)
 				_pump_http_queue()
@@ -633,7 +637,7 @@ func _decode_nakama_rpc_payload(parsed: Variant) -> Variant:
 func _decode_nakama_rpc_payload_from_text(text: String) -> Variant:
 	var wrapper: Variant = _parse_json_safe(text)
 	if typeof(wrapper) == TYPE_DICTIONARY:
-		var decoded := _decode_nakama_rpc_payload(wrapper)
+		var decoded: Variant = _decode_nakama_rpc_payload(wrapper)
 		if typeof(decoded) == TYPE_DICTIONARY:
 			return decoded
 		if not wrapper.has("payload"):
@@ -990,7 +994,7 @@ func _http_result_message(result: int) -> String:
 
 func _normalize_entries(value: Variant) -> Array:
 	if typeof(value) == TYPE_ARRAY:
-		return value
+		return value as Array
 	if typeof(value) == TYPE_DICTIONARY:
 		var out: Array = []
 		for key in value.keys():
@@ -1040,7 +1044,7 @@ func _format_nakama_error(parsed, raw_text: String) -> String:
 
 func _apply_account_info(parsed: Dictionary) -> void:
 	if parsed.has("user") and typeof(parsed["user"]) == TYPE_DICTIONARY:
-		var user: Dictionary = parsed["user"]
+		var user: Dictionary = parsed["user"] as Dictionary
 		if user.has("id"):
 			user_id = str(user.get("id", user_id))
 		var api_email := str(user.get("email", "")).strip_edges()
@@ -1071,7 +1075,7 @@ func _parse_jwt_payload(token: String) -> Dictionary:
 	var decoded := Marshalls.base64_to_utf8(b64)
 	var parsed: Variant = _parse_json_safe(decoded)
 	if typeof(parsed) == TYPE_DICTIONARY:
-		return parsed
+		return parsed as Dictionary
 	return {}
 
 

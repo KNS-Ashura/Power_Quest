@@ -18,9 +18,9 @@ func _on_profile_updated(profile: Dictionary) -> void:
 	var recent_value: Variant = profile.get("recent", [])
 	var recent: Array = []
 	if typeof(recent_value) == TYPE_ARRAY:
-		recent = recent_value
+		recent = recent_value as Array
 	elif typeof(recent_value) == TYPE_DICTIONARY:
-		recent = recent_value.get("items", [])
+		recent = (recent_value as Dictionary).get("items", []) as Array
 	historique.clear()
 	for item in recent:
 		var value: Variant = item
