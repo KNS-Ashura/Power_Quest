@@ -182,6 +182,8 @@ func move_to(cible : Vector2):
 	if is_camp_guardian:
 		return
 	attack_target_node = null
+	if is_instance_valid(agent_navigation):
+		agent_navigation.target_desired_distance = 8.0
 	agent_navigation.target_position = cible
 
 func _arreter_combat() -> void:
@@ -224,6 +226,8 @@ func attack_target(cible : Node2D):
 			return
 	attack_target_node = cible
 	if is_instance_valid(cible):
+		if is_instance_valid(agent_navigation):
+			agent_navigation.target_desired_distance = max(8.0, _rayon_zone_detection() - 5.0)
 		agent_navigation.target_position = cible.global_position
 
 var dernier_regard : String = "f"
@@ -239,6 +243,11 @@ func _physics_process(_delta):
 		_gerer_tirs_passifs_gardien(_delta)
 
 	var doit_avancer = true
+	if is_instance_valid(agent_navigation):
+		if is_instance_valid(attack_target_node):
+			agent_navigation.target_desired_distance = max(8.0, _rayon_zone_detection() - 5.0)
+		else:
+			agent_navigation.target_desired_distance = 8.0
 	
 	if cooldown_actuel_sort > 0:
 		cooldown_actuel_sort -= _delta
