@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cti4meatxnoth" path="res://assets/menu/book-ui/PNG/pages_apper.png" id="3_stbfh"]
 [ext_resource type="Texture2D" uid="uid://b1acwktknhlj8" path="res://assets/menu/book-ui/PNG/pages_desappear-Sheet.png" id="4_cmifk"]
 [ext_resource type="LabelSettings" uid="uid://dtfjtw28xtiua" path="res://assets/menu/settings/scroll_button_settings.tres" id="5_0i8o1"]
+[ext_resource type="FontFile" uid="uid://dakebd4j7bckm" path="res://assets/menu/fonts/Jersey10-Regular.ttf" id="5_airtt"]
 [ext_resource type="Texture2D" uid="uid://bl2xjuuuhcjy2" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton2.tres" id="5_i17nj"]
 [ext_resource type="Texture2D" uid="uid://whmm0jl4qfnf" path="res://assets/menu/book-ui/PNG/Turning_pages_left.png" id="5_tyuks"]
 [ext_resource type="Texture2D" uid="uid://blsxs0mpjagub" path="res://assets/menu/img-sur-mesure/chevalier.tres" id="6_sgnfi"]
@@ -118,7 +119,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"Open_book",
-"speed": 8.0
+"speed": 13.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stbfh"]
@@ -140,7 +141,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"appear",
-"speed": 4.0
+"speed": 12.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fa1r8"]
@@ -162,7 +163,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"disparition",
-"speed": 4.0
+"speed": 12.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tyuks"]
@@ -275,7 +276,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"default",
-"speed": 12.0
+"speed": 25.0
 }]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cx6fd"]
@@ -322,10 +323,10 @@ sprite_frames = SubResource("SpriteFrames_mgecw")
 [node name="ScrollContainer" type="VBoxContainer" parent="." unique_id=845490020]
 texture_filter = 1
 layout_direction = 3
-offset_left = -268.66666
-offset_top = 359.333
-offset_right = -130.0
-offset_bottom = 583.99963
+offset_left = -258.0
+offset_top = 359.0
+offset_right = -150.0
+offset_bottom = 584.0
 size_flags_horizontal = 3
 mouse_filter = 2
 theme = SubResource("Theme_46enr")
@@ -349,10 +350,9 @@ stretch_mode = 0
 layout_mode = 0
 offset_left = 2.0
 offset_top = 2.0
-offset_right = 137.33334
+offset_right = 106.0
 offset_bottom = 21.0
-theme_override_fonts/font = ExtResource("11_omw2x")
-text = "MENU_MAIN_PLAY"
+text = "JOUER SOLO Vs IA"
 label_settings = ExtResource("5_0i8o1")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -371,11 +371,11 @@ texture_filter = 1
 layout_mode = 0
 offset_left = 3.0
 offset_top = 2.0
-offset_right = 136.0
+offset_right = 105.0
 offset_bottom = 21.0
-theme_override_fonts/font = ExtResource("11_omw2x")
+theme_override_fonts/font = ExtResource("5_airtt")
 theme_override_font_sizes/font_size = 24
-text = "MENU_MAIN_MULTI"
+text = "MULTIJOUEUR"
 label_settings = ExtResource("5_0i8o1")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -394,11 +394,10 @@ texture_filter = 1
 layout_mode = 0
 offset_left = 3.0
 offset_top = 2.0
-offset_right = 135.33334
+offset_right = 106.0
 offset_bottom = 21.0
-theme_override_fonts/font = ExtResource("11_omw2x")
 theme_override_font_sizes/font_size = 24
-text = "MENU_MAIN_PROFILE"
+text = "PROFIL"
 label_settings = ExtResource("5_0i8o1")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -417,11 +416,11 @@ texture_filter = 1
 layout_mode = 0
 offset_left = 3.0
 offset_top = 2.0
-offset_right = 135.33334
+offset_right = 105.0
 offset_bottom = 21.0
-theme_override_fonts/font = ExtResource("11_omw2x")
+theme_override_fonts/font = ExtResource("5_airtt")
 theme_override_font_sizes/font_size = 24
-text = "MENU_MAIN_MAPS"
+text = "CARTES"
 label_settings = ExtResource("5_0i8o1")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -440,11 +439,11 @@ texture_filter = 1
 layout_mode = 0
 offset_left = 3.0
 offset_top = 2.0
-offset_right = 136.0
+offset_right = 106.0
 offset_bottom = 21.0
-theme_override_fonts/font = ExtResource("11_omw2x")
+theme_override_fonts/font = ExtResource("5_airtt")
 theme_override_font_sizes/font_size = 24
-text = "MENU_MAIN_SETTINGS"
+text = "PARAMETRES"
 label_settings = ExtResource("5_0i8o1")
 horizontal_alignment = 1
 vertical_alignment = 1
