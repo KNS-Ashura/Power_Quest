@@ -31,7 +31,10 @@ static func step(owner: Node) -> bool:
 		return false
 	match int(owner.water_transport_phase):
 		PHASE_IDLE:
-			return mark_allies(owner)
+			# One click: mark and board immediately.
+			if not mark_allies(owner):
+				return false
+			return board_marked(owner)
 		PHASE_MARKED:
 			return board_marked(owner)
 		PHASE_CARRYING:
@@ -83,7 +86,6 @@ static func mark_allies(owner: Node) -> bool:
 		if owner.water_transport_marked.size() >= cap:
 			break
 		owner.water_transport_marked.append(unit)
-		owner._attacher_effet_sur_cible(unit, owner.SCENE_WATER_TRANSPORT_MARK_FX, 3600.0)
 	owner.water_transport_phase = PHASE_MARKED
 	return true
 
@@ -119,7 +121,7 @@ static func board_marked(owner: Node) -> bool:
 		owner.water_transport_origin[unit] = unit.global_position
 		owner.water_transport_boarded.append(unit)
 		remove_transport_fx(owner, unit)
-		owner._attacher_effet_sur_cible(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, 0.45)
+		spawn_board_fx_world(owner, unit.global_position)
 		hide_unit(owner, unit)
 	owner.water_transport_marked.clear()
 	if owner.water_transport_boarded.is_empty():
@@ -233,6 +235,26 @@ static func remove_transport_fx(owner: Node, unit: Node2D) -> void:
 	var fx = unit.get_node_or_null(owner.NOM_NOEUD_EFFET_BUFF)
 	if is_instance_valid(fx):
 		fx.queue_free()
+
+
+static func spawn_board_fx_world(owner: Node, world_pos: Vector2) -> void:
+	if not is_instance_valid(owner) or owner.SCENE_WATER_TRANSPORT_BOARD_FX == null:
+		return
+	var parent_node: Node = owner.get_tree().current_scene
+	if not is_instance_valid(parent_node):
+		parent_node = owner.get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var fx: Node = owner.SCENE_WATER_TRANSPORT_BOARD_FX.instantiate()
+	parent_node.add_child(fx)
+	if fx is Node2D:
+		(fx as Node2D).global_position = world_pos
+	var timer: SceneTreeTimer = owner.get_tree().create_timer(0.55)
+	timer.timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free(),
+		CONNECT_ONE_SHOT
+	)
 
 
 static func nav_regions(owner: Node) -> Array[NavigationRegion2D]:
