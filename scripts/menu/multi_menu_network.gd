@@ -157,9 +157,11 @@ func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> voi
 			players, max_players, MIN_PLAYERS_TO_START
 		]
 	elif seconds_left > 0:
-		_status_label.text = "%d / %d — lancement dans ~%d s" % [players, max_players, seconds_left]
+		_status_label.text = "%d / %d — lancement dans %d s (nouveau joueur = +10 s)" % [
+			players, max_players, seconds_left
+		]
 	else:
-		_status_label.text = "%d / %d — recherche d'adversaire…" % [players, max_players]
+		_status_label.text = "%d / %d — connexion au serveur…" % [players, max_players]
 
 
 func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
@@ -181,7 +183,8 @@ func _on_game_connected() -> void:
 
 
 func _on_online_match_begin() -> void:
-	_status_label.text = "Chargement de la map…"
+	var map_idx := MapSession.active_map_index
+	_status_label.text = "Chargement de la map %d…" % map_idx
 
 
 func _on_game_connection_failed(message: String) -> void:

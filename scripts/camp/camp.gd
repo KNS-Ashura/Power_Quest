@@ -229,8 +229,6 @@ func _can_spawn_guardian() -> bool:
 		return false
 	if _guardian_spawn_timer > 0.0:
 		return false
-	if MapSession.is_neutral_team(team):
-		return false
 	return true
 
 
@@ -621,7 +619,8 @@ func _update_groups_and_visuals() -> void:
 			color_rect.color = Color(0.8, 0.1, 0.1, 0.3)
 		if label_node:
 			label_node.visible = true
-			label_node.text = "ENNEMI" if not is_port() else "PORT ENNEMI"
+			var owner_label := MapSession.get_team_display_name(int(team))
+			label_node.text = ("PORT %s" % owner_label) if is_port() else owner_label
 	queue_redraw()
 
 

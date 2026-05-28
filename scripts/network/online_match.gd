@@ -5,7 +5,7 @@ extends Node
 signal setup_complete
 
 const TEAM_NEUTRAL := 2
-const CAMPS_PER_PLAYER := 2
+const NEUTRAL_SITES := 6
 
 
 func is_game_server() -> bool:
@@ -36,39 +36,93 @@ func _server_setup() -> void:
 
 	MapSession.online_player_count = player_count
 
-	camps.shuffle()
+	var assignment_map := _distribute_camps_among_players(camps, player_count)
 	var paths: PackedStringArray = PackedStringArray()
 	var teams: PackedInt32Array = PackedInt32Array()
-	var index: int = 0
-	var assigned_player: int = 0
+	var neutral_count := 0
+	for camp in camps:
+		var camp_team: int = int(assignment_map.get(camp, TEAM_NEUTRAL))
+		paths.append(_camp_path(camp))
+		teams.append(camp_team)
+		if camp_team == TEAM_NEUTRAL:
+			neutral_count += 1
 
-	for slot in range(player_count):
-		for _j in range(CAMPS_PER_PLAYER):
-			if index >= camps.size():
-				break
-			paths.append(_camp_path(camps[index]))
-			teams.append(slot)
-			index += 1
-			assigned_player += 1
-
-	while index < camps.size():
-		paths.append(_camp_path(camps[index]))
-		teams.append(TEAM_NEUTRAL)
-		index += 1
+	var team_names := _build_team_display_names(peers, player_count)
+	MapSession.set_team_display_names(team_names)
 
 	_apply_camp_assignments(paths, teams)
 	print(
-		"[OnlineMatch] %d joueurs, %d camps (%d aléatoires/joueur, %d neutres)."
-		% [player_count, paths.size(), CAMPS_PER_PLAYER, paths.size() - assigned_player]
+		"[OnlineMatch] %d joueurs, %d sites (%d neutres, ≥1 site/joueur)."
+		% [player_count, paths.size(), neutral_count]
 	)
 
 	for i in range(player_count):
 		var peer_id: int = int(peers[i])
 		OnlineGameSync.register_peer_team(peer_id, i)
-		rpc_match_player_setup.rpc_id(peer_id, i, player_count, paths, teams)
+		rpc_match_player_setup.rpc_id(peer_id, i, player_count, paths, teams, team_names)
 
 	MapSession.online_camps_ready = true
 	setup_complete.emit()
+
+
+## 6 sites neutres (camps ou ports) avec gardien ; le reste réparti entre les joueurs.
+## Chaque joueur reçoit au moins un site ; les sites restants sont assignés aléatoirement.
+func _distribute_camps_among_players(camps: Array, player_count: int) -> Dictionary:
+	var assignments: Dictionary = {}
+	var total: int = camps.size()
+	var neutral_count: int = NEUTRAL_SITES
+	if total < player_count + neutral_count:
+		neutral_count = maxi(0, total - player_count)
+		push_warning(
+			"[OnlineMatch] Peu de sites (%d) pour %d joueurs + %d neutres — neutres réduits à %d."
+			% [total, player_count, NEUTRAL_SITES, neutral_count]
+		)
+
+	var playable_count: int = total - neutral_count
+	var shuffled: Array = camps.duplicate()
+	shuffled.shuffle()
+
+	var playable_sites: Array = shuffled.slice(0, playable_count)
+	var neutral_sites: Array = shuffled.slice(playable_count, total)
+
+	for site in neutral_sites:
+		assignments[site] = TEAM_NEUTRAL
+
+	if playable_sites.is_empty() or player_count <= 0:
+		return assignments
+
+	var guaranteed: int = mini(player_count, playable_sites.size())
+	for i in range(guaranteed):
+		assignments[playable_sites[i]] = i
+
+	var extras: Array = []
+	if playable_sites.size() > guaranteed:
+		extras = playable_sites.slice(guaranteed, playable_sites.size())
+	extras.shuffle()
+
+	var recipient_slots: Array = []
+	for slot in range(player_count):
+		recipient_slots.append(slot)
+	while recipient_slots.size() < extras.size():
+		var batch: Array = range(player_count)
+		batch.shuffle()
+		recipient_slots.append_array(batch)
+	recipient_slots.shuffle()
+	recipient_slots = recipient_slots.slice(0, extras.size())
+
+	for j in range(extras.size()):
+		assignments[extras[j]] = int(recipient_slots[j])
+
+	return assignments
+
+
+func _build_team_display_names(peers: Array, player_count: int) -> PackedStringArray:
+	var names := PackedStringArray()
+	names.resize(player_count)
+	for i in range(player_count):
+		var peer_id: int = int(peers[i])
+		names[i] = NetworkSession.get_peer_display_name(peer_id)
+	return names
 
 
 func _sorted_camps() -> Array:
@@ -98,10 +152,12 @@ func rpc_match_player_setup(
 	team: int,
 	player_count: int,
 	paths: PackedStringArray,
-	teams: PackedInt32Array
+	teams: PackedInt32Array,
+	team_names: PackedStringArray
 ) -> void:
 	MapSession.local_team = team
 	MapSession.online_player_count = player_count
+	MapSession.set_team_display_names(team_names)
 	_apply_camp_assignments(paths, teams)
 	MapSession.online_camps_ready = true
 	_refresh_all_camp_visuals()
