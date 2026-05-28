@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bmkyeiiusrbku"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_xtj62"]
+[ext_resource type="Script" path="res://scripts/characters/unit_actor.gd" id="1_xtj62"]
 [ext_resource type="Texture2D" uid="uid://bqb7xawt45d85" path="res://assets/character/water-transporter/nv1/attack.png" id="2_lb6g3"]
 [ext_resource type="Texture2D" uid="uid://6vx18055hgcv" path="res://assets/character/water-transporter/nv1/death.png" id="4_sw1iu"]
 [ext_resource type="Texture2D" uid="uid://12s6mtahvlc8" path="res://assets/character/water-transporter/nv1/idle.png" id="5_w6ksd"]

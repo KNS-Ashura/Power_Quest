@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cf5x28jbwes4"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_player_gd"]
+[ext_resource type="Script" path="res://scripts/characters/unit_actor.gd" id="1_player_gd"]
 [ext_resource type="Texture2D" uid="uid://chscgsvu51mw0" path="res://assets/character/support/nv2/attack.png" id="2_cddc8"]
 [ext_resource type="Texture2D" uid="uid://cyfrx5imwwqhv" path="res://assets/character/support/nv2/run.png" id="2_run"]
 [ext_resource type="Texture2D" uid="uid://dqi830w6ymi7" path="res://assets/character/support/nv2/death.png" id="3_ep5c0"]

@@ -119,7 +119,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"Open_book",
-"speed": 8.0
+"speed": 13.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_stbfh"]
@@ -141,7 +141,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"appear",
-"speed": 2.0
+"speed": 12.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fa1r8"]
@@ -163,7 +163,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"disparition",
-"speed": 2.0
+"speed": 12.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tyuks"]
@@ -276,7 +276,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"default",
-"speed": 10.0
+"speed": 25.0
 }]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cx6fd"]

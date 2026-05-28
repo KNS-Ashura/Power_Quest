@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dr0x33am8vbnn"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_18gtt"]
+[ext_resource type="Script" path="res://scripts/characters/unit_actor.gd" id="1_18gtt"]
 [ext_resource type="Texture2D" uid="uid://dqwmnjnc64g8n" path="res://assets/character/gardien-port/gardien-port-2/attack.png" id="2_ex1tp"]
 [ext_resource type="Texture2D" uid="uid://cc16voxg0n38a" path="res://assets/character/gardien-port/gardien-port-2/death.png" id="3_mvkfo"]
 [ext_resource type="Texture2D" uid="uid://22uiw1twjnhn" path="res://assets/character/gardien-port/gardien-port-2/run.png" id="4_cufl4"]

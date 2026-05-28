@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dpof38i1ok33h"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_dyhcn"]
+[ext_resource type="Script" path="res://scripts/characters/unit_actor.gd" id="1_dyhcn"]
 [ext_resource type="Texture2D" uid="uid://b86fcijft0jck" path="res://assets/character/infanterie/nv1/attack.png" id="2_4klc4"]
 [ext_resource type="Texture2D" uid="uid://7ri6ngmtubqn" path="res://assets/character/infanterie/nv1/idle.png" id="2_f08yo"]
 [ext_resource type="Texture2D" uid="uid://ccg38pr357444" path="res://assets/character/infanterie/nv1/run.png" id="3_4we8d"]

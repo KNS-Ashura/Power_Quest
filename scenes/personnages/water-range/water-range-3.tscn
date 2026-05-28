@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://range0000001"]
 
-[ext_resource type="Script" uid="uid://d1i6ff62xw8du" path="res://scripts/characters/player.gd" id="1_player_gd"]
+[ext_resource type="Script" path="res://scripts/characters/unit_actor.gd" id="1_player_gd"]
 [ext_resource type="Texture2D" uid="uid://d2oqnggpacj46" path="res://assets/character/water-range/nv3/attack.png" id="2_elt7h"]
 [ext_resource type="Texture2D" uid="uid://kgcyxh4vkkx5" path="res://assets/character/water-range/nv3/death.png" id="3_7gwrv"]
 [ext_resource type="Texture2D" uid="uid://b5u5i6q55r3sy" path="res://assets/character/water-range/nv3/run.png" id="5_a8ug6"]
