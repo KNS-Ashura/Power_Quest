@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d24bweuxkv1bs"
-path="res://.godot/imported/water_detilazation_source.png-ee260d41be334a636ef96b533a2fcad3.ctex"
+uid="uid://dpx8gmay378nd"
+path="res://.godot/imported/Objects.png-13835ff094d42517a7f98e1e01dda5f1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/water_detilazation_source.png"
-dest_files=["res://.godot/imported/water_detilazation_source.png-ee260d41be334a636ef96b533a2fcad3.ctex"]
+source_file="res://assets/tilesets/Cave/Objects.png"
+dest_files=["res://.godot/imported/Objects.png-13835ff094d42517a7f98e1e01dda5f1.ctex"]
 
 [params]
 

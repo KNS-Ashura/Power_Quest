@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgmugjrgg3ac8"
-path="res://.godot/imported/lava_detilazation_source.png-99ac67ccdc4a26b2d1a8da069e823248.ctex"
+uid="uid://63gup55d4kd4"
+path="res://.godot/imported/Objects.png-5192a3d3f5726def4ae0999008cc7a26.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/lava_detilazation_source.png"
-dest_files=["res://.godot/imported/lava_detilazation_source.png-99ac67ccdc4a26b2d1a8da069e823248.ctex"]
+source_file="res://assets/tilesets/cursed-land/Objects.png"
+dest_files=["res://.godot/imported/Objects.png-5192a3d3f5726def4ae0999008cc7a26.ctex"]
 
 [params]
 

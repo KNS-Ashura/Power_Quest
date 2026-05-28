@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cv68kfos0y2cv"
-path="res://.godot/imported/water_n_lava_coasts_source.png-efbe60bf00f62e63cadd8c0126aba228.ctex"
+uid="uid://bjdaogh3w4527"
+path="res://.godot/imported/Water_coasts.png-ecc46581d9f7b7923280a249b943e91a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/water_n_lava_coasts_source.png"
-dest_files=["res://.godot/imported/water_n_lava_coasts_source.png-efbe60bf00f62e63cadd8c0126aba228.ctex"]
+source_file="res://assets/tilesets/cursed-land/Water_coasts.png"
+dest_files=["res://.godot/imported/Water_coasts.png-ecc46581d9f7b7923280a249b943e91a.ctex"]
 
 [params]
 

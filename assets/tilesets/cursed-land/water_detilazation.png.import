@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdrplkc4iows3"
-path="res://.godot/imported/bubbles_source.png-e333cef3aa88a92dde7a09f4fcef44d9.ctex"
+uid="uid://cyx8uut3r6b21"
+path="res://.godot/imported/water_detilazation.png-ceefa704ca9b62f6157a80a84a29bba1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/bubbles_source.png"
-dest_files=["res://.godot/imported/bubbles_source.png-e333cef3aa88a92dde7a09f4fcef44d9.ctex"]
+source_file="res://assets/tilesets/cursed-land/water_detilazation.png"
+dest_files=["res://.godot/imported/water_detilazation.png-ceefa704ca9b62f6157a80a84a29bba1.ctex"]
 
 [params]
 

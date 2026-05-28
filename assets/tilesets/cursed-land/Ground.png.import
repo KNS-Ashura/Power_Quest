@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdxo6asc1j3d0"
-path="res://.godot/imported/Cave_objects_source.png-7a11cc4ca2463a0bd985d85257aa422e.ctex"
+uid="uid://bfx56rqwmpjv8"
+path="res://.godot/imported/Ground.png-4c908a84b6c74f1f69b173f1a2188ff8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/Cave_objects_source.png"
-dest_files=["res://.godot/imported/Cave_objects_source.png-7a11cc4ca2463a0bd985d85257aa422e.ctex"]
+source_file="res://assets/tilesets/cursed-land/Ground.png"
+dest_files=["res://.godot/imported/Ground.png-4c908a84b6c74f1f69b173f1a2188ff8.ctex"]
 
 [params]
 

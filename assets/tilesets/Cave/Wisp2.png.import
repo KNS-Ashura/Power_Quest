@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bu5edh2v1djc1"
-path="res://.godot/imported/Objects_animated_source.png-abc0d2e48a118a6a17c178671ce919cf.ctex"
+uid="uid://dkxv3dq67jfby"
+path="res://.godot/imported/Wisp2.png-c1484913ab085c36e006709e4b82e12f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/Objects_animated_source.png"
-dest_files=["res://.godot/imported/Objects_animated_source.png-abc0d2e48a118a6a17c178671ce919cf.ctex"]
+source_file="res://assets/tilesets/Cave/Wisp2.png"
+dest_files=["res://.godot/imported/Wisp2.png-c1484913ab085c36e006709e4b82e12f.ctex"]
 
 [params]
 

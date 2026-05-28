@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blo0h88fi73g3"
-path="res://.godot/imported/ground_source.png-e6d652035dbec83d50ec6abdc109b85d.ctex"
+uid="uid://bs8ei7wqfxvwi"
+path="res://.godot/imported/Totem_animation.png-41424fcd66a7fecc6745a6aa3e4e3fe4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/Cave/ground_source.png"
-dest_files=["res://.godot/imported/ground_source.png-e6d652035dbec83d50ec6abdc109b85d.ctex"]
+source_file="res://assets/tilesets/Cave/Totem_animation.png"
+dest_files=["res://.godot/imported/Totem_animation.png-41424fcd66a7fecc6745a6aa3e4e3fe4.ctex"]
 
 [params]
 
