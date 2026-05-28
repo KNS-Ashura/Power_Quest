@@ -99,6 +99,7 @@ theme_override_fonts/font = ExtResource("4_82xqq")
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxTexture_enj72")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_71mqq")
+language = "en"
 selected = 1
 item_count = 3
 popup/item_0/text = "TXT_LANG_EN"
@@ -115,8 +116,7 @@ offset_left = 141.0
 offset_top = 458.0
 offset_right = 291.0
 offset_bottom = 496.0
-scale = Vector2(1.0077736, 3.0078921)
-theme_override_constants/separation = 5
+theme_override_constants/separation = 28
 
 [node name="MusicSlider" type="HSlider" parent="Music" unique_id=469285279]
 layout_mode = 2

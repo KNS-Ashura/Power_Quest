@@ -1,5 +1,6 @@
 extends Node2D
 
+static var premier_lancement = true
 
 @onready var book_anim = $AnimatedSprite2D
 @onready var anim_apparition = $apparition
@@ -9,13 +10,11 @@ extends Node2D
 @onready var scroll_container = $ScrollContainer
 @onready var menu_interactif = $MenuInteractif 
 
-
 @onready var btn_solo = $"%Play Solo"
 @onready var btn_multi = $"%Multi"
 @onready var btn_profile = $"%Profile"
 @onready var btn_maps = $"%Maps"
 @onready var btn_settings = $"%Settings"
-
 
 @onready var mark_solo = $MenuInteractif/Solo_vs_ia
 @onready var mark_multi = $MenuInteractif/Multi
@@ -24,27 +23,22 @@ extends Node2D
 @onready var mark_settings = $MenuInteractif/Settings
 @onready var mark_menu = $MenuInteractif/Menu 
 
-
 @onready var btn_back_settings = get_node_or_null("Settings2/BackToMenu")
 @onready var btn_back_profil = get_node_or_null("Profil2/BackToMenu")
 @onready var btn_back_maps = get_node_or_null("Maps2/BackToMenu")
 @onready var btn_back_solo = get_node_or_null("SoloVsIa/BackToMenu")
-@onready var btn_back_multi = get_node_or_null("Multi2/PageGauche/BackToMenu") # Corrigé selon ton arbre précis !
+@onready var btn_back_multi = get_node_or_null("Multi2/PageGauche/BackToMenu") 
 
 var current_active_menu: Node = null
-
-
 var original_positions = {} 
 var current_active_bookmark: TextureButton = null
 const OFFSET_X = -12.0 
-
-
 var is_transitioning: bool = false
 
 func _ready():
-
-	TranslationServer.set_locale("en")
-	
+	if premier_lancement:
+		TranslationServer.set_locale("en")
+		premier_lancement = false
 	
 	menu_ui.visible = false
 	scroll_container.visible = false
@@ -55,24 +49,9 @@ func _ready():
 	anim_disparition.hide()
 	anim_turn.hide()
 	
-	
 	_cacher_tous_les_sous_menus()
-	
-	
 	_sauvegarder_positions_initiales()
-	
-	
 	_connecter_signaux()
-	
-	
-	var option_menu = get_node_or_null("Settings2/Language/Option")
-	if option_menu:
-		option_menu.auto_translate = false
-		option_menu.item_selected.connect(_on_language_option_selected)
-		option_menu.selected = 0
-	
-	_rafraichir_boutons_principaux()
-	
 	
 	book_anim.stop()
 	book_anim.frame = 0
@@ -80,27 +59,20 @@ func _ready():
 	await get_tree().create_timer(0.5).timeout 
 	book_anim.play("Open_book")
 
-
-
 func _on_animated_sprite_2d_animation_finished():
 	if book_anim.animation == "Open_book":
-		
 		menu_ui.visible = true
 		scroll_container.visible = true
 		menu_interactif.visible = true
 		
-		
 		_animer_marque_page(mark_menu)
 		
-
 		var tween = create_tween()
 		menu_ui.modulate.a = 0
 		scroll_container.modulate.a = 0
 		tween.tween_property(menu_ui, "modulate:a", 1.0, 0.5)
 		tween.parallel().tween_property(scroll_container, "modulate:a", 1.0, 0.5)
 		tween.parallel().tween_property(menu_interactif, "modulate:a", 1.0, 0.5)
-
-
 
 func _on_menu_principal_pressed() -> void:
 	if current_active_menu == null and menu_ui.visible:
@@ -131,29 +103,6 @@ func _on_menu_principal_pressed() -> void:
 	await tween_in.finished
 	
 	is_transitioning = false
-
-
-
-func _on_language_option_selected(index: int) -> void:
-	match index:
-		0:
-			TranslationServer.set_locale("en")
-		1:
-			TranslationServer.set_locale("fr")
-		2:
-			TranslationServer.set_locale("de")
-			
-	_rafraichir_boutons_principaux()
-
-func _rafraichir_boutons_principaux() -> void:
-	if is_inside_tree():
-		if btn_solo.has_node("Label"): btn_solo.get_node("Label").text = tr("MENU_MAIN_PLAY")
-		if btn_multi.has_node("Label"): btn_multi.get_node("Label").text = tr("MENU_MAIN_MULTI")
-		if btn_profile.has_node("Label"): btn_profile.get_node("Label").text = tr("MENU_MAIN_PROFILE")
-		if btn_maps.has_node("Label"): btn_maps.get_node("Label").text = tr("MENU_MAIN_MAPS")
-		if btn_settings.has_node("Label"): btn_settings.get_node("Label").text = tr("MENU_MAIN_SETTINGS")
-
-
 
 func _animer_marque_page(nouveau_bouton: TextureButton) -> void:
 	if current_active_bookmark == nouveau_bouton:
@@ -194,11 +143,8 @@ func _on_settings_pressed() -> void:
 	_animer_marque_page(mark_settings)
 	_jouer_transition_complete($Settings2)
 
-
-
 func _jouer_transition_complete(target_menu: Node) -> void:
 	if not target_menu:
-		print("[ERREUR] Le nœud du menu cible n'existe pas.")
 		return
 		
 	if current_active_menu == target_menu:
@@ -243,8 +189,6 @@ func _jouer_transition_complete(target_menu: Node) -> void:
 	await tween_in.finished
 
 	is_transitioning = false
-
-
 
 func _connecter_signaux():
 	btn_solo.pressed.connect(_on_solo_pressed)

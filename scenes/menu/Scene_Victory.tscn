@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://dqcqf33l5fy55" path="res://scripts/menu/transi_menu.gd" id="5_02gto"]
 [ext_resource type="Texture2D" uid="uid://frd85xevj23q" path="res://assets/menu/img-sur-mesure/Scene_panel_victory/monster.tres" id="5_xd2x3"]
 [ext_resource type="Texture2D" uid="uid://c5acoqnynuryq" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/bouton_biome.tres" id="6_krher"]
-[ext_resource type="AudioStream" uid="uid://bbpsck75t4hb0" path="res://Victory Sound Effect.mp3" id="7_pq6ei"]
+[ext_resource type="AudioStream" uid="uid://c5v1v5cpdlo6" path="res://assets/sounds/Victory Sound Effect.mp3" id="8_j5cg8"]
 
 [node name="VictoryPanel" type="Node2D" unique_id=1225290706]
 
@@ -111,7 +111,7 @@ texture = ExtResource("6_krher")
 metadata/_edit_use_anchors_ = true
 
 [node name="SoundVictory" type="AudioStreamPlayer" parent="." unique_id=868120790]
-stream = ExtResource("7_pq6ei")
+stream = ExtResource("8_j5cg8")
 autoplay = true
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1882294037]

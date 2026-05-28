@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://h08ks7kxf5ps" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/flechesDroite.tres" id="4_vv0tc"]
 [ext_resource type="Texture2D" uid="uid://frd85xevj23q" path="res://assets/menu/img-sur-mesure/Scene_panel_victory/monster.tres" id="5_pu8c7"]
 [ext_resource type="Texture2D" uid="uid://c5acoqnynuryq" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/bouton_biome.tres" id="6_pdn84"]
-[ext_resource type="AudioStream" uid="uid://bx2cesm1hee0v" path="res://assets/menu/img-sur-mesure/Scene_panel_victory/DEFEAT (Deep Voice) - Sound Effect.mp3" id="7_3m71u"]
+[ext_resource type="AudioStream" uid="uid://bwsbji4j0ykpm" path="res://assets/sounds/DEFEAT (Deep Voice) - Sound Effect.mp3" id="7_ctsgl"]
 
 [node name="SceneDefeat" type="Node2D" unique_id=541244316]
 
@@ -105,5 +105,5 @@ texture = ExtResource("6_pdn84")
 metadata/_edit_use_anchors_ = true
 
 [node name="SoundDefeat" type="AudioStreamPlayer" parent="." unique_id=1056145232]
-stream = ExtResource("7_3m71u")
+stream = ExtResource("7_ctsgl")
 autoplay = true
