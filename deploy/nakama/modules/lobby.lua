@@ -14,6 +14,7 @@ local LEADERBOARD_ID = "pq_winrate"
 local MIN_PLAYERS = 2
 local MAX_PLAYERS = 8
 local MATCH_COUNTDOWN_SEC = 10
+local FAST_START_COUNTDOWN_SEC = 5
 local QUEUE_TTL_SEC = 90
 local PENDING_TTL_SEC = 120
 
@@ -183,7 +184,19 @@ local function queue_countdown_seconds(match_starts_at)
 	return left
 end
 
--- Dès 2 joueurs : compte à rebours 10 s (réinitialisé à chaque nouveau joueur).
+
+local function countdown_duration_for_players(count)
+	if count >= MAX_PLAYERS then
+		return FAST_START_COUNTDOWN_SEC
+	end
+	if count >= MIN_PLAYERS then
+		return MATCH_COUNTDOWN_SEC
+	end
+	return 0
+end
+
+
+-- Dès 2 joueurs : 10 s (reset à chaque join). À 8 joueurs : 5 s.
 local function evaluate_queue_after_change(queue)
 	local count = #queue
 	if count < MIN_PLAYERS then
@@ -191,7 +204,8 @@ local function evaluate_queue_after_change(queue)
 		return encode_waiting(count, 0)
 	end
 
-	local match_starts_at = now_ts() + MATCH_COUNTDOWN_SEC
+	local duration = countdown_duration_for_players(count)
+	local match_starts_at = now_ts() + duration
 	write_queue(queue, now_ts(), match_starts_at)
 	local seconds_left = queue_countdown_seconds(match_starts_at)
 	if seconds_left <= 0 then
@@ -199,6 +213,7 @@ local function evaluate_queue_after_change(queue)
 	end
 	return encode_waiting(count, seconds_left)
 end
+
 
 local function evaluate_queue_status(queue, match_starts_at)
 	local count = #queue
@@ -208,9 +223,10 @@ local function evaluate_queue_status(queue, match_starts_at)
 
 	local seconds_left = queue_countdown_seconds(match_starts_at)
 	if match_starts_at <= 0 then
-		match_starts_at = now_ts() + MATCH_COUNTDOWN_SEC
+		local duration = countdown_duration_for_players(count)
+		match_starts_at = now_ts() + duration
 		write_queue(queue, now_ts(), match_starts_at)
-		seconds_left = MATCH_COUNTDOWN_SEC
+		seconds_left = duration
 	end
 
 	if seconds_left <= 0 then
@@ -273,55 +289,140 @@ local function rpc_ping(context, payload)
 	return nk.json_encode({ status = "ok", module = "lobby.lua" })
 end
 
-local function default_stats(user_id)
-	return {
-		user_id = user_id,
-		username = "",
-		level = 0,
-		games = 0,
-		wins = 0,
-		losses = 0,
-		winrate = 0.0,
-		total_seconds = 0,
-		recent = {},
-		updated_at = now_ts(),
-	}
+
+local function decode_json_payload(payload)
+	if payload == nil or payload == "" then
+		return {}
+	end
+	local ok, parsed = pcall(nk.json_decode, payload)
+	if not ok or parsed == nil then
+		return {}
+	end
+	if type(parsed) == "string" and parsed ~= "" then
+		local ok2, parsed2 = pcall(nk.json_decode, parsed)
+		if ok2 and parsed2 ~= nil then
+			return parsed2
+		end
+		return {}
+	end
+	return parsed
 end
 
-local function read_stats(user_id)
+
+local function rpc_set_username(context, payload)
+	local data = decode_json_payload(payload)
+	local username = tostring(data.username or "")
+	username = username:match("^%s*(.-)%s*$") or ""
+	if #username < 3 or #username > 20 then
+		return nk.json_encode({ status = "error", message = "invalid_username" })
+	end
+	if not username:match("^[a-zA-Z0-9_]+$") then
+		return nk.json_encode({ status = "error", message = "invalid_username" })
+	end
+
+	local user_id = context.user_id
+	local ok, err = pcall(nk.account_update_id, user_id, {}, username, username, nil, nil, nil, nil)
+	if not ok then
+		nk.logger_warn("set_username failed: " .. tostring(err))
+		return nk.json_encode({ status = "error", message = tostring(err) })
+	end
+	return nk.json_encode({ status = "ok", username = username })
+end
+
+local function read_recent_results(user_id)
 	local objects = nk.storage_read({
 		{ collection = STATS_COLLECTION, key = STATS_KEY, user_id = user_id },
 	})
 	if objects == nil or #objects == 0 then
-		return default_stats(user_id)
+		return {}
 	end
 	local value = objects[1].value or {}
-	value.user_id = user_id
-	value.games = tonumber(value.games or 0) or 0
-	value.wins = tonumber(value.wins or 0) or 0
-	value.losses = tonumber(value.losses or 0) or 0
-	value.total_seconds = tonumber(value.total_seconds or 0) or 0
-	value.level = tonumber(value.level or 0) or 0
-	value.recent = value.recent or {}
-	value.winrate = 0.0
-	if value.games > 0 then
-		value.winrate = (value.wins / value.games) * 100.0
+	if type(value.recent) == "table" then
+		return value.recent
 	end
-	return value
+	return {}
 end
 
-local function write_stats(user_id, stats)
-	stats.updated_at = now_ts()
+
+local function write_recent_results(user_id, recent)
 	nk.storage_write({
 		{
 			collection = STATS_COLLECTION,
 			key = STATS_KEY,
 			user_id = user_id,
-			value = stats,
+			value = { recent = recent, updated_at = now_ts() },
 			permission_read = 2,
 			permission_write = 0,
 		},
 	})
+end
+
+
+local function read_legacy_stats(user_id)
+	local objects = nk.storage_read({
+		{ collection = STATS_COLLECTION, key = STATS_KEY, user_id = user_id },
+	})
+	if objects == nil or #objects == 0 then
+		return nil
+	end
+	local value = objects[1].value or {}
+	if value.games == nil then
+		return nil
+	end
+	return value
+end
+
+
+local function read_profile_from_leaderboard(user_id, username)
+	local games = 0
+	local wins = 0
+	local losses = 0
+	local total_seconds = 0
+	local winrate = 0.0
+	local level = 0
+
+	local ok, result = pcall(nk.leaderboard_records_list, LEADERBOARD_ID, { user_id }, 1, user_id, 0)
+	if ok and result ~= nil and result.records ~= nil and #result.records > 0 then
+		local rec = result.records[1]
+		local score = tonumber(rec.score or 0) or 0
+		winrate = score / 1000.0
+		wins = tonumber(rec.subscore or 0) or 0
+		if rec.metadata ~= nil then
+			games = tonumber(rec.metadata.games or 0) or 0
+			total_seconds = tonumber(rec.metadata.total_seconds or 0) or 0
+		end
+		losses = games - wins
+		if losses < 0 then
+			losses = 0
+		end
+	else
+		local legacy = read_legacy_stats(user_id)
+		if legacy ~= nil then
+			games = tonumber(legacy.games or 0) or 0
+			wins = tonumber(legacy.wins or 0) or 0
+			losses = tonumber(legacy.losses or 0) or 0
+			total_seconds = tonumber(legacy.total_seconds or 0) or 0
+			level = tonumber(legacy.level or 0) or 0
+			winrate = tonumber(legacy.winrate or 0) or 0
+		end
+	end
+
+	if level <= 0 and games > 0 then
+		level = math.floor(games / 3)
+	end
+
+	local recent = read_recent_results(user_id)
+	return {
+		user_id = user_id,
+		username = username,
+		level = level,
+		games = games,
+		wins = wins,
+		losses = losses,
+		winrate = winrate,
+		total_seconds = total_seconds,
+		recent = recent,
+	}
 end
 
 local function ensure_leaderboard()
@@ -352,54 +453,51 @@ local function rpc_submit_match_result(context, payload)
 	local duration_seconds = tonumber(data.duration_seconds or 0) or 0
 	if duration_seconds < 0 then duration_seconds = 0 end
 
-	local stats = read_stats(user_id)
-	stats.username = username
-	stats.games = stats.games + 1
+	local profile = read_profile_from_leaderboard(user_id, username)
+	profile.games = profile.games + 1
 	if win then
-		stats.wins = stats.wins + 1
+		profile.wins = profile.wins + 1
 	else
-		stats.losses = stats.losses + 1
+		profile.losses = profile.losses + 1
 	end
-	stats.total_seconds = stats.total_seconds + duration_seconds
-	stats.winrate = (stats.wins / stats.games) * 100.0
-
-	table.insert(stats.recent, 1, win and "W" or "L")
-	while #stats.recent > 10 do
-		table.remove(stats.recent)
+	profile.total_seconds = profile.total_seconds + duration_seconds
+	if profile.games > 0 then
+		profile.winrate = (profile.wins / profile.games) * 100.0
 	end
-	write_stats(user_id, stats)
+	profile.level = math.floor(profile.games / 3)
 
-	local score = math.floor(stats.winrate * 1000.0)
-	local subscore = stats.wins
+	table.insert(profile.recent, 1, win and "W" or "L")
+	while #profile.recent > 10 do
+		table.remove(profile.recent)
+	end
+	write_recent_results(user_id, profile.recent)
+
+	local score = math.floor(profile.winrate * 1000.0)
+	local subscore = profile.wins
 	pcall(nk.leaderboard_record_write, LEADERBOARD_ID, user_id, username, score, subscore, {
-		games = stats.games,
-		winrate = stats.winrate,
-		total_seconds = stats.total_seconds,
+		games = profile.games,
+		winrate = profile.winrate,
+		total_seconds = profile.total_seconds,
 	})
 
 	return nk.json_encode({
 		status = "ok",
-		games = stats.games,
-		wins = stats.wins,
-		losses = stats.losses,
-		winrate = stats.winrate,
-		total_seconds = stats.total_seconds,
-		recent = stats.recent,
+		games = profile.games,
+		wins = profile.wins,
+		losses = profile.losses,
+		winrate = profile.winrate,
+		total_seconds = profile.total_seconds,
+		recent = profile.recent,
 	})
 end
 
 local function rpc_get_player_profile(context, payload)
-	local stats = read_stats(context.user_id)
 	local username = context.username or ""
-	if username == "" then
-		username = stats.username or ""
-	end
 	if username == context.user_id then
 		username = ""
 	end
-	stats.username = username
-	write_stats(context.user_id, stats)
-	return nk.json_encode(stats)
+	local profile = read_profile_from_leaderboard(context.user_id, username)
+	return nk.json_encode(profile)
 end
 
 local function rpc_get_leaderboard(context, payload)
@@ -440,6 +538,7 @@ local function rpc_get_leaderboard(context, payload)
 	return nk.json_encode({ entries = entries })
 end
 
+nk.register_rpc(rpc_set_username, "set_username")
 nk.register_rpc(rpc_join_queue, "join_queue")
 nk.register_rpc(rpc_leave_queue, "leave_queue")
 nk.register_rpc(rpc_queue_status, "queue_status")
@@ -449,4 +548,9 @@ nk.register_rpc(rpc_get_player_profile, "get_player_profile")
 nk.register_rpc(rpc_get_leaderboard, "get_leaderboard")
 ensure_leaderboard()
 
-nk.logger_info(string.format("Power Quest lobby module loaded (countdown %ds)", MATCH_COUNTDOWN_SEC))
+nk.logger_info(string.format(
+	"Power Quest lobby loaded (countdown %ds, fast start %ds at %d players)",
+	MATCH_COUNTDOWN_SEC,
+	FAST_START_COUNTDOWN_SEC,
+	MAX_PLAYERS
+))

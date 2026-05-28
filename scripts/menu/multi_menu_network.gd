@@ -106,6 +106,8 @@ func _enter_matchmaking_ui() -> void:
 
 
 func _cancel_matchmaking(show_message: bool) -> void:
+	if not _in_matchmaking and not _connecting_game:
+		return
 	_in_matchmaking = false
 	_connecting_game = false
 	NetworkSession.leave_ranked_queue()
@@ -157,8 +159,9 @@ func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> voi
 			players, max_players, MIN_PLAYERS_TO_START
 		]
 	elif seconds_left > 0:
-		_status_label.text = "%d / %d — lancement dans %d s (nouveau joueur = +10 s)" % [
-			players, max_players, seconds_left
+		var timer_hint := "10 s" if players < max_players else "5 s (file pleine)"
+		_status_label.text = "%d / %d — lancement dans %d s (%s)" % [
+			players, max_players, seconds_left, timer_hint
 		]
 	else:
 		_status_label.text = "%d / %d — connexion au serveur…" % [players, max_players]
