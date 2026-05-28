@@ -67,7 +67,7 @@ func _handle_camera_movement(delta: float) -> void:
 		dir.y -= 1
 	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
 		dir.y += 1
-	if Input.is_key_pressed(KEY_Q) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+	if Input.is_key_pressed(KEY_Q) or Input.is_key_pressed(KEY_LEFT):
 		dir.x -= 1
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		dir.x += 1
@@ -141,6 +141,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			if selection_box.size.length() < 5:
 				_handle_building_click()
 
+	if event is InputEventKey and event.pressed and not event.echo:
+		if _handle_army_selection_hotkey(event as InputEventKey):
+			get_viewport().set_input_as_handled()
+			return
+
 	if event is InputEventKey and event.keycode == KEY_E and event.pressed:
 		var spell_cast := false
 		for soldier in get_tree().get_nodes_in_group("soldiers"):
@@ -209,6 +214,40 @@ func _unhandled_input(event: InputEvent) -> void:
 				)
 				selection[i].move_to(dest + offset)
 		_send_network_orders(selection, dest, target)
+
+
+func _handle_army_selection_hotkey(event: InputEventKey) -> bool:
+	if event.keycode == KEY_A:
+		_select_all_local_army()
+		return true
+	if not UnitStats.is_selection_hotkey(event.keycode):
+		return false
+	_select_units_by_hotkey(event.keycode)
+	return true
+
+
+func _select_all_local_army() -> void:
+	deselect_building()
+	for soldier in get_tree().get_nodes_in_group("soldiers"):
+		if not soldier.has_method("set_selection"):
+			continue
+		var selected := true
+		if soldier.has_method("is_selectable_as_local_army"):
+			selected = soldier.is_selectable_as_local_army()
+		else:
+			selected = MapSession.is_local_team(int(soldier.get("team")))
+		soldier.set_selection(selected)
+
+
+func _select_units_by_hotkey(keycode: int) -> void:
+	deselect_building()
+	for soldier in get_tree().get_nodes_in_group("soldiers"):
+		if not soldier.has_method("set_selection"):
+			continue
+		var should_select := false
+		if soldier.has_method("matches_selection_hotkey"):
+			should_select = soldier.matches_selection_hotkey(keycode)
+		soldier.set_selection(should_select)
 
 
 func select_units() -> void:

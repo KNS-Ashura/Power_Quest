@@ -176,6 +176,17 @@ func set_selection(etat : bool):
 	is_selected = etat
 	self.modulate = Color(1.2, 1.2, 1.2) if is_selected else Color(1, 1, 1)
 
+
+func is_selectable_as_local_army() -> bool:
+	return MapSession.is_local_team(int(team))
+
+
+func matches_selection_hotkey(keycode: int) -> bool:
+	if is_camp_guardian or stats == null:
+		return false
+	return UnitStats.selection_hotkey_for_type(stats.unit_type) == keycode
+
+
 func move_to(cible : Vector2):
 	if net_remote_proxy:
 		return

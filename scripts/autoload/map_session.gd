@@ -17,12 +17,15 @@ const MAP_SCENE_PATHS: Dictionary = {
 	3: "res://scenes/map/Map3.scn",
 }
 
+const ONLINE_MAP_POOL: Array[int] = [1, 2]
+
 const GAME_SHELL_SCENE := "res://scenes/jeu/Main.scn"
 
 var is_online_match: bool = false
 var local_team: int = 0
 var online_player_count: int = 0
 var online_camps_ready: bool = false
+var team_display_names: Dictionary = {}
 
 
 func is_local_team(team_id: int) -> bool:
@@ -43,13 +46,44 @@ func is_neutral_team(team_id: int) -> bool:
 	return team_id == 2
 
 
+func set_team_display_names(names: PackedStringArray) -> void:
+	team_display_names.clear()
+	for i in range(names.size()):
+		var label := str(names[i]).strip_edges()
+		if label != "":
+			team_display_names[i] = label
+
+
+func get_team_display_name(team_id: int) -> String:
+	if is_neutral_team(team_id):
+		return "Neutre"
+	if team_display_names.has(team_id):
+		var name: String = str(team_display_names[team_id]).strip_edges()
+		if name != "":
+			return name
+	if not is_online_match and team_id == 1:
+		return "Ennemi IA"
+	return "Ennemi"
+
+
 func reset_online_state() -> void:
 	is_online_match = false
 	local_team = 0
 	online_player_count = 0
 	online_camps_ready = false
+	team_display_names.clear()
 	if OnlineGameSync.has_method("reset"):
 		OnlineGameSync.reset()
+
+
+func pick_random_online_map_index() -> int:
+	return ONLINE_MAP_POOL[randi() % ONLINE_MAP_POOL.size()]
+
+
+func normalize_online_map_index(map_index: int) -> int:
+	if map_index in ONLINE_MAP_POOL:
+		return map_index
+	return ONLINE_MAP_POOL[0]
 
 
 func get_map_scene_path(map_index: int = -1) -> String:

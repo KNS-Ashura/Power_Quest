@@ -17,6 +17,8 @@ signal online_match_begin
 const MAIN_SCENE := "res://scenes/jeu/Main.scn"
 const MIN_PLAYERS_TO_START := 2
 const FALLBACK_GAME_WS_URL := "wss://powerquest.robinmatelot.codes/game/"
+const WS_CONNECT_RETRIES := 3
+const WS_CONNECT_RETRY_DELAY_SEC := 1.5
 ## Corps RPC Nakama : le serveur attend une chaîne JSON, pas un objet. Vide = deux guillemets.
 const NAKAMA_RPC_BODY_EMPTY := '""'
 
@@ -42,6 +44,7 @@ var _match_handoff_started: bool = false
 var _ws_connecting: bool = false
 var _match_peer: WebSocketMultiplayerPeer
 var _server_registered_peers: Array[int] = []
+var _peer_display_names: Dictionary = {}
 var _server_match_started: bool = false
 var _match_start_check_scheduled: bool = false
 var _waiting_map_after_connect: bool = false
@@ -77,6 +80,28 @@ func get_display_username() -> String:
 	if _pending_auth_username.strip_edges() != "":
 		return _pending_auth_username.strip_edges()
 	return "Joueur"
+
+
+func sanitize_display_username(value: String) -> String:
+	var cleaned := value.strip_edges()
+	if _is_human_username(cleaned):
+		return cleaned
+	return ""
+
+
+func register_peer_display_name(peer_id: int, display_name: String) -> void:
+	var cleaned := sanitize_display_username(display_name)
+	if cleaned == "":
+		cleaned = "Joueur %d" % peer_id
+	_peer_display_names[peer_id] = cleaned
+
+
+func get_peer_display_name(peer_id: int) -> String:
+	return str(_peer_display_names.get(peer_id, "Joueur %d" % peer_id))
+
+
+func clear_peer_display_names() -> void:
+	_peer_display_names.clear()
 
 
 func _is_human_username(value: String) -> bool:
@@ -256,7 +281,7 @@ func authenticate() -> void:
 		auth_failed.emit("Connecte-toi ou crée un compte avant de lancer une partie.")
 		return
 	var raw := FileAccess.get_file_as_string("user://account_credentials.json")
-	var parsed = JSON.parse_string(raw)
+	var parsed: Variant = _parse_json_safe(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		auth_failed.emit("Identifiants locaux invalides. Reconnecte-toi.")
 		return
@@ -280,11 +305,12 @@ func leave_ranked_queue() -> void:
 	_rpc("leave_queue")
 
 
-## inner_json : chaîne JSON interne optionnelle (ex. '{"foo":1}'), pas un objet HTTP brut.
+## inner_json : objet JSON déjà sérialisé (ex. '{"limit":20}'), ou vide pour RPC sans argument.
 func _rpc(id: String, inner_json: String = "") -> void:
 	var url := "%s/v2/rpc/%s" % [NetworkConfig.nakama_base_url(), id]
 	var headers := _nakama_headers(true)
-	var body := NAKAMA_RPC_BODY_EMPTY if inner_json == "" else JSON.stringify(inner_json)
+	# Ne pas JSON.stringify une 2e fois : Nakama attend le corps RPC brut.
+	var body := NAKAMA_RPC_BODY_EMPTY if inner_json == "" else inner_json
 	_enqueue_http({"kind": "rpc", "rpc_id": id, "url": url, "headers": headers, "body": body})
 
 
@@ -316,6 +342,23 @@ func _pump_http_queue() -> void:
 		_pump_http_queue()
 
 
+func _parse_json_safe(text: String) -> Variant:
+	if text.is_empty():
+		return null
+	var cleaned := text.strip_edges()
+	if cleaned.is_empty():
+		return null
+	if cleaned.begins_with("\ufeff"):
+		cleaned = cleaned.substr(1)
+	# Page HTML d'erreur Apache / proxy au lieu de JSON Nakama.
+	if cleaned.begins_with("<"):
+		return null
+	var json := JSON.new()
+	if json.parse(cleaned) != OK:
+		return null
+	return json.data
+
+
 func _nakama_headers(with_session: bool) -> PackedStringArray:
 	# Export Web : ne pas demander gzip (sinon erreur Godot code 8 / stream_peer_gzip).
 	var headers := PackedStringArray([
@@ -340,7 +383,22 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		return
 
 	var text := body.get_string_from_utf8()
-	var parsed = JSON.parse_string(text)
+	var parsed: Variant = _parse_json_safe(text)
+	if parsed == null:
+		var preview := text.substr(0, mini(160, text.length())).strip_edges()
+		var rpc_hint := ""
+		if _http.has_meta("rpc_id"):
+			rpc_hint = " (RPC %s)" % str(_http.get_meta("rpc_id"))
+		push_warning(
+			"[NetworkSession] Réponse non-JSON HTTP %s%s : %s"
+			% [str(response_code), rpc_hint, preview]
+		)
+		var msg := (
+			"Réponse serveur illisible%s (HTTP %s). "
+			+ "Vérifie Nakama, le module lobby.lua déployé, et le proxy /v2."
+		) % [rpc_hint, str(response_code)]
+		_handle_error(msg)
+		return
 
 	if _http.has_meta("rpc_id"):
 		var rpc_id: String = _http.get_meta("rpc_id")
@@ -404,18 +462,35 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	_pump_http_queue()
 
 
+func _decode_nakama_rpc_payload(parsed: Variant) -> Variant:
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return null
+	if not parsed.has("payload"):
+		return parsed
+	var inner: Variant = parsed["payload"]
+	if typeof(inner) == TYPE_DICTIONARY:
+		return inner
+	if typeof(inner) != TYPE_STRING:
+		return null
+	var decoded: Variant = _parse_json_safe(str(inner))
+	if typeof(decoded) == TYPE_DICTIONARY:
+		return decoded
+	return null
+
+
 func _handle_rpc_response(rpc_id: String, code: int, parsed, raw_text: String) -> void:
 	if code != 200:
 		var detail := _format_nakama_error(parsed, raw_text)
 		match_failed.emit("RPC %s (%s): %s" % [rpc_id, str(code), detail])
 		return
 
-	var payload = parsed
-	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("payload"):
-		payload = JSON.parse_string(str(parsed["payload"]))
-
+	var payload: Variant = _decode_nakama_rpc_payload(parsed)
 	if typeof(payload) != TYPE_DICTIONARY:
-		match_failed.emit("Réponse RPC invalide")
+		var preview := raw_text.substr(0, mini(160, raw_text.length())).strip_edges()
+		match_failed.emit(
+			"Réponse RPC invalide (%s). Déploie lobby.lua sur Nakama ? Aperçu : %s"
+			% [rpc_id, preview]
+		)
 		return
 
 	if rpc_id == "join_queue" or rpc_id == "queue_status":
@@ -459,18 +534,62 @@ func _apply_queue_payload(payload: Dictionary) -> void:
 func resolved_game_ws_url() -> String:
 	var url := NetworkConfig.resolved_game_ws_url().strip_edges()
 	if url != "":
-		return url
+		return _normalize_game_ws_url(url)
 	return FALLBACK_GAME_WS_URL
+
+
+func _normalize_game_ws_url(url: String) -> String:
+	var normalized := url.strip_edges()
+	if normalized == "":
+		return normalized
+	if not normalized.ends_with("/"):
+		normalized += "/"
+	return normalized
 
 
 func connect_to_game_server(ws_url: String = "") -> void:
 	if _ws_connecting:
 		print("[NetworkSession] Connexion WebSocket déjà en cours, ignorée.")
 		return
-	var url := ws_url.strip_edges() if ws_url != "" else resolved_game_ws_url()
-	if url == "":
-		url = FALLBACK_GAME_WS_URL
+	var primary_url := ws_url.strip_edges() if ws_url != "" else resolved_game_ws_url()
+	if primary_url == "":
+		primary_url = FALLBACK_GAME_WS_URL
+	primary_url = _normalize_game_ws_url(primary_url)
+
+	var urls_to_try: Array[String] = [primary_url]
+	var dev_url := _normalize_game_ws_url(NetworkConfig.dev_game_ws_url)
+	if NetworkConfig.use_dev_endpoints() or OS.has_feature("editor"):
+		if dev_url != "" and dev_url != primary_url:
+			urls_to_try.append(dev_url)
+
 	_ws_connecting = true
+	var last_error := ""
+	for url in urls_to_try:
+		for attempt in range(WS_CONNECT_RETRIES):
+			var err_msg := await _try_connect_game_ws(url)
+			if err_msg == "":
+				_ws_connecting = false
+				game_connected.emit()
+				_waiting_map_after_connect = true
+				_map_wait_elapsed = 0.0
+				await get_tree().process_frame
+				await get_tree().process_frame
+				rpc_register_for_match.rpc_id(1, get_display_username())
+				print(
+					"[NetworkSession] WebSocket jeu connecté — enregistrement (peer %d)."
+					% multiplayer.get_unique_id()
+				)
+				return
+			last_error = err_msg
+			if attempt < WS_CONNECT_RETRIES - 1:
+				await get_tree().create_timer(WS_CONNECT_RETRY_DELAY_SEC).timeout
+
+	_ws_connecting = false
+	_match_handoff_started = false
+	game_connection_failed.emit(last_error)
+
+
+func _try_connect_game_ws(url: String) -> String:
 	if _match_peer != null:
 		_match_peer.close()
 		_match_peer = null
@@ -478,9 +597,7 @@ func connect_to_game_server(ws_url: String = "") -> void:
 	print("[NetworkSession] Connexion WebSocket → ", url)
 	var err := _match_peer.create_client(url)
 	if err != OK:
-		_ws_connecting = false
-		game_connection_failed.emit("WebSocket client erreur %s (URL: %s)" % [str(err), url])
-		return
+		return "WebSocket client erreur %s (URL: %s)" % [str(err), url]
 	multiplayer.multiplayer_peer = _match_peer
 	await get_tree().process_frame
 
@@ -489,42 +606,29 @@ func connect_to_game_server(ws_url: String = "") -> void:
 	while true:
 		var st := _match_peer.get_connection_status()
 		if st == WebSocketMultiplayerPeer.CONNECTION_CONNECTED:
-			break
+			return ""
 		if st == WebSocketMultiplayerPeer.CONNECTION_DISCONNECTED:
-			_ws_connecting = false
-			game_connection_failed.emit(
-				"WebSocket refusé ou proxy /game incorrect (URL: %s). Vérifie Apache ProxyPass /game → ws://127.0.0.1:9080 et powerquest-game actif."
-				% url
-			)
-			return
+			return (
+				"WebSocket refusé (URL: %s). Le serveur jeu (port 9080) est-il actif ? "
+				+ "VPS : systemctl status powerquest-game — Apache : ProxyPass /game/ → ws://127.0.0.1:9080/"
+			) % url
 		if Time.get_ticks_msec() - start_ms > timeout_ms:
-			_ws_connecting = false
-			game_connection_failed.emit(
-				"Timeout WebSocket (%s). VPS : systemctl status powerquest-game ; ss -tlnp | grep 9080 ; test WSS avec curl GET (pas HEAD) sur /game/"
-				% url
-			)
-			return
+			return (
+				"Timeout WebSocket (%s). Vérifie powerquest-game sur le VPS (port 9080)."
+			) % url
 		await get_tree().create_timer(0.1).timeout
-
-	_ws_connecting = false
-	game_connected.emit()
-	_waiting_map_after_connect = true
-	_map_wait_elapsed = 0.0
-	# Laisser le canal RPC se stabiliser (surtout export Web).
-	await get_tree().process_frame
-	await get_tree().process_frame
-	rpc_register_for_match.rpc_id(1)
-	print("[NetworkSession] WebSocket jeu connecté — enregistrement auprès du serveur (peer local %d)." % multiplayer.get_unique_id())
+	return "Connexion WebSocket interrompue."
 
 
 ## Chaque client annonce sa présence ; le serveur lance la map à 2+ joueurs.
 @rpc("any_peer", "reliable")
-func rpc_register_for_match() -> void:
+func rpc_register_for_match(display_name: String = "") -> void:
 	if not multiplayer.is_server():
 		return
 	var peer_id := multiplayer.get_remote_sender_id()
 	if peer_id <= 0 or peer_id in _server_registered_peers:
 		return
+	register_peer_display_name(peer_id, display_name)
 	_server_registered_peers.append(peer_id)
 	print(
 		"[NetworkSession] Client enregistré peer %d (%d/%d)."
@@ -591,15 +695,16 @@ func server_begin_online_match(player_count: int = MIN_PLAYERS_TO_START) -> void
 	_server_match_started = true
 	_server_registered_peers.clear()
 	_waiting_map_after_connect = false
-	print("[NetworkSession] Lancement partie (%d joueurs)." % player_count)
-	MapSession.active_map_index = 2
+	var map_index := MapSession.pick_random_online_map_index()
+	print("[NetworkSession] Lancement partie (%d joueurs, map %d)." % [player_count, map_index])
+	MapSession.active_map_index = map_index
 	MapSession.is_online_match = true
 	MapSession.local_team = 0
 	MapSession.online_player_count = player_count
 
 	# Envoyer aux clients AVANT change_scene (sinon le WebSocket serveur était détruit).
 	for peer_id in multiplayer.get_peers():
-		rpc_begin_online_match.rpc_id(peer_id, player_count)
+		rpc_begin_online_match.rpc_id(peer_id, player_count, map_index)
 	await get_tree().create_timer(0.25).timeout
 
 	if ServerMode.is_dedicated_server:
@@ -610,21 +715,31 @@ func server_begin_online_match(player_count: int = MIN_PLAYERS_TO_START) -> void
 
 func reset_server_match_state() -> void:
 	_server_registered_peers.clear()
+	clear_peer_display_names()
 	_server_match_started = false
 
 
 ## Appelé par le serveur de jeu quand 2+ clients sont connectés (RPC).
 @rpc("authority", "call_remote", "reliable")
-func rpc_begin_online_match(player_count: int = MIN_PLAYERS_TO_START) -> void:
+func rpc_begin_online_match(
+	player_count: int = MIN_PLAYERS_TO_START, map_index: int = 0
+) -> void:
 	if ServerMode.is_dedicated_server:
 		return
-	print("[NetworkSession] Client — démarrage map (%d joueurs)." % player_count)
+	var map_idx := MapSession.normalize_online_map_index(
+		map_index if map_index > 0 else MapSession.active_map_index
+	)
+	print("[NetworkSession] Client — démarrage map %d (%d joueurs)." % [map_idx, player_count])
 	_waiting_map_after_connect = false
-	_load_online_match_scene(player_count)
+	_load_online_match_scene(player_count, map_idx)
 
 
-func _load_online_match_scene(player_count: int = MIN_PLAYERS_TO_START) -> void:
-	MapSession.active_map_index = 2
+func _load_online_match_scene(
+	player_count: int = MIN_PLAYERS_TO_START, map_index: int = 0
+) -> void:
+	MapSession.active_map_index = MapSession.normalize_online_map_index(
+		map_index if map_index > 0 else MapSession.active_map_index
+	)
 	MapSession.is_online_match = true
 	MapSession.local_team = 0
 	MapSession.online_player_count = player_count
@@ -720,7 +835,7 @@ func _parse_jwt_payload(token: String) -> Dictionary:
 	while b64.length() % 4 != 0:
 		b64 += "="
 	var decoded := Marshalls.base64_to_utf8(b64)
-	var parsed = JSON.parse_string(decoded)
+	var parsed: Variant = _parse_json_safe(decoded)
 	if typeof(parsed) == TYPE_DICTIONARY:
 		return parsed
 	return {}
