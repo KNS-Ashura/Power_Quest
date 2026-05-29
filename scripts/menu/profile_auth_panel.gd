@@ -56,7 +56,8 @@ func _on_profile_updated(profile: Dictionary) -> void:
 		return
 	_apply_username_display(profile)
 	if _winrate_label != null:
-		_winrate_label.text = "%.1f%%" % float(profile.get("winrate", 0.0))
+		var wr := float(profile.get("winrate", 0.0))
+		_winrate_label.text = str(snappedf(wr, 0.1)) + "%"
 	if _matches_label != null:
 		_matches_label.text = str(int(profile.get("games", 0)))
 	var total_sec := int(profile.get("total_seconds", 0))

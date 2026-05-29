@@ -43,7 +43,8 @@ func _rebuild() -> void:
 			var m := (total_sec % 3600) / 60
 			node_time.text = "%02dh%02d" % [h, m]
 		if node_score:
-			node_score.text = "%.1f%%" % float(entry.get("winrate", 0.0))
+			var wr := float(entry.get("winrate", 0.0))
+			node_score.text = str(snappedf(wr, 0.1)) + "%"
 
 		if node_rank:
 			match i:

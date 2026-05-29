@@ -117,7 +117,7 @@ func _on_auth_failed(message: String) -> void:
 
 func _show_error(text: String) -> void:
 	if error_message == null:
-		push_warning("[Unconnect] %s" % text)
+		push_warning("[Unconnect] " + text)
 		return
 	error_message.add_theme_color_override("font_color", Color("#e53e3e"))
 	error_message.text = text

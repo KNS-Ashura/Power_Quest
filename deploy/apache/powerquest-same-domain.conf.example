@@ -14,6 +14,10 @@ ProxyPassReverse /healthcheck http://127.0.0.1:7360/healthcheck
     ProxyPass http://127.0.0.1:7360/v2
     ProxyPassReverse http://127.0.0.1:7360/v2
 
+    # Export Web Godot : ne pas compresser les réponses JSON Nakama (HTTPRequest / parse WASM).
+    SetEnv no-gzip 1
+    SetEnv no-brotli 1
+
     Header always unset Access-Control-Allow-Origin
     Header always unset Access-Control-Allow-Methods
     Header always unset Access-Control-Allow-Headers
