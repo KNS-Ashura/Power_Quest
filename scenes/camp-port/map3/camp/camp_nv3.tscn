@@ -1,0 +1,108 @@
+[gd_scene format=3 uid="uid://wjt65oitx3b5"]
+
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_7p8ii"]
+[ext_resource type="Texture2D" uid="uid://3m4qctyg3x78" path="res://assets/objects/map3/Castle.png" id="2_i4su2"]
+[ext_resource type="Texture2D" uid="uid://bs8ei7wqfxvwi" path="res://assets/tilesets/Cave/Totem_animation.png" id="2_ngavp"]
+[ext_resource type="Texture2D" uid="uid://dchvra17elvco" path="res://assets/objects/map3/Plant3_1.png" id="3_761jw"]
+[ext_resource type="Texture2D" uid="uid://b0gj3754q38g0" path="res://assets/objects/map3/Pentacle1.png" id="3_qftao"]
+[ext_resource type="Texture2D" uid="uid://ymnn72pv0iot" path="res://assets/objects/map3/Scull3.png" id="5_y8ada"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i4su2"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(0, 0, 96, 88)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qftao"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(96, 0, 96, 88)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y8ada"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(192, 0, 96, 88)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wysxs"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(288, 0, 96, 88)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fn2og"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(384, 0, 96, 88)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x7tnv"]
+atlas = ExtResource("2_ngavp")
+region = Rect2(480, 0, 96, 88)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pwn8b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i4su2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qftao")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y8ada")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wysxs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fn2og")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x7tnv")
+}],
+"loop": true,
+"name": &"animation_camp_V",
+"speed": 11.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
+radius = 25.0
+height = 88.0
+
+[node name="camp" type="StaticBody2D" unique_id=1255783347]
+script = ExtResource("1_7p8ii")
+team = 0
+
+[node name="Sprite2D4" type="Sprite2D" parent="." unique_id=35617875]
+position = Vector2(22, -49)
+texture = ExtResource("2_i4su2")
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=594218138]
+position = Vector2(1, 59.999992)
+rotation = -0.00797035
+texture = ExtResource("3_qftao")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1009737143]
+position = Vector2(-42, -21)
+texture = ExtResource("3_761jw")
+
+[node name="Sprite2D3" type="Sprite2D" parent="." unique_id=747024860]
+position = Vector2(57, 16.000002)
+rotation = -0.00797035
+texture = ExtResource("5_y8ada")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1028446195]
+rotation = -0.00797035
+sprite_frames = SubResource("SpriteFrames_pwn8b")
+animation = &"animation_camp_V"
+frame_progress = 0.5912705
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
+position = Vector2(0, 1)
+shape = SubResource("CapsuleShape2D_q06s1")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Timer" type="Timer" parent="." unique_id=1702314306]
+autostart = true
+
+[node name="Marker2D" type="Marker2D" parent="." unique_id=592443713]
+
+[node name="Label" type="Label" parent="." unique_id=1269375851]
+offset_left = -40.0
+offset_top = -80.0
+offset_right = 40.0
+offset_bottom = -57.0
+text = "ALLIE"
+horizontal_alignment = 1

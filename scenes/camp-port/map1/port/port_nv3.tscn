@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://dxmve4xvuieo5"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/port_nv3.gd" id="1_lkk23"]
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_lkk23"]
 [ext_resource type="Texture2D" uid="uid://mds878v4e061" path="res://assets/objects/map1/Objects_source.png" id="2_lkk23"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
 radius = 25.0
 height = 88.0
 
-[node name="camp" type="StaticBody2D" unique_id=1255783347]
+[node name="port" type="StaticBody2D" unique_id=1255783347]
 script = ExtResource("1_lkk23")
 team = 0
 

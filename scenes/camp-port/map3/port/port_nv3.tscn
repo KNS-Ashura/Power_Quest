@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://tanyfsou7iw0"]
+
+[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_7ggv2"]
+[ext_resource type="Texture2D" uid="uid://b43s5h45v18eg" path="res://assets/objects/map3/Blue_crystal2.png" id="2_of7sk"]
+[ext_resource type="Texture2D" uid="uid://ciwfi8dei72k2" path="res://assets/objects/map3/Flower-crystal1.png" id="3_7ggv2"]
+[ext_resource type="Texture2D" uid="uid://bsc7j6slijx88" path="res://assets/objects/map3/magic_circle_dark_shadow.png" id="4_lk246"]
+[ext_resource type="Texture2D" uid="uid://dges3d85nldpd" path="res://assets/objects/map3/Dark_totem_dark_shadow1.png" id="5_of7sk"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_q06s1"]
+radius = 25.0
+height = 88.0
+
+[node name="camp" type="StaticBody2D" unique_id=1255783347]
+script = ExtResource("1_7ggv2")
+team = 0
+
+[node name="Sprite2D4" type="Sprite2D" parent="." unique_id=223679986]
+position = Vector2(44, -16)
+texture = ExtResource("2_of7sk")
+
+[node name="Sprite2D3" type="Sprite2D" parent="." unique_id=567249617]
+position = Vector2(-43, -58)
+texture = ExtResource("3_7ggv2")
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=2023610510]
+position = Vector2(2, 56)
+texture = ExtResource("4_lk246")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=715842900]
+position = Vector2(7, -33)
+texture = ExtResource("5_of7sk")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=532220156]
+position = Vector2(0, 1)
+shape = SubResource("CapsuleShape2D_q06s1")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="Timer" type="Timer" parent="." unique_id=1702314306]
+autostart = true
+
+[node name="Marker2D" type="Marker2D" parent="." unique_id=592443713]
+
+[node name="Label" type="Label" parent="." unique_id=1269375851]
+offset_left = -37.0
+offset_top = -129.0
+offset_right = 43.0
+offset_bottom = -106.0
+text = "ALLIE"
+horizontal_alignment = 1

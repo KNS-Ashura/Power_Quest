@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://g44ksmerc7aj"]
+
+[ext_resource type="Script" uid="uid://c6ofhuab4uu83" path="res://scripts/combat/anti_armor_spell_projectile.gd" id="1_06pnd"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"capture",
+"speed": 5.0
+}]
+
+[node name="projectile" type="CharacterBody2D" unique_id=561468748]
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_06pnd")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
+rotation = 0.0038198903
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"capture"
