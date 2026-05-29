@@ -16,6 +16,9 @@ signal online_match_begin
 
 const MAIN_SCENE := "res://scenes/jeu/Main.scn"
 const MIN_PLAYERS_TO_START := 2
+const MAX_PLAYERS_TO_START := 8
+## Fenêtre d'attente après le 2e joueur pour laisser arriver le reste du groupe (jusqu'à 8).
+const LOBBY_START_GRACE_SEC := 5.0
 const FALLBACK_GAME_WS_URL := "wss://powerquest.robinmatelot.codes/game/"
 const WS_CONNECT_RETRIES := 3
 const WS_CONNECT_RETRY_DELAY_SEC := 1.5
@@ -1177,11 +1180,10 @@ func rpc_register_for_match(display_name: String = "") -> void:
 	register_peer_display_name(peer_id, display_name)
 	_server_registered_peers.append(peer_id)
 	print(
-		"[NetworkSession] Client enregistré peer %d (%d/%d)."
-		% [peer_id, _server_registered_peers.size(), MIN_PLAYERS_TO_START]
+		"[NetworkSession] Client enregistré peer %d (%d connectés, max %d)."
+		% [peer_id, _server_registered_peers.size(), MAX_PLAYERS_TO_START]
 	)
-	if _server_registered_peers.size() >= MIN_PLAYERS_TO_START:
-		server_begin_online_match(_server_registered_peers.size())
+	_consider_match_start()
 
 
 ## Le peer WebSocket vit sur cet autoload pour survivre au change_scene (serveur dédié).
@@ -1199,7 +1201,7 @@ func _on_server_peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server():
 		return
 	print("[NetworkSession] Client WebSocket connecté: ", peer_id)
-	_schedule_server_match_start_check()
+	_consider_match_start()
 
 
 func _on_server_peer_disconnected(peer_id: int) -> void:
@@ -1211,27 +1213,41 @@ func _on_server_peer_disconnected(peer_id: int) -> void:
 		reset_server_match_state()
 
 
-func _schedule_server_match_start_check() -> void:
+## Nombre de joueurs présents (enregistrés ou simplement connectés en secours).
+func _current_player_count() -> int:
+	return maxi(_server_registered_peers.size(), multiplayer.get_peers().size())
+
+
+## Décide quand lancer : tout de suite si plein (8), sinon après une fenêtre de grâce
+## dès qu'on a le minimum (laisse le reste du groupe se connecter, jusqu'à 8).
+func _consider_match_start() -> void:
+	if _server_match_started:
+		return
+	var count := _current_player_count()
+	if count >= MAX_PLAYERS_TO_START:
+		print("[NetworkSession] Lobby plein (%d) — lancement immédiat." % count)
+		server_begin_online_match(MAX_PLAYERS_TO_START)
+		return
+	if count >= MIN_PLAYERS_TO_START:
+		_schedule_match_start_after_grace()
+
+
+func _schedule_match_start_after_grace() -> void:
 	if _match_start_check_scheduled or _server_match_started:
 		return
 	_match_start_check_scheduled = true
-	_run_server_match_start_check()
-
-
-func _run_server_match_start_check() -> void:
-	await get_tree().create_timer(1.5).timeout
+	print(
+		"[NetworkSession] %d joueurs — attente %.0fs pour le groupe complet."
+		% [_current_player_count(), LOBBY_START_GRACE_SEC]
+	)
+	await get_tree().create_timer(LOBBY_START_GRACE_SEC).timeout
 	_match_start_check_scheduled = false
 	if _server_match_started:
 		return
-	var peer_count := multiplayer.get_peers().size()
-	if peer_count < MIN_PLAYERS_TO_START:
+	var count := _current_player_count()
+	if count < MIN_PLAYERS_TO_START:
 		return
-	var reg_count := _server_registered_peers.size()
-	var count := maxi(reg_count, peer_count)
-	print(
-		"[NetworkSession] Secours lancement — peers=%d, enregistrés=%d."
-		% [peer_count, reg_count]
-	)
+	print("[NetworkSession] Lancement après grâce — %d joueurs." % count)
 	server_begin_online_match(count)
 
 

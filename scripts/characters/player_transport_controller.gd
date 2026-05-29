@@ -100,7 +100,7 @@ static func allies_in_radius(owner: Node) -> Array[Node2D]:
 	requete.transform = Transform2D(0, owner.global_position)
 	requete.collide_with_areas = false
 	requete.collide_with_bodies = true
-	var groupe := "soldiers" if owner.team == owner.Owner.PLAYER else "enemies"
+	var groupe := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
 	for res in owner.get_world_2d().direct_space_state.intersect_shape(requete):
 		var obj = res.collider as Node2D
 		if obj == null or not obj.is_in_group(groupe):
@@ -207,7 +207,7 @@ static func show_unit(owner: Node, unit: Node2D, spawn_pos: Vector2) -> void:
 	remove_transport_fx(owner, unit)
 	unit.visible = true
 	unit.global_position = spawn_pos
-	unit.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT if unit.get("team") == owner.Owner.PLAYER else owner.COLLISION_LAYER_ENEMY_UNIT
+	unit.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT if MapSession.is_local_team(int(unit.get("team"))) else owner.COLLISION_LAYER_ENEMY_UNIT
 	unit.collision_mask = owner.COLLISION_LAYER_WORLD | owner.COLLISION_LAYER_PLAYER_UNIT | owner.COLLISION_LAYER_ENEMY_UNIT
 	unit.set_process(true)
 	unit.set_physics_process(true)

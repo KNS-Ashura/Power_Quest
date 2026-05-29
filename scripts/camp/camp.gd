@@ -494,12 +494,15 @@ func _is_valid_land_point(world_pos: Vector2) -> bool:
 
 
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
+	var new_team: int = Owner.NEUTRAL
 	if killer_team != -1 and killer_team != team:
-		_capture_by_team(killer_team)
+		new_team = killer_team
 	elif is_instance_valid(killer) and killer.get("team") != null and killer.team != team:
-		_capture_by_team(killer.team)
-	else:
-		_capture_by_team(Owner.NEUTRAL)
+		new_team = int(killer.team)
+	_capture_by_team(new_team)
+	# Multijoueur : propage la capture (et le respawn du gardien) sur tous les écrans.
+	if MapSession.is_online_match and OnlineGameSync.is_online_active():
+		OnlineGameSync.report_camp_capture(str(get_path()), new_team)
 
 
 func _capture_by_team(new_team: int) -> void:
