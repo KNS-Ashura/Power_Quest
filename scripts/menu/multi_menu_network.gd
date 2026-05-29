@@ -155,16 +155,28 @@ func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> voi
 	if not _in_matchmaking:
 		return
 	if players < MIN_PLAYERS_TO_START:
-		_status_label.text = "%d / %d — en attente (%d joueurs min.)" % [
-			players, max_players, MIN_PLAYERS_TO_START
-		]
+		_status_label.text = (
+			str(players)
+			+ " / "
+			+ str(max_players)
+			+ " — en attente ("
+			+ str(MIN_PLAYERS_TO_START)
+			+ " joueurs min.)"
+		)
 	elif seconds_left > 0:
 		var timer_hint := "10 s" if players < max_players else "5 s (file pleine)"
-		_status_label.text = "%d / %d — lancement dans %d s (%s)" % [
-			players, max_players, seconds_left, timer_hint
-		]
+		_status_label.text = (
+			str(players)
+			+ " / "
+			+ str(max_players)
+			+ " — lancement dans "
+			+ str(seconds_left)
+			+ " s ("
+			+ timer_hint
+			+ ")"
+		)
 	else:
-		_status_label.text = "%d / %d — connexion au serveur…" % [players, max_players]
+		_status_label.text = str(players) + " / " + str(max_players) + " — connexion au serveur…"
 
 
 func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
@@ -187,7 +199,7 @@ func _on_game_connected() -> void:
 
 func _on_online_match_begin() -> void:
 	var map_idx := MapSession.active_map_index
-	_status_label.text = "Chargement de la map %d…" % map_idx
+	_status_label.text = "Chargement de la map " + str(map_idx) + "…"
 
 
 func _on_game_connection_failed(message: String) -> void:

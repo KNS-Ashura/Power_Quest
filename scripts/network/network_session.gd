@@ -37,6 +37,13 @@ var _pending_auth_username: String = ""
 ## Pseudo choisi à l'inscription — prioritaire sur le username auto Nakama (souvent aléatoire).
 var _session_username_override: String = ""
 var _leave_queue_pending: bool = false
+var _awaiting_join_ack: bool = false
+var _rpc_warn_last: Dictionary = {}
+var _use_browser_http: bool = false
+var _web_bridge_warned: bool = false
+var _web_pending_id: String = ""
+var _web_request_started_ms: int = 0
+const WEB_HTTP_TIMEOUT_MS := 15000
 
 var _http: HTTPRequest
 var _http_queue: Array = []
@@ -59,6 +66,12 @@ func _ready() -> void:
 	# Le binaire --server n'a pas besoin du client Nakama / HTTP.
 	if ServerMode.is_dedicated_server:
 		return
+	_use_browser_http = WebNakamaHttp.is_available()
+	if _use_browser_http:
+		# Injecte le pont fetch() au runtime (indépendant de index.html / export_presets).
+		if not WebNakamaHttp.ensure_bridge():
+			_use_browser_http = false
+			call_deferred("_warn_missing_web_bridge")
 	_http = HTTPRequest.new()
 	add_child(_http)
 	_http.request_completed.connect(_on_http_completed)
@@ -85,6 +98,10 @@ func get_display_username() -> String:
 		return from_profile
 	if _pending_auth_username.strip_edges() != "":
 		return _pending_auth_username.strip_edges()
+	if account_email != "":
+		var from_file := _load_saved_username_for_email(account_email)
+		if _is_human_username(from_file):
+			return from_file
 	return "Joueur"
 
 
@@ -152,7 +169,7 @@ func register_account(email: String, password: String, username: String) -> void
 		"is_registration": true,
 		"url": url,
 		"headers": _nakama_headers(false),
-		"body": JSON.stringify({"email": e, "password": p})
+		"body": JSON.stringify({"email": e, "password": p, "username": u})
 	})
 
 
@@ -171,7 +188,7 @@ func login_account(email: String, password: String) -> void:
 		return
 	_pending_auth_email = e
 	_pending_auth_password = p
-	_pending_auth_username = ""
+	_apply_saved_username_hints(e)
 	_enqueue_http({
 		"kind": "auth_account",
 		"url": "%s/v2/account/authenticate/email?create=false" % NetworkConfig.nakama_base_url(),
@@ -239,6 +256,12 @@ func _sync_username_on_server(username: String) -> void:
 
 
 func _complete_auth_success() -> void:
+	if profile_cache.is_empty():
+		profile_cache = {}
+	var display_name := get_display_username()
+	if display_name != "Joueur":
+		profile_cache["username"] = display_name
+		profile_updated.emit(profile_cache.duplicate(true))
 	request_account_info()
 	request_player_profile()
 	request_leaderboard()
@@ -252,11 +275,46 @@ func request_leaderboard(limit: int = 20) -> void:
 	_rpc("get_leaderboard", payload)
 
 
-func _save_credentials(email: String, password: String) -> void:
+func _read_saved_credentials() -> Dictionary:
+	if not FileAccess.file_exists("user://account_credentials.json"):
+		return {}
+	var parsed: Variant = _parse_json_safe(FileAccess.get_file_as_string("user://account_credentials.json"))
+	if typeof(parsed) == TYPE_DICTIONARY:
+		return parsed as Dictionary
+	return {}
+
+
+func _load_saved_username_for_email(email: String) -> String:
+	var creds := _read_saved_credentials()
+	if str(creds.get("email", "")).to_lower() != email.strip_edges().to_lower():
+		return ""
+	return str(creds.get("username", "")).strip_edges()
+
+
+func _apply_saved_username_hints(email: String) -> void:
+	var saved := _load_saved_username_for_email(email)
+	_pending_auth_username = ""
+	if _is_human_username(saved):
+		_pending_auth_username = saved
+		_session_username_override = saved
+
+
+func _save_credentials(email: String, password: String, username: String = "") -> void:
 	var f := FileAccess.open("user://account_credentials.json", FileAccess.WRITE)
 	if f == null:
 		return
-	f.store_string(JSON.stringify({"email": email, "password": password}))
+	var data := {
+		"email": email.strip_edges().to_lower(),
+		"password": password,
+	}
+	var u := username.strip_edges()
+	if u == "" and _is_human_username(_session_username_override):
+		u = _session_username_override
+	elif u == "" and _is_human_username(account_username):
+		u = account_username
+	if _is_human_username(u):
+		data["username"] = u
+	f.store_string(JSON.stringify(data))
 
 
 func _delete_saved_credentials() -> void:
@@ -310,24 +368,28 @@ func authenticate() -> void:
 	if not FileAccess.file_exists("user://account_credentials.json"):
 		auth_failed.emit("Connecte-toi ou crée un compte avant de lancer une partie.")
 		return
-	var raw := FileAccess.get_file_as_string("user://account_credentials.json")
-	var parsed: Variant = _parse_json_safe(raw)
-	if typeof(parsed) != TYPE_DICTIONARY:
+	var parsed := _read_saved_credentials()
+	if parsed.is_empty():
 		auth_failed.emit("Identifiants locaux invalides. Reconnecte-toi.")
 		return
-	login_account(str(parsed.get("email", "")), str(parsed.get("password", "")))
+	var email := str(parsed.get("email", ""))
+	_apply_saved_username_hints(email)
+	login_account(email, str(parsed.get("password", "")))
 
 
 func join_ranked_queue() -> void:
 	if not is_account_logged_in():
 		match_failed.emit("Connecte-toi avec un compte avant de jouer en ligne.")
 		return
-	_in_queue = true
+	_awaiting_join_ack = true
+	_in_queue = false
+	_match_handoff_started = false
 	_rpc("join_queue")
 
 
 func leave_ranked_queue() -> void:
 	_in_queue = false
+	_awaiting_join_ack = false
 	_match_handoff_started = false
 	_ws_connecting = false
 	if not is_authenticated or session_token == "":
@@ -338,7 +400,9 @@ func leave_ranked_queue() -> void:
 	_rpc("leave_queue")
 
 
-## inner_json : objet JSON sérialisé (ex. '{"limit":20}'). Nakama HTTP RPC attend une chaîne JSON.
+## inner_json : objet JSON sérialisé (ex. '{"limit":20}').
+## Nakama HTTP RPC attend le payload comme CHAÎNE JSON encodée → on (re)stringifie.
+## Sinon : 400 "cannot unmarshal object into Go value of type string".
 func _rpc(id: String, inner_json: String = "") -> void:
 	var url := "%s/v2/rpc/%s" % [NetworkConfig.nakama_base_url(), id]
 	var headers := _nakama_headers(true)
@@ -351,21 +415,28 @@ func _enqueue_http(job: Dictionary) -> void:
 	_pump_http_queue()
 
 
+func _warn_missing_web_bridge() -> void:
+	if _web_bridge_warned:
+		return
+	_web_bridge_warned = true
+	push_warning(
+		"[NetworkSession] Pont fetch() non injecté — repli sur HTTPRequest Godot."
+	)
+
+
 func _pump_http_queue() -> void:
-	if _http_busy or _http == null or _http_queue.is_empty():
+	if _http_busy or _http_queue.is_empty():
+		return
+	if _web_pending_id != "":
 		return
 	var job: Dictionary = _http_queue.pop_front()
+	if _use_browser_http and WebNakamaHttp.bridge_ready():
+		_start_web_request(job)
+		return
+	if _http == null:
+		return
 	_http_busy = true
-	_http.set_meta("http_kind", str(job.get("kind", "")))
-	if job.get("kind") == "rpc":
-		_http.set_meta("rpc_id", str(job.get("rpc_id", "")))
-	else:
-		if _http.has_meta("rpc_id"):
-			_http.remove_meta("rpc_id")
-	if bool(job.get("is_registration", false)):
-		_http.set_meta("is_registration", true)
-	if job.has("desired_username"):
-		_http.set_meta("desired_username", str(job.get("desired_username")))
+	_apply_http_job_meta(job)
 	var err := _http.request(
 		str(job.get("url", "")),
 		job.get("headers", PackedStringArray()),
@@ -374,8 +445,67 @@ func _pump_http_queue() -> void:
 	)
 	if err != OK:
 		_http_busy = false
-		push_error("[NetworkSession] HTTP request failed to start: %s" % str(err))
+		push_error("[NetworkSession] HTTP request failed to start: " + str(err))
 		_pump_http_queue()
+
+
+func _apply_http_job_meta(job: Dictionary) -> void:
+	_http.set_meta("http_kind", str(job.get("kind", "")))
+	if job.get("kind") == "rpc":
+		_http.set_meta("rpc_id", str(job.get("rpc_id", "")))
+	else:
+		if _http.has_meta("rpc_id"):
+			_http.remove_meta("rpc_id")
+	if bool(job.get("is_registration", false)):
+		_http.set_meta("is_registration", true)
+	elif _http.has_meta("is_registration"):
+		_http.remove_meta("is_registration")
+	if job.has("desired_username"):
+		_http.set_meta("desired_username", str(job.get("desired_username")))
+	elif _http.has_meta("desired_username"):
+		_http.remove_meta("desired_username")
+
+
+## Export Web : envoie via fetch() navigateur (asynchrone), réponse lue dans _poll_web_request().
+func _start_web_request(job: Dictionary) -> void:
+	_http_busy = true
+	_apply_http_job_meta(job)
+	var url := str(job.get("url", ""))
+	var method := int(job.get("method", HTTPClient.METHOD_POST))
+	var headers: PackedStringArray = job.get("headers", PackedStringArray())
+	var body := str(job.get("body", ""))
+	_web_pending_id = "%d_%d" % [Time.get_ticks_usec(), randi()]
+	_web_request_started_ms = Time.get_ticks_msec()
+	if not WebNakamaHttp.send(_web_pending_id, url, method, headers, body):
+		_web_pending_id = ""
+		_http_busy = false
+		_handle_error("Réseau Web indisponible (pont window.PQ).")
+		_pump_http_queue()
+
+
+func _poll_web_request() -> void:
+	if _web_pending_id == "":
+		return
+	var res := WebNakamaHttp.poll(_web_pending_id)
+	if res.is_empty():
+		if Time.get_ticks_msec() - _web_request_started_ms > WEB_HTTP_TIMEOUT_MS:
+			_web_pending_id = ""
+			_http_busy = false
+			_handle_error("Timeout réseau Web (Nakama injoignable).")
+			_pump_http_queue()
+		return
+	_web_pending_id = ""
+	var response_code := int(res.get("status", 0))
+	var text := str(res.get("text", ""))
+	if not bool(res.get("ok", false)) and response_code == 0:
+		_http_busy = false
+		_handle_error("Réseau Web : " + str(res.get("error", "fetch échoué")))
+		_pump_http_queue()
+		return
+	# _on_http_completed remet _http_busy à false et relance le pump.
+	_on_http_completed(
+		HTTPRequest.RESULT_SUCCESS, response_code, PackedStringArray(), text.to_utf8_buffer()
+	)
 
 
 func _http_is_success(response_code: int) -> bool:
@@ -439,6 +569,19 @@ func _extract_auth_fields_from_text(text: String) -> Dictionary:
 	return out
 
 
+## Repli Web : extrait "username":"..." du texte brut quand JSON.parse échoue.
+func _extract_username_from_text(text: String) -> String:
+	if text.is_empty():
+		return ""
+	var re := RegEx.new()
+	if re.compile("\"username\"\\s*:\\s*\"([^\"]+)\"") != OK:
+		return ""
+	var m := re.search(text)
+	if m:
+		return m.get_string(1).strip_edges()
+	return ""
+
+
 func _apply_auth_session_from_fields(fields: Dictionary, was_registration: bool) -> bool:
 	if not fields.has("token") or str(fields["token"]) == "":
 		return false
@@ -457,19 +600,29 @@ func _apply_auth_session_from_fields(fields: Dictionary, was_registration: bool)
 		account_username = chosen_username
 		_session_username_override = chosen_username
 		if _pending_auth_email != "" and _pending_auth_password != "":
-			_save_credentials(_pending_auth_email, _pending_auth_password)
+			_save_credentials(_pending_auth_email, _pending_auth_password, chosen_username)
 		_pending_auth_email = ""
 		_pending_auth_password = ""
 		_pending_auth_username = ""
-		_sync_username_on_server(chosen_username)
+		call_deferred("_sync_username_on_server", chosen_username)
 		_complete_auth_success()
 	else:
+		var saved_user := _load_saved_username_for_email(account_email)
 		if _is_human_username(token_username):
 			account_username = token_username
 		elif _is_human_username(chosen_username):
 			account_username = chosen_username
+			_session_username_override = chosen_username
+		elif _is_human_username(saved_user):
+			account_username = saved_user
+			_session_username_override = saved_user
+			_sync_username_on_server(saved_user)
 		if _pending_auth_email != "" and _pending_auth_password != "":
-			_save_credentials(_pending_auth_email, _pending_auth_password)
+			_save_credentials(
+				_pending_auth_email,
+				_pending_auth_password,
+				account_username if account_username != "" else saved_user
+			)
 		_pending_auth_email = ""
 		_pending_auth_password = ""
 		_pending_auth_username = ""
@@ -523,6 +676,14 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	# Nakama renvoie parfois HTTP 200/204 avec corps vide (ex. PUT account) — ce n'est pas une erreur.
 	if parsed == null and _http_is_success(response_code):
 		if http_kind == "account_info":
+			# Repli Web : si le JSON n'a pas parsé, on tente d'extraire le pseudo du texte brut.
+			var fallback_user := _extract_username_from_text(text)
+			if _is_human_username(fallback_user) and _session_username_override == "":
+				account_username = fallback_user
+				if profile_cache.is_empty():
+					profile_cache = {}
+				profile_cache["username"] = fallback_user
+				profile_updated.emit(profile_cache)
 			_pump_http_queue()
 			return
 		if http_kind == "account_update":
@@ -539,38 +700,21 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	if _http.has_meta("rpc_id"):
 		var rpc_id: String = str(_http.get_meta("rpc_id"))
 		_http.remove_meta("rpc_id")
-		if parsed == null and _http_is_success(response_code):
-			var rpc_payload: Variant = _decode_nakama_rpc_payload_from_text(text)
-			if typeof(rpc_payload) == TYPE_DICTIONARY:
-				_handle_rpc_response(rpc_id, response_code, rpc_payload, text)
-				_pump_http_queue()
-				return
-			if _is_benign_rpc(rpc_id):
-				_handle_rpc_response(rpc_id, response_code, {}, text)
-				_pump_http_queue()
-				return
-		if parsed != null:
-			_handle_rpc_response(rpc_id, response_code, parsed, text)
-		else:
-			var preview := text.substr(0, mini(120, text.length())).strip_edges()
-			push_warning(
-				"[NetworkSession] RPC %s illisible (HTTP %s): %s"
-				% [rpc_id, str(response_code), preview]
-			)
-			if not _is_benign_rpc(rpc_id):
-				match_failed.emit("RPC %s : réponse illisible." % rpc_id)
+		var rpc_payload := _resolve_rpc_payload(parsed, text)
+		_handle_rpc_response(rpc_id, response_code, rpc_payload, text)
 		_pump_http_queue()
 		return
 
 	if parsed == null:
 		var preview := text.substr(0, mini(160, text.length())).strip_edges()
 		push_warning(
-			"[NetworkSession] Réponse non-JSON HTTP %s : %s"
-			% [str(response_code), preview]
+			"[NetworkSession] Réponse non-JSON HTTP "
+			+ str(response_code)
+			+ " : "
+			+ preview
 		)
 		_handle_error(
-			"Réponse serveur illisible (HTTP %s). Réexporte le client Web."
-			% str(response_code)
+			"Réponse serveur illisible (HTTP " + str(response_code) + "). Réexporte le client Web."
 		)
 		return
 
@@ -580,6 +724,9 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 			if profile_cache.is_empty():
 				profile_cache = {}
 			profile_cache["username"] = account_username
+			var creds := _read_saved_credentials()
+			if account_email != "" and creds.has("password"):
+				_save_credentials(account_email, str(creds.get("password", "")), account_username)
 			profile_updated.emit(profile_cache)
 		_pump_http_queue()
 		return
@@ -612,25 +759,56 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	_pump_http_queue()
 
 
+func _resolve_rpc_payload(parsed: Variant, raw_text: String) -> Dictionary:
+	var payload: Variant = _decode_nakama_rpc_payload(parsed)
+	if typeof(payload) != TYPE_DICTIONARY:
+		payload = _decode_nakama_rpc_payload_from_text(raw_text)
+	if typeof(payload) == TYPE_DICTIONARY:
+		return payload as Dictionary
+	if _looks_like_queue_rpc_text(raw_text):
+		return _extract_queue_fields_from_text(raw_text)
+	return {}
+
+
+func _looks_like_queue_rpc_text(text: String) -> bool:
+	if text.is_empty():
+		return false
+	return text.find("players") >= 0 and (
+		text.find("waiting") >= 0
+		or text.find("matched") >= 0
+		or text.find("wait") >= 0
+		or text.find("max_players") >= 0
+	)
+
+
 func _decode_nakama_rpc_payload(parsed: Variant) -> Variant:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return null
 	if not parsed.has("payload"):
+		if parsed.has("status") or parsed.has("players"):
+			return parsed
 		return parsed
 	var inner: Variant = parsed["payload"]
-	if typeof(inner) == TYPE_DICTIONARY:
-		return inner
-	if typeof(inner) != TYPE_STRING:
-		return null
-	var inner_text := str(inner)
-	var decoded: Variant = _parse_json_safe(inner_text)
-	if typeof(decoded) == TYPE_DICTIONARY:
-		return decoded
-	# Export Web : parfois la chaîne payload garde des \" littéraux.
-	var unescaped := inner_text.replace('\\"', '"')
-	decoded = _parse_json_safe(unescaped)
-	if typeof(decoded) == TYPE_DICTIONARY:
-		return decoded
+	var guard := 0
+	while guard < 6:
+		guard += 1
+		if typeof(inner) == TYPE_DICTIONARY:
+			return inner
+		if typeof(inner) != TYPE_STRING:
+			return null
+		var inner_text := str(inner).strip_edges()
+		var decoded: Variant = _parse_json_safe(inner_text)
+		if typeof(decoded) == TYPE_DICTIONARY:
+			return decoded
+		# Export Web : parfois la chaîne payload garde des \" littéraux.
+		var unescaped := inner_text.replace('\\"', '"')
+		decoded = _parse_json_safe(unescaped)
+		if typeof(decoded) == TYPE_DICTIONARY:
+			return decoded
+		if typeof(decoded) == TYPE_STRING:
+			inner = decoded
+			continue
+		break
 	return null
 
 
@@ -640,15 +818,122 @@ func _decode_nakama_rpc_payload_from_text(text: String) -> Variant:
 		var decoded: Variant = _decode_nakama_rpc_payload(wrapper)
 		if typeof(decoded) == TYPE_DICTIONARY:
 			return decoded
-		if not wrapper.has("payload"):
+		if not (wrapper as Dictionary).has("payload"):
 			return wrapper
-	# Réponse RPC sans enveloppe, ou parse WASM défaillant.
+	# Parse Godot/WASM KO : extraire la chaîne payload à la main puis re-parser.
+	var inner_text := _extract_payload_string_literal(text)
+	if inner_text != "":
+		var inner_parsed: Variant = _parse_json_safe(inner_text)
+		if typeof(inner_parsed) == TYPE_DICTIONARY:
+			return inner_parsed
+	# Réponse RPC sans enveloppe, ou JSON tronqué.
 	var direct: Variant = _parse_json_safe(_extract_json_object_text(text))
 	if typeof(direct) == TYPE_DICTIONARY:
 		return direct
-	if text.find('"status"') >= 0 and text.find('"left"') >= 0:
+	# Détecter "left" UNIQUEMENT sur la vraie valeur "status":"left"
+	# (sinon "seconds_left" déclenche un faux positif → 0/8).
+	if _text_has_status_left(text):
 		return {"status": "left", "players": 0}
+	if _looks_like_queue_rpc_text(text):
+		return _extract_queue_fields_from_text(text)
 	return null
+
+
+func _text_has_status_left(text: String) -> bool:
+	# Gère le JSON échappé ("status":"left") et non échappé (\"status\":\"left\").
+	var t := text.replace('\\"', '"').replace("\\\\", "\\")
+	return t.find("\"status\":\"left\"") >= 0 or t.find("\"status\": \"left\"") >= 0
+
+
+func _extract_payload_string_literal(text: String) -> String:
+	var key_pos := text.find("\"payload\"")
+	if key_pos < 0:
+		return ""
+	var colon := text.find(":", key_pos)
+	if colon < 0:
+		return ""
+	var i := colon + 1
+	while i < text.length() and text[i] in " \t\r\n":
+		i += 1
+	if i >= text.length() or text[i] != '"':
+		return ""
+	i += 1
+	var out := ""
+	while i < text.length():
+		var ch := text[i]
+		if ch == "\\" and i + 1 < text.length():
+			var esc := text[i + 1]
+			match esc:
+				'"':
+					out += '"'
+				"\\":
+					out += "\\"
+				"/":
+					out += "/"
+				"b":
+					out += "\b"
+				"f":
+					out += "\f"
+				"n":
+					out += "\n"
+				"r":
+					out += "\r"
+				"t":
+					out += "\t"
+				_:
+					out += esc
+			i += 2
+			continue
+		if ch == '"':
+			break
+		out += ch
+		i += 1
+	return out
+
+
+func _extract_queue_fields_from_text(text: String) -> Dictionary:
+	# Déséchappe d'abord : les payloads RPC arrivent souvent en JSON échappé
+	# (ex. \"players\":2), sinon les regex ne matchent rien.
+	var t := text.replace('\\"', '"').replace("\\\\", "\\")
+	var out := {"status": "waiting", "players": 1, "max_players": 8, "seconds_left": 60}
+	if t.find("\"status\":\"matched\"") >= 0:
+		out["status"] = "matched"
+	elif t.find("\"status\":\"left\"") >= 0:
+		out["status"] = "left"
+	else:
+		out["status"] = "waiting"
+	for key in ["players", "max_players", "seconds_left"]:
+		var val := _extract_json_int_field(t, key)
+		if val >= 0:
+			out[key] = val
+	var match_re := RegEx.new()
+	if match_re.compile("\"match_id\"\\s*:\\s*\"([^\"]*)\"") == OK:
+		var mm := match_re.search(t)
+		if mm:
+			out["match_id"] = mm.get_string(1)
+	var ws_re := RegEx.new()
+	if ws_re.compile("\"game_ws_url\"\\s*:\\s*\"([^\"]*)\"") == OK:
+		var wm := ws_re.search(t)
+		if wm:
+			out["game_ws_url"] = wm.get_string(1)
+	return out
+
+
+func _extract_json_int_field(text: String, field: String) -> int:
+	var re := RegEx.new()
+	if re.compile('"' + field + '"\\s*:\\s*(\\d+)') != OK:
+		return -1
+	var pos := 0
+	while true:
+		var m := re.search(text, pos)
+		if m == null:
+			return -1
+		var start := m.get_start()
+		if start > 0 and text[start - 1] == "_":
+			pos = m.get_end()
+			continue
+		return int(m.get_string(1))
+	return -1
 
 
 func _is_benign_rpc(rpc_id: String) -> bool:
@@ -658,38 +943,59 @@ func _is_benign_rpc(rpc_id: String) -> bool:
 	]
 
 
-func _handle_rpc_response(rpc_id: String, code: int, parsed, raw_text: String) -> void:
+func _rpc_warn_once(key: String, message: String) -> void:
+	var now := Time.get_ticks_msec()
+	var last := int(_rpc_warn_last.get(key, 0))
+	if now - last < 5000:
+		return
+	_rpc_warn_last[key] = now
+	push_warning(message)
+
+
+func _handle_rpc_response(rpc_id: String, code: int, payload: Dictionary, raw_text: String) -> void:
 	if rpc_id == "leave_queue":
 		_leave_queue_pending = false
 
 	if code != 200:
-		var detail := _format_nakama_error(parsed, raw_text)
+		var detail := _format_nakama_error(null, raw_text)
 		if not _is_benign_rpc(rpc_id):
-			match_failed.emit("RPC %s (%s): %s" % [rpc_id, str(code), detail])
+			match_failed.emit(
+				"RPC " + rpc_id + " (" + str(code) + "): " + detail
+			)
 		return
 
-	var payload: Variant = null
-	if typeof(parsed) == TYPE_DICTIONARY:
-		if parsed.has("payload"):
-			payload = _decode_nakama_rpc_payload(parsed)
-		else:
-			payload = parsed
-	if payload == null or typeof(payload) != TYPE_DICTIONARY:
-		payload = _decode_nakama_rpc_payload_from_text(raw_text)
-
-	if typeof(payload) != TYPE_DICTIONARY:
-		if _is_benign_rpc(rpc_id):
+	if payload.is_empty():
+		if rpc_id == "join_queue" or rpc_id == "queue_status":
+			if _looks_like_queue_rpc_text(raw_text):
+				payload = _extract_queue_fields_from_text(raw_text)
+			else:
+				payload = {"status": "waiting", "players": 1, "max_players": 8, "seconds_left": 60}
+		elif _is_benign_rpc(rpc_id):
 			return
-		var preview := raw_text.substr(0, mini(160, raw_text.length())).strip_edges()
-		match_failed.emit(
-			"Réponse RPC invalide (%s). Aperçu : %s" % [rpc_id, preview]
-		)
-		return
+		else:
+			var preview := raw_text.substr(0, mini(160, raw_text.length())).strip_edges()
+			_rpc_warn_once(
+				"rpc_" + rpc_id,
+				"[NetworkSession] RPC "
+				+ rpc_id
+				+ " illisible (HTTP "
+				+ str(code)
+				+ "): "
+				+ preview
+			)
+			match_failed.emit(
+				"Réponse RPC invalide (" + rpc_id + "). Aperçu : " + preview
+			)
+			return
 
 	if rpc_id == "leave_queue" or rpc_id == "ping":
 		return
 
 	if rpc_id == "join_queue" or rpc_id == "queue_status":
+		if rpc_id == "join_queue":
+			_awaiting_join_ack = false
+			if not payload.is_empty():
+				_in_queue = true
 		_apply_queue_payload(payload)
 	elif rpc_id == "get_player_profile":
 		_apply_player_profile_payload(payload)
@@ -699,17 +1005,23 @@ func _handle_rpc_response(rpc_id: String, code: int, parsed, raw_text: String) -
 		request_player_profile()
 		request_leaderboard()
 	elif rpc_id == "set_username":
-		if typeof(payload) == TYPE_DICTIONARY:
-			if str(payload.get("status", "")) == "ok":
-				var synced := str(payload.get("username", "")).strip_edges()
-				if _is_human_username(synced):
-					account_username = synced
-					_session_username_override = synced
-			else:
-				push_warning(
-					"[NetworkSession] set_username: %s"
-					% str(payload.get("message", "unknown"))
-				)
+		if payload.is_empty():
+			return
+		if str(payload.get("status", "")) == "ok":
+			var synced := str(payload.get("username", "")).strip_edges()
+			if _is_human_username(synced):
+				account_username = synced
+				_session_username_override = synced
+				var creds := _read_saved_credentials()
+				if account_email != "" and creds.has("password"):
+					_save_credentials(account_email, str(creds.get("password", "")), synced)
+			return
+		var err_msg := str(payload.get("message", "")).strip_edges()
+		if err_msg == "":
+			return
+		if err_msg == "invalid_username" and _is_human_username(_session_username_override):
+			return
+		push_warning("[NetworkSession] set_username: " + err_msg)
 
 
 func _apply_player_profile_payload(payload: Variant) -> void:
@@ -739,9 +1051,17 @@ func _apply_leaderboard_payload(payload: Variant) -> void:
 
 func _apply_queue_payload(payload: Dictionary) -> void:
 	var status := str(payload.get("status", "waiting"))
+	if status == "wait":
+		status = "waiting"
 	var players := int(payload.get("players", 0))
 	var max_p := int(payload.get("max_players", 8))
 	var seconds := int(payload.get("seconds_left", 60))
+	# Évite 0/8 : queue_status peut arriver avant que join_queue ait fini côté serveur.
+	if status == "waiting" and players <= 0 and (_in_queue or _awaiting_join_ack):
+		if _in_queue and not _awaiting_join_ack:
+			_awaiting_join_ack = true
+			_rpc("join_queue")
+		players = 1
 	queue_updated.emit(players, max_p, seconds)
 
 	if status == "matched" and players >= MIN_PLAYERS_TO_START:
@@ -1088,12 +1408,15 @@ func _handle_error(msg: String) -> void:
 		match_failed.emit(msg)
 	elif is_authenticated:
 		# Ne pas déconnecter l'utilisateur pour une erreur HTTP secondaire (ex. leave_queue).
-		push_warning("[NetworkSession] %s" % msg)
+		push_warning("[NetworkSession] " + msg)
 	else:
 		auth_failed.emit(msg)
 
 
 func _process(_delta: float) -> void:
+	# Export Web : récupère la réponse fetch() en cours (asynchrone).
+	if _web_pending_id != "":
+		_poll_web_request()
 	if _waiting_map_after_connect:
 		_map_wait_elapsed += _delta
 		if _map_wait_elapsed >= MAP_WAIT_TIMEOUT:
@@ -1101,12 +1424,12 @@ func _process(_delta: float) -> void:
 			game_connection_failed.emit(
 				"La map n'a pas démarré. Ouvre un 2e onglet (Multijoueur) ou vérifie le serveur jeu (port 9080)."
 			)
-	if not _in_queue or not is_authenticated or _match_handoff_started:
+	if not _in_queue or not is_authenticated or _match_handoff_started or _awaiting_join_ack:
 		return
 	if _http_busy:
 		return
 	_last_queue_poll += _delta
-	if _last_queue_poll < 1.0:
+	if _last_queue_poll < 2.0:
 		return
 	_last_queue_poll = 0.0
 	_rpc("queue_status")
