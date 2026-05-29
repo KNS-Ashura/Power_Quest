@@ -35,7 +35,7 @@ static func cast_spell(owner: Node) -> bool:
 	requete.collide_with_bodies = true
 
 	var resultats: Array = owner.get_world_2d().direct_space_state.intersect_shape(requete)
-	var groupe := "soldiers" if owner.team == owner.Owner.PLAYER else "enemies"
+	var groupe := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
 	var au_moins_un_effet: bool = false
 	var cibles_sync: Array = []
 
@@ -224,7 +224,12 @@ static func couleur_unite(owner: Node) -> Color:
 		return Color(1.0, 0.95, 0.25)
 	if owner.anti_armor_sort_actif:
 		return Color(1.0, 0.45, 0.85)
-	if owner.team == owner.Owner.ENEMY:
+	# Couleurs RELATIVES au spectateur local : gris = neutre, rouge = ennemi joueur,
+	# blanc = ses propres troupes (jamais en rouge sur son propre écran).
+	var t: int = int(owner.team)
+	if MapSession.is_neutral_team(t):
+		return Color(0.6, 0.6, 0.6)
+	if MapSession.is_hostile_team(t):
 		return Color(1.0, 0.2, 0.2)
 	return Color.WHITE
 

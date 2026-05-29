@@ -5,7 +5,13 @@ extends Node
 signal setup_complete
 
 const TEAM_NEUTRAL := 2
-const NEUTRAL_SITES := 6
+
+
+## Convertit un slot (0..N-1) en ID d'équipe en évitant l'ID neutre (2),
+## pour supporter jusqu'à 8 joueurs sans collision avec le neutre.
+## slots 0,1,2,3,4,5,6,7 -> équipes 0,1,3,4,5,6,7,8
+func _slot_to_team(slot: int) -> int:
+	return slot if slot < TEAM_NEUTRAL else slot + 1
 
 
 func is_game_server() -> bool:
@@ -52,76 +58,75 @@ func _server_setup() -> void:
 
 	_apply_camp_assignments(paths, teams)
 	print(
-		"[OnlineMatch] %d joueurs, %d sites (%d neutres, ≥1 site/joueur)."
+		"[OnlineMatch] %d joueurs, %d sites (%d neutres, 2 sites/joueur)."
 		% [player_count, paths.size(), neutral_count]
 	)
 
 	for i in range(player_count):
 		var peer_id: int = int(peers[i])
-		OnlineGameSync.register_peer_team(peer_id, i)
-		rpc_match_player_setup.rpc_id(peer_id, i, player_count, paths, teams, team_names)
+		var team_id: int = _slot_to_team(i)
+		OnlineGameSync.register_peer_team(peer_id, team_id)
+		rpc_match_player_setup.rpc_id(peer_id, team_id, player_count, paths, teams, team_names)
 
 	MapSession.online_camps_ready = true
 	setup_complete.emit()
 
 
-## 6 sites neutres (camps ou ports) avec gardien ; le reste réparti entre les joueurs.
-## Chaque joueur reçoit au moins un site ; les sites restants sont assignés aléatoirement.
+## Chaque joueur démarre avec EXACTEMENT 2 sites : au moins 1 camp normal
+## + un 2e site (camp OU port). Tous les autres sites restent NEUTRES (avec gardien).
 func _distribute_camps_among_players(camps: Array, player_count: int) -> Dictionary:
 	var assignments: Dictionary = {}
-	var total: int = camps.size()
-	var neutral_count: int = NEUTRAL_SITES
-	if total < player_count + neutral_count:
-		neutral_count = maxi(0, total - player_count)
-		push_warning(
-			"[OnlineMatch] Peu de sites (%d) pour %d joueurs + %d neutres — neutres réduits à %d."
-			% [total, player_count, NEUTRAL_SITES, neutral_count]
-		)
-
-	var playable_count: int = total - neutral_count
-	var shuffled: Array = camps.duplicate()
-	shuffled.shuffle()
-
-	var playable_sites: Array = shuffled.slice(0, playable_count)
-	var neutral_sites: Array = shuffled.slice(playable_count, total)
-
-	for site in neutral_sites:
-		assignments[site] = TEAM_NEUTRAL
-
-	if playable_sites.is_empty() or player_count <= 0:
+	# Tout neutre par défaut.
+	for c in camps:
+		assignments[c] = TEAM_NEUTRAL
+	if player_count <= 0:
 		return assignments
 
-	var guaranteed: int = mini(player_count, playable_sites.size())
-	for i in range(guaranteed):
-		assignments[playable_sites[i]] = i
+	# Sépare les camps normaux des ports.
+	var regular: Array = []
+	var ports: Array = []
+	for c in camps:
+		if c.has_method("is_port") and c.is_port():
+			ports.append(c)
+		else:
+			regular.append(c)
+	regular.shuffle()
+	ports.shuffle()
 
-	var extras: Array = []
-	if playable_sites.size() > guaranteed:
-		extras = playable_sites.slice(guaranteed, playable_sites.size())
-	extras.shuffle()
-
-	var recipient_slots: Array = []
+	# 1er site garanti par joueur : un CAMP normal (repli sur port si trop peu de camps).
+	var reg_idx: int = 0
+	var port_idx: int = 0
 	for slot in range(player_count):
-		recipient_slots.append(slot)
-	while recipient_slots.size() < extras.size():
-		var batch: Array = range(player_count)
-		batch.shuffle()
-		recipient_slots.append_array(batch)
-	recipient_slots.shuffle()
-	recipient_slots = recipient_slots.slice(0, extras.size())
+		var team_id: int = _slot_to_team(slot)
+		if reg_idx < regular.size():
+			assignments[regular[reg_idx]] = team_id
+			reg_idx += 1
+		elif port_idx < ports.size():
+			assignments[ports[port_idx]] = team_id
+			port_idx += 1
 
-	for j in range(extras.size()):
-		assignments[extras[j]] = int(recipient_slots[j])
+	# 2e site par joueur : un site restant au hasard (camp ou port).
+	var pool: Array = []
+	pool.append_array(regular.slice(reg_idx, regular.size()))
+	pool.append_array(ports.slice(port_idx, ports.size()))
+	pool.shuffle()
+	var pool_idx: int = 0
+	for slot in range(player_count):
+		if pool_idx < pool.size():
+			assignments[pool[pool_idx]] = _slot_to_team(slot)
+			pool_idx += 1
 
 	return assignments
 
 
+## Noms d'équipe indexés par ID d'équipe (pas par slot), car les IDs sautent le neutre.
 func _build_team_display_names(peers: Array, player_count: int) -> PackedStringArray:
+	var max_team: int = _slot_to_team(player_count - 1) if player_count > 0 else 0
 	var names := PackedStringArray()
-	names.resize(player_count)
+	names.resize(max_team + 1)
 	for i in range(player_count):
 		var peer_id: int = int(peers[i])
-		names[i] = NetworkSession.get_peer_display_name(peer_id)
+		names[_slot_to_team(i)] = NetworkSession.get_peer_display_name(peer_id)
 	return names
 
 

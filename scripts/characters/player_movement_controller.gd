@@ -29,16 +29,19 @@ static func configurer_mouvement_et_collisions(owner: Node) -> void:
 
 
 static func appliquer_calques_collision_equipe(owner: Node) -> void:
-	match owner.team:
-		owner.Owner.PLAYER:
-			owner.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT
-			owner.collision_mask = owner.COLLISION_LAYER_WORLD | owner.COLLISION_LAYER_ENEMY_UNIT
-		owner.Owner.ENEMY:
-			owner.collision_layer = owner.COLLISION_LAYER_ENEMY_UNIT
-			owner.collision_mask = owner.COLLISION_LAYER_WORLD | owner.COLLISION_LAYER_PLAYER_UNIT
-		_:
-			owner.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT | owner.COLLISION_LAYER_ENEMY_UNIT
-			owner.collision_mask = owner.COLLISION_LAYER_WORLD
+	# Relatif au spectateur local (supporte 2 à 8 joueurs) :
+	#  - neutre  : détecté par tous, sans poussée physique (comportement d'origine)
+	#  - mes unités : calque PLAYER
+	#  - tout autre joueur : calque ENEMY
+	if MapSession.is_neutral_team(int(owner.team)):
+		owner.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT | owner.COLLISION_LAYER_ENEMY_UNIT
+		owner.collision_mask = owner.COLLISION_LAYER_WORLD
+	elif MapSession.is_local_team(int(owner.team)):
+		owner.collision_layer = owner.COLLISION_LAYER_PLAYER_UNIT
+		owner.collision_mask = owner.COLLISION_LAYER_WORLD | owner.COLLISION_LAYER_ENEMY_UNIT
+	else:
+		owner.collision_layer = owner.COLLISION_LAYER_ENEMY_UNIT
+		owner.collision_mask = owner.COLLISION_LAYER_WORLD | owner.COLLISION_LAYER_PLAYER_UNIT
 
 
 static func configurer_zone_detection(owner: Node) -> void:
