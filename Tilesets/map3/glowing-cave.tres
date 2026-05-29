@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" format=3 uid="uid://bldrflt8wdkr2"]
+[gd_resource type="TileSet" format=3 uid="uid://cvhhcco1y5s6y"]
 
 [ext_resource type="Texture2D" uid="uid://bnmdwt00jr3f3" path="res://assets/tilesets/Cave/Glowing_cave_objects.png" id="1_r3wj6"]
 [ext_resource type="Texture2D" uid="uid://s1puoik66i8o" path="res://assets/tilesets/Cave/Details.png" id="1_wxyku"]
