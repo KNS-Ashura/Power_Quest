@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://byibtqfv5t0t7"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_merxe"]
+[ext_resource type="Script" uid="uid://jn2pcnbxs4hi" path="res://scripts/camp/port_nv1.gd" id="1_merxe"]
 [ext_resource type="Texture2D" uid="uid://bsc7j6slijx88" path="res://assets/objects/map3/magic_circle_dark_shadow.png" id="2_h4j60"]
 [ext_resource type="Texture2D" uid="uid://b82go0uhwske8" path="res://assets/objects/map3/Flower-crystal3.png" id="2_iw3kl"]
 [ext_resource type="Texture2D" uid="uid://t4cc0xhmf4id" path="res://assets/objects/map3/Blue_crystal3.png" id="2_uok4t"]

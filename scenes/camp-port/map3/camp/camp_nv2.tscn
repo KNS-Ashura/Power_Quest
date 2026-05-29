@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://meotj575muar"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_p5h7a"]
+[ext_resource type="Script" uid="uid://dfrvq33wykm6h" path="res://scripts/camp/camp_nv2.gd" id="1_p5h7a"]
 [ext_resource type="Texture2D" uid="uid://dnh36s6aebhmw" path="res://assets/objects/map3/Tower.png" id="2_0abk0"]
 [ext_resource type="Texture2D" uid="uid://cxjron0bi5tgc" path="res://assets/objects/map3/Pentacle4.png" id="3_p5h7a"]
 [ext_resource type="Texture2D" uid="uid://bi2x33h2igtly" path="res://assets/objects/map3/Plant3_2.png" id="4_0abk0"]

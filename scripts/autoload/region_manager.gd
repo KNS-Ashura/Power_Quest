@@ -13,8 +13,12 @@ func init_match() -> void:
 	_sites_by_region.clear()
 	_control.clear()
 
-	var defs: Dictionary = _RegionDefs.regions_for_map(MapSession.active_map_index)
+	var map_index: int = MapSession.active_map_index
+	var defs: Dictionary = _RegionDefs.regions_for_map(map_index)
 	if defs.is_empty():
+		if _RegionDefs.uses_auto_regions(map_index):
+			_build_auto_regions_by_position()
+			_recalculate_all()
 		return
 
 	var by_name: Dictionary = {}
@@ -60,10 +64,36 @@ func is_region_controlled(region_id: int, team: int) -> bool:
 
 
 func region_name(region_id: int) -> String:
-	var defs: Dictionary = _RegionDefs.regions_for_map(MapSession.active_map_index)
+	var map_index: int = MapSession.active_map_index
+	var defs: Dictionary = _RegionDefs.regions_for_map(map_index)
 	if defs.has(region_id):
 		return defs[region_id].get("name", "Region %s" % region_id)
+	if _RegionDefs.uses_auto_regions(map_index):
+		return _RegionDefs.auto_region_display_name(region_id)
 	return ""
+
+
+func _build_auto_regions_by_position() -> void:
+	var sites: Array = get_tree().get_nodes_in_group("camps")
+	if sites.is_empty():
+		return
+
+	sites.sort_custom(func(a: Node, b: Node) -> bool:
+		return a.global_position.y < b.global_position.y
+	)
+
+	var count: int = sites.size()
+	var third: int = maxi(1, count / 3)
+	var two_thirds: int = mini(count, third * 2)
+
+	_sites_by_region[1] = sites.slice(0, third)
+	_sites_by_region[2] = sites.slice(third, two_thirds)
+	_sites_by_region[3] = sites.slice(two_thirds, count)
+
+	print(
+		"RegionManager: auto regions for map %d (%d sites, %d/%d/%d)."
+		% [MapSession.active_map_index, count, third, two_thirds - third, count - two_thirds]
+	)
 
 
 func _recalculate_all() -> void:

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://wjt65oitx3b5"]
 
-[ext_resource type="Script" uid="uid://bfuxd1e3caxdo" path="res://scripts/camp/camp_nv1.gd" id="1_7p8ii"]
+[ext_resource type="Script" uid="uid://c05l8g830n8b" path="res://scripts/camp/camp_nv3.gd" id="1_7p8ii"]
 [ext_resource type="Texture2D" uid="uid://3m4qctyg3x78" path="res://assets/objects/map3/Castle.png" id="2_i4su2"]
 [ext_resource type="Texture2D" uid="uid://bs8ei7wqfxvwi" path="res://assets/tilesets/Cave/Totem_animation.png" id="2_ngavp"]
 [ext_resource type="Texture2D" uid="uid://dchvra17elvco" path="res://assets/objects/map3/Plant3_1.png" id="3_761jw"]

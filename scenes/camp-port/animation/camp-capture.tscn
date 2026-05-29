@@ -1,21 +1,101 @@
 [gd_scene format=3 uid="uid://g44ksmerc7aj"]
 
-[ext_resource type="Script" uid="uid://c6ofhuab4uu83" path="res://scripts/combat/anti_armor_spell_projectile.gd" id="1_06pnd"]
+[ext_resource type="Script" uid="uid://bvx64v8ln7d87" path="res://scripts/camp/camp_site_vfx.gd" id="1_vfx"]
+[ext_resource type="Texture2D" uid="uid://cwutqyph7iy1x" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull1.png" id="2_pi1ve"]
+[ext_resource type="Texture2D" uid="uid://bqaa8vc2gp7y3" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull2.png" id="3_bb0uq"]
+[ext_resource type="Texture2D" uid="uid://bgmpkid0df6ou" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull3.png" id="4_sunbf"]
+[ext_resource type="Texture2D" uid="uid://brrwnlyj8xdhg" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull4.png" id="5_iae7w"]
+[ext_resource type="Texture2D" uid="uid://buhtewrmi7uui" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull5.png" id="6_q180w"]
+[ext_resource type="Texture2D" uid="uid://b4qhjqk2q3pmt" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull6.png" id="7_l14kq"]
+[ext_resource type="Texture2D" uid="uid://bkiowqb3lokf8" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull7.png" id="8_fvs1m"]
+[ext_resource type="Texture2D" uid="uid://ksaiv7kmnnb1" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull8.png" id="9_708yq"]
+[ext_resource type="Texture2D" uid="uid://nos5xktcgwft" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull9.png" id="10_osplb"]
+[ext_resource type="Texture2D" uid="uid://dbvbhh1l6c1os" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull10.png" id="11_j7pl4"]
+[ext_resource type="Texture2D" uid="uid://bhn7tg5l6rrt1" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull11.png" id="12_tayuf"]
+[ext_resource type="Texture2D" uid="uid://7blu8vpcjdbb" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull12.png" id="13_rd6pj"]
+[ext_resource type="Texture2D" uid="uid://gg5jwjjlfj2k" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull13.png" id="14_ry657"]
+[ext_resource type="Texture2D" uid="uid://dudtkfsf3fyh8" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull14.png" id="15_amd8d"]
+[ext_resource type="Texture2D" uid="uid://b1c378se0cnac" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull15.png" id="16_xr6ro"]
+[ext_resource type="Texture2D" uid="uid://b2wc1rtgsv5cg" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull16.png" id="17_xh7si"]
+[ext_resource type="Texture2D" uid="uid://cb04hsb50vmmv" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull17.png" id="18_cyevc"]
+[ext_resource type="Texture2D" uid="uid://c16rjev744rjq" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull18.png" id="19_2ryhp"]
+[ext_resource type="Texture2D" uid="uid://pgk0roc7ea5k" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull19.png" id="20_46mvk"]
+[ext_resource type="Texture2D" uid="uid://dcwl8mi43qpdu" path="res://assets/objects/camps-anim/Smoke_scull/Smoke_scull20.png" id="21_o8m8h"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
 animations = [{
-"frames": [],
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_pi1ve")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_bb0uq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_sunbf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_iae7w")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_q180w")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_l14kq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_fvs1m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_708yq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_osplb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_j7pl4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_tayuf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_rd6pj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_ry657")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_amd8d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_xr6ro")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_xh7si")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_cyevc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_2ryhp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_46mvk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_o8m8h")
+}],
 "loop": true,
 "name": &"capture",
-"speed": 5.0
+"speed": 11.0
 }]
 
-[node name="projectile" type="CharacterBody2D" unique_id=561468748]
-collision_layer = 0
-collision_mask = 0
-script = ExtResource("1_06pnd")
+[node name="CampCaptureVfx" type="Node2D" unique_id=1327143804]
+script = ExtResource("1_vfx")
+animation_name = "capture"
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=892673722]
-rotation = 0.0038198903
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=822616605]
+position = Vector2(0.9999962, -1)
+scale = Vector2(2.8384376, 2.8370311)
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"capture"
