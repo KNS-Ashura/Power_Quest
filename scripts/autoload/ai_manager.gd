@@ -127,6 +127,9 @@ func init_match() -> void:
 
 
 func _on_global_cycle() -> void:
+	# Aucune IA en multijoueur : tout est contrôlé par des joueurs humains.
+	if MapSession.is_online_match:
+		return
 	ai_gold += GameManager.cycle_gold_bonus
 	for camp in _get_owned_camps():
 		var region_bonus: int = RegionManager.bonus_income_for_site(camp)
@@ -134,6 +137,9 @@ func _on_global_cycle() -> void:
 
 
 func _on_think() -> void:
+	# Aucune IA en multijoueur.
+	if MapSession.is_online_match:
+		return
 	if GameManager.match_over:
 		return
 	if current_difficulty != MapSession.get_ai_difficulty():

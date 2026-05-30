@@ -10,13 +10,18 @@ var index_ia_actuel: int = 0
 var liste_des_cartes: Array[Dictionary] = [
 	{
 		"nom": "Undead Land",
-		"image_map": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres"),
+		"image_map": preload("res://assets/menu/map-img/map1.png"),
 		"map_index": 1
 	},
 	{
 		"nom": "Desert Land",
-		"image_map": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres"),
+		"image_map": preload("res://assets/menu/map-img/map2.png"),
 		"map_index": 2
+	},
+	{
+		"nom": "Glowing Cave",
+		"image_map": preload("res://assets/objects/map3/Castle.png"),
+		"map_index": 3
 	}
 ]
 var index_carte_actuelle: int = 0

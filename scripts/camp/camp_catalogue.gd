@@ -48,27 +48,37 @@ const SCENES_PORT_GUARDIAN = {
 
 const CAMP_VISUAL_PATHS_BY_VARIANT = {
 	"map1": {
-		1: "res://scenes/camp/map1/camp_nv1.tscn",
-		2: "res://scenes/camp/map1/camp_nv2.tscn",
-		3: "res://scenes/camp/map1/camp_nv3.tscn"
+		1: "res://scenes/camp-port/map1/camp/camp_nv1.tscn",
+		2: "res://scenes/camp-port/map1/camp/camp_nv2.tscn",
+		3: "res://scenes/camp-port/map1/camp/camp_nv3.tscn"
 	},
 	"map2": {
-		1: "res://scenes/camp/map2/camp_nv1_map2.tscn",
-		2: "res://scenes/camp/map2/camp_nv2_map2.tscn",
-		3: "res://scenes/camp/map2/camp_nv3_map2.tscn"
+		1: "res://scenes/camp-port/map2/camp/camp_nv1_map2.tscn",
+		2: "res://scenes/camp-port/map2/camp/camp_nv2_map2.tscn",
+		3: "res://scenes/camp-port/map2/camp/camp_nv3_map2.tscn"
+	},
+	"map3": {
+		1: "res://scenes/camp-port/map3/camp/camp_nv1.tscn",
+		2: "res://scenes/camp-port/map3/camp/camp_nv2.tscn",
+		3: "res://scenes/camp-port/map3/camp/camp_nv3.tscn"
 	}
 }
 
 const PORT_VISUAL_PATHS_BY_VARIANT = {
 	"map1": {
-		1: "res://scenes/camp/map1/port/port_nv1.tscn",
-		2: "res://scenes/camp/map1/port/port_nv2.tscn",
-		3: "res://scenes/camp/map1/port/port_nv3.tscn"
+		1: "res://scenes/camp-port/map1/port/port_nv1.tscn",
+		2: "res://scenes/camp-port/map1/port/port_nv2.tscn",
+		3: "res://scenes/camp-port/map1/port/port_nv3.tscn"
 	},
 	"map2": {
-		1: "res://scenes/camp/map2/port2/port_nv1.tscn",
-		2: "res://scenes/camp/map2/port2/port_nv2.tscn",
-		3: "res://scenes/camp/map2/port2/port_nv3.tscn"
+		1: "res://scenes/camp-port/map2/port2/port_nv1.tscn",
+		2: "res://scenes/camp-port/map2/port2/port_nv2.tscn",
+		3: "res://scenes/camp-port/map2/port2/port_nv3.tscn"
+	},
+	"map3": {
+		1: "res://scenes/camp-port/map3/port/port_nv1.tscn",
+		2: "res://scenes/camp-port/map3/port/port_nv2.tscn",
+		3: "res://scenes/camp-port/map3/port/port_nv3.tscn"
 	}
 }
 

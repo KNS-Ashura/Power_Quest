@@ -547,12 +547,13 @@ func take_damage(montant : int, auteur = null, auteur_team : int = -1):
 func die(tueur : Node2D = null, tueur_team : int = -1):
 	if is_dying:
 		return
+	# Le propriétaire est autoritaire sur la mort de SON unité : il la signale
+	# TOUJOURS (même morte par dégâts réseau) pour retirer les proxies partout.
 	if (
 		MapSession.is_online_match
 		and OnlineGameSync.is_online_active()
 		and MapSession.is_local_team(team)
 		and net_sync_id >= 0
-		and not _network_damage
 	):
 		OnlineGameSync.report_unit_death(net_sync_id)
 
@@ -831,6 +832,14 @@ func apply_network_state(pos: Vector2, vel: Vector2, hp: int) -> void:
 
 func force_network_death() -> void:
 	PlayerNetworkControllerRef.force_network_death(self)
+
+
+func apply_heal_network_remote(amount: int, caster_sync_id: int) -> void:
+	PlayerNetworkControllerRef.apply_heal_network_remote(self, amount, caster_sync_id)
+
+
+func apply_spell_network_remote(spell_type: int, target_sync_ids: Array, params: Dictionary) -> void:
+	PlayerSpellControllerRef.apply_spell_network_remote(self, spell_type, target_sync_ids, params)
 
 
 func _physics_process_network_proxy(delta: float) -> void:

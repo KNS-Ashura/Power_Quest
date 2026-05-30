@@ -1,6 +1,6 @@
 extends Node
 
-## Active map for this session (1 = Undead Land, 2 = Desert Land, 3 = TBD).
+## Active map for this session (1 = Undead Land, 2 = Desert Land, 3 = Glowing Cave).
 var active_map_index: int = 1
 ## AI difficulty for Solo vs IA (0 = simple, 1 = normal, 2 = hard).
 var active_ai_difficulty: int = 1
@@ -17,7 +17,7 @@ const MAP_SCENE_PATHS: Dictionary = {
 	3: "res://scenes/map/Map3.scn",
 }
 
-const ONLINE_MAP_POOL: Array[int] = [1, 2]
+const ONLINE_MAP_POOL: Array[int] = [1, 2, 3]
 
 const GAME_SHELL_SCENE := "res://scenes/jeu/Main.scn"
 

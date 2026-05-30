@@ -1,6 +1,8 @@
 extends StaticBody2D
 
 const CampCatalogue = preload("res://scripts/camp/camp_catalogue.gd")
+const SCENE_VFX_CAPTURE := preload("res://scenes/camp-port/animation/camp-capture.tscn")
+const SCENE_VFX_UPGRADE := preload("res://scenes/camp-port/animation/camp-upgrade.tscn")
 const BUILDING_CLICK_LAYER := 8
 
 enum Owner { PLAYER, ENEMY, NEUTRAL }
@@ -38,6 +40,7 @@ signal site_captured(new_team)
 func _ready() -> void:
 	collision_layer = BUILDING_CLICK_LAYER
 	collision_mask = 0
+	_infer_camp_level_from_scene_file()
 	_detect_site_type()
 	_detect_visual_variant()
 	_apply_level_config()
@@ -83,9 +86,48 @@ const OVERLAY_VISUAL_NODE_NAMES: Array[String] = [
 	"AnimatedSprite2D2", "AnimatedSprite2D3", "Sprite2D2", "Sprite2D3"
 ]
 
+func _infer_camp_level_from_scene_file() -> void:
+	var path := scene_file_path.to_lower()
+	if path.is_empty():
+		return
+	if path.contains("camp_nv3") or path.contains("port_nv3"):
+		camp_level = 3
+	elif path.contains("camp_nv2") or path.contains("port_nv2"):
+		camp_level = 2
+	elif path.contains("camp_nv1") or path.contains("port_nv1"):
+		camp_level = 1
+
+
 func _detect_visual_variant() -> void:
-	if MapSession.active_map_index == 2:
+	match MapSession.active_map_index:
+		2:
+			camp_visual_variant = "map2"
+		3:
+			camp_visual_variant = "map3"
+			use_level_visual_overlays = false
+		_:
+			camp_visual_variant = "map1"
+
+	var path := scene_file_path.to_lower()
+	if path.contains("camp-port/map1") or path.contains("/map1/"):
+		camp_visual_variant = "map1"
+	elif path.contains("camp-port/map2") or path.contains("/map2/"):
 		camp_visual_variant = "map2"
+	elif path.contains("/map3/") or path.contains("camp-port/map3"):
+		camp_visual_variant = "map3"
+		use_level_visual_overlays = false
+
+
+func _play_site_vfx(packed: PackedScene) -> void:
+	if packed == null:
+		return
+	var parent_node := get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var fx := packed.instantiate()
+	parent_node.add_child(fx)
+	if fx is Node2D:
+		(fx as Node2D).global_position = global_position
 
 
 func is_port() -> bool:
@@ -153,22 +195,23 @@ func _has_static_sprite_visuals() -> bool:
 
 
 func _apply_full_visual_from_template() -> void:
-	for child in get_children():
-		if child is Sprite2D or child is AnimatedSprite2D:
-			remove_child(child)
-			child.free()
-
 	var paths_by_level: Dictionary = CampCatalogue.visual_paths(camp_visual_variant, is_port())
 	var template_path: String = paths_by_level.get(camp_level, paths_by_level.get(1, ""))
 	if template_path.is_empty():
 		return
 	var template_res = load(template_path)
 	if not (template_res is PackedScene):
+		push_warning("Camp visual template missing: %s" % template_path)
 		return
 
 	var template_root = (template_res as PackedScene).instantiate()
 	if not is_instance_valid(template_root):
 		return
+
+	for child in get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			remove_child(child)
+			child.free()
 
 	for source_node in template_root.get_children():
 		if not (source_node is Sprite2D or source_node is AnimatedSprite2D):
@@ -451,12 +494,15 @@ func _is_valid_land_point(world_pos: Vector2) -> bool:
 
 
 func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
+	var new_team: int = Owner.NEUTRAL
 	if killer_team != -1 and killer_team != team:
-		_capture_by_team(killer_team)
+		new_team = killer_team
 	elif is_instance_valid(killer) and killer.get("team") != null and killer.team != team:
-		_capture_by_team(killer.team)
-	else:
-		_capture_by_team(Owner.NEUTRAL)
+		new_team = int(killer.team)
+	_capture_by_team(new_team)
+	# Multijoueur : propage la capture (et le respawn du gardien) sur tous les écrans.
+	if MapSession.is_online_match and OnlineGameSync.is_online_active():
+		OnlineGameSync.report_camp_capture(str(get_path()), new_team)
 
 
 func _capture_by_team(new_team: int) -> void:
@@ -472,6 +518,7 @@ func _capture_by_team(new_team: int) -> void:
 
 
 func _notify_capture() -> void:
+	_play_site_vfx(SCENE_VFX_CAPTURE)
 	site_captured.emit(team)
 	RegionManager.notify_site_changed(self)
 
@@ -621,6 +668,7 @@ func upgrade_camp(use_economy: bool = true, owner_required: int = Owner.PLAYER) 
 	_apply_level_config()
 	_refresh_unit_catalog()
 	_apply_level_visuals()
+	_play_site_vfx(SCENE_VFX_UPGRADE)
 	camp_upgradedd.emit(camp_level)
 
 	if production_queue.size() > 0:
