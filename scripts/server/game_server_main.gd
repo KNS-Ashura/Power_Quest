@@ -44,7 +44,9 @@ func _read_port_from_cmdline() -> int:
 
 func _on_peer_connected(peer_id: int) -> void:
 	print("[GameServer] Client connecté: ", peer_id)
-	# Lancement via NetworkSession.rpc_register_for_match (évite double start).
+	_try_start_match()
+	var timer := get_tree().create_timer(6.0)
+	timer.timeout.connect(_try_start_match, CONNECT_ONE_SHOT)
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
@@ -52,8 +54,10 @@ func _on_peer_disconnected(peer_id: int) -> void:
 
 
 func _try_start_match() -> void:
-	# Secours si les clients n'ont pas pu appeler rpc_register_for_match.
 	if _match_started:
+		return
+	if NetworkSession.is_server_match_running():
+		_match_started = true
 		return
 	var count := multiplayer.get_peers().size()
 	if count < MIN_PLAYERS_TO_START:

@@ -120,6 +120,7 @@ texture = ExtResource("1_m70i2")
 19:1/animation_frame_4/duration = 0.1
 19:1/animation_frame_5/duration = 0.1
 19:1/0 = 0
+5:2/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hu6sp"]
 texture = ExtResource("2_cbdxd")

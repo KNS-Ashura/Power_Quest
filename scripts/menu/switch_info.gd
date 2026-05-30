@@ -3,28 +3,28 @@ extends Node2D
 
 var liste_des_cartes = [
 	{
-		"nom": "THE GREEN ISLAND",
+		"nom": "MAP_GREEN_ISLAND",
 		"image_map": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres"),
 		"portrait": preload("res://assets/menu/img-sur-mesure/scene_maps/assets_generale/imgDroite.tres"),
-		"description": "VOILA DU TEXTE ET J'EN REJOUE POUR TESTER, C'EST COOL",
-		"attr1": "CURSED LAND", "attr2": "GLOWING LAND",
-		"attr3": "CAVE LAND", "attr4": "UNDEAD LAND"
+		"description": "MAP_DESC_TEST",
+		"attr1": "MAP_CURSED_LAND", "attr2": "MAP_GLOWING_LAND",
+		"attr3": "MAP_CAVE_LAND", "attr4": "MAP_UNDEAD_LAND"
 	},
 	{
-		"nom": "CHEVALIER TEST",
+		"nom": "MAP_NAME_1",
 		"image_map": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
 		"portrait": preload("res://assets/menu/img-sur-mesure/chevalier.tres"),
-		"description": "Je suis un chevalier super mega stylé",
-		"attr1": "ROCKY AREA", "attr2": "WINTER LAND",
-		"attr3": "SEABED LAND", "attr4": "FLYING ISLAND"
+		"description": "MAP_DESC_TEST",
+		"attr1": "MAP_CURSED_LAND", "attr2": "MAP_GLOWING_LAND",
+		"attr3": "MAP_CAVE_LAND", "attr4": "MAP_UNDEAD_LAND"
 	},
 	{
-		"nom": "FANTOME TEST",
+		"nom": "MAP_NAME_3",
 		"image_map": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
 		"portrait": preload("res://assets/menu/img-sur-mesure/ghost.tres"),
-		"description": "Je suis un fantome super mega stylé",
-		"attr1": "FOREST", "attr2": "DESERT",
-		"attr3": "SWAMP LAND", "attr4": "GLADES LAND"
+		"description": "MAP_DESC_TEST",
+		"attr1": "MAP_CURSED_LAND", "attr2": "MAP_GLOWING_LAND",
+		"attr3": "MAP_CAVE_LAND", "attr4": "MAP_UNDEAD_LAND"
 	}
 ]
 
@@ -40,8 +40,13 @@ var index_carte_actuelle = 0
 @onready var attr3 = %CAVE
 @onready var attr4 = %UNDEAD
 
-func _ready():
+func _ready() -> void:
 	update_display()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		update_display()
 
 
 func update_display():

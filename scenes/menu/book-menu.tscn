@@ -11,10 +11,8 @@
 [ext_resource type="FontFile" uid="uid://dakebd4j7bckm" path="res://assets/menu/fonts/Jersey10-Regular.ttf" id="5_airtt"]
 [ext_resource type="Texture2D" uid="uid://bl2xjuuuhcjy2" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton2.tres" id="5_i17nj"]
 [ext_resource type="Texture2D" uid="uid://whmm0jl4qfnf" path="res://assets/menu/book-ui/PNG/Turning_pages_left.png" id="5_tyuks"]
-[ext_resource type="Texture2D" uid="uid://blsxs0mpjagub" path="res://assets/menu/img-sur-mesure/chevalier.tres" id="6_sgnfi"]
 [ext_resource type="Texture2D" uid="uid://brk8ducw0jydf" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton3.tres" id="7_vkhoe"]
 [ext_resource type="Texture2D" uid="uid://u7sunpk3ig23" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton4.tres" id="8_oedcg"]
-[ext_resource type="Texture2D" uid="uid://drxtqv2viui82" path="res://assets/menu/img-sur-mesure/demon.tres" id="9_0qj5p"]
 [ext_resource type="Texture2D" uid="uid://eaxdf7ja0oja" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton5.tres" id="9_7tbvn"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="11_omw2x"]
 [ext_resource type="Texture2D" uid="uid://num0npuwnhvv" path="res://assets/menu/img-sur-mesure/barre.tres" id="11_vkhoe"]
@@ -291,7 +289,7 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("1_tyuks")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1584117811]
-position = Vector2(349.1667, 452.00003)
+position = Vector2(349.33334, 451.99994)
 scale = Vector2(0.6338889, 0.57666665)
 texture = ExtResource("2_j816d")
 
@@ -324,10 +322,10 @@ sprite_frames = SubResource("SpriteFrames_mgecw")
 [node name="ScrollContainer" type="VBoxContainer" parent="." unique_id=845490020]
 texture_filter = 1
 layout_direction = 3
-offset_left = -258.0
-offset_top = 359.0
-offset_right = -150.0
-offset_bottom = 584.0
+offset_left = -253.33333
+offset_top = 336.0
+offset_right = -145.33333
+offset_bottom = 561.0
 size_flags_horizontal = 3
 mouse_filter = 2
 theme = SubResource("Theme_46enr")
@@ -633,28 +631,6 @@ offset_bottom = 453.0
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("11_vkhoe")
 stretch_mode = 3
-flip_h = true
-
-[node name="Chevalier" type="TextureRect" parent="MenuContent" unique_id=1482354161]
-texture_filter = 1
-layout_mode = 0
-offset_left = 517.0
-offset_top = 377.0
-offset_right = 539.0
-offset_bottom = 404.0
-scale = Vector2(2, 2)
-texture = ExtResource("6_sgnfi")
-
-[node name="Daemon" type="TextureRect" parent="MenuContent" unique_id=611140688]
-texture_filter = 1
-layout_mode = 0
-offset_left = 344.0
-offset_top = 391.0
-offset_right = 362.0
-offset_bottom = 423.0
-scale = Vector2(2, 2)
-texture = ExtResource("9_0qj5p")
-expand_mode = 1
 flip_h = true
 
 [node name="Maps2" parent="." unique_id=551856575 instance=ExtResource("19_kfwy2")]

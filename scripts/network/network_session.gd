@@ -1224,6 +1224,7 @@ func connect_to_game_server(ws_url: String = "") -> void:
 				await get_tree().process_frame
 				await get_tree().process_frame
 				rpc_register_for_match.rpc_id(1, get_display_username())
+				_retry_register_while_waiting()
 				print(
 					"[NetworkSession] WebSocket jeu connecté — enregistrement (peer %d)."
 					% multiplayer.get_unique_id()
@@ -1267,6 +1268,22 @@ func _try_connect_game_ws(url: String) -> String:
 			) % url
 		await get_tree().create_timer(0.1).timeout
 	return "Connexion WebSocket interrompue."
+
+
+func _retry_register_while_waiting() -> void:
+	for attempt in range(4):
+		await get_tree().create_timer(3.0).timeout
+		if not _waiting_map_after_connect:
+			return
+		if _match_peer == null:
+			continue
+		if _match_peer.get_connection_status() != WebSocketMultiplayerPeer.CONNECTION_CONNECTED:
+			continue
+		print(
+			"[NetworkSession] Nouvel enregistrement serveur (tentative %d)."
+			% (attempt + 2)
+		)
+		rpc_register_for_match.rpc_id(1, get_display_username())
 
 
 ## Chaque client annonce sa présence ; le serveur lance la map à 2+ joueurs.
@@ -1364,8 +1381,9 @@ func server_begin_online_match(player_count: int = MIN_PLAYERS_TO_START) -> void
 	MapSession.local_team = 0
 	MapSession.online_player_count = player_count
 
-	# Envoyer aux clients AVANT change_scene (sinon le WebSocket serveur était détruit).
-	for peer_id in multiplayer.get_peers():
+	var peers := multiplayer.get_peers()
+	print("[NetworkSession] Envoi RPC begin_match à %d client(s)." % peers.size())
+	for peer_id in peers:
 		rpc_begin_online_match.rpc_id(peer_id, player_count, map_index)
 	await get_tree().create_timer(0.25).timeout
 
@@ -1379,6 +1397,10 @@ func reset_server_match_state() -> void:
 	_server_registered_peers.clear()
 	clear_peer_display_names()
 	_server_match_started = false
+
+
+func is_server_match_running() -> bool:
+	return _server_match_started
 
 
 ## Appelé par le serveur de jeu quand 2+ clients sont connectés (RPC).

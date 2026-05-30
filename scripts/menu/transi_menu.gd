@@ -1,26 +1,24 @@
 extends TextureButton
 
-@onready var transition_rect = $"../ColorRect" 
+const _MENU_SCENE := "res://scenes/menu/book-menu.tscn"
+const _FADE_DURATION := 1.0
 
-func _on_pressed():
-	# 1. Disparition (Fade Out)
-	var tween = create_tween()
-	tween.tween_property(transition_rect, "modulate:a", 1.0, 2.0)
-	await tween.finished
-	
-	# 2. Chargement de la nouvelle scène
-	var next_scene = load("res://scenes/menu/book-menu.tscn").instantiate()
-	get_tree().root.add_child(next_scene)
-	get_tree().current_scene = next_scene
-	
-	# 3. On donne le rectangle noir au menu et on détruit la victoire
-	transition_rect.reparent(next_scene)
-	owner.queue_free() # La scène de victoire est définitivement supprimée ici !
-	
-	# 4. Apparition (Fade In) sur la nouvelle scène
-	var tween_in = create_tween()
-	tween_in.tween_property(transition_rect, "modulate:a", 0.0, 2.0)
-	await tween_in.finished
-	
-	# 5. Nettoyage du rectangle noir devenu inutile
-	transition_rect.queue_free()
+
+func _on_pressed() -> void:
+	disabled = true
+	MapSession.reset_online_state()
+
+	var fade := get_node_or_null("../ColorRect") as ColorRect
+	if fade != null:
+		fade.top_level = true
+		fade.visible = true
+		fade.global_position = Vector2.ZERO
+		fade.size = get_viewport().get_visible_rect().size
+		fade.modulate.a = 0.0
+		fade.mouse_filter = Control.MOUSE_FILTER_STOP
+		var tween := create_tween()
+		tween.tween_property(fade, "modulate:a", 1.0, _FADE_DURATION)
+		await tween.finished
+
+	GameManager.clear_result_overlay()
+	get_tree().change_scene_to_file(_MENU_SCENE)
