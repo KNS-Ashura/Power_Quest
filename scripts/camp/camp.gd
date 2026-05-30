@@ -3,6 +3,7 @@ extends StaticBody2D
 const CampCatalogue = preload("res://scripts/camp/camp_catalogue.gd")
 const SCENE_VFX_CAPTURE := preload("res://scenes/camp-port/animation/camp-capture.tscn")
 const SCENE_VFX_UPGRADE := preload("res://scenes/camp-port/animation/camp-upgrade.tscn")
+const SCENE_VFX_SPAWN_PATH := "res://scenes/camp-port/animation/spawn-unit.tscn"
 const BUILDING_CLICK_LAYER := 8
 
 enum Owner { PLAYER, ENEMY, NEUTRAL }
@@ -128,6 +129,21 @@ func _play_site_vfx(packed: PackedScene) -> void:
 	parent_node.add_child(fx)
 	if fx is Node2D:
 		(fx as Node2D).global_position = global_position
+
+
+func _play_spawn_vfx(world_position: Vector2) -> void:
+	if not ResourceLoader.exists(SCENE_VFX_SPAWN_PATH):
+		return
+	var packed: PackedScene = load(SCENE_VFX_SPAWN_PATH) as PackedScene
+	if packed == null:
+		return
+	var parent_node := get_parent()
+	if not is_instance_valid(parent_node):
+		return
+	var fx := packed.instantiate()
+	parent_node.add_child(fx)
+	if fx is Node2D:
+		(fx as Node2D).global_position = world_position
 
 
 func is_port() -> bool:
@@ -576,6 +592,7 @@ func _finish_production() -> void:
 		return
 	parent_node.add_child(unit)
 	unit.global_position = spawn_position
+	_play_spawn_vfx(spawn_position)
 	if unit.has_method("_apply_stats_to_unit"):
 		unit._apply_stats_to_unit()
 	if unit.has_method("_configurer_calques_navigation"):
@@ -619,6 +636,7 @@ func spawn_unite_reseau(
 		return null
 	parent_node.add_child(unit)
 	unit.global_position = spawn_position
+	_play_spawn_vfx(spawn_position)
 	if unit.has_method("_apply_stats_to_unit"):
 		unit._apply_stats_to_unit()
 	if unit.has_method("_configurer_calques_navigation"):
@@ -778,3 +796,4 @@ func receive_reinforcements(count: int) -> void:
 			return
 		parent_node.add_child(unit)
 		unit.global_position = spawn_position
+		_play_spawn_vfx(spawn_position)
