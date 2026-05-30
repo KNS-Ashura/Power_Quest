@@ -26,8 +26,8 @@
 [ext_resource type="PackedScene" uid="uid://bxl1ogeltlbvq" path="res://scenes/menu/profil.tscn" id="21_ry8bh"]
 [ext_resource type="PackedScene" uid="uid://ctcktsumn5tr0" path="res://scenes/menu/settings.tscn" id="22_bjixh"]
 [ext_resource type="PackedScene" uid="uid://3gyev7vui3ra" path="res://scenes/menu/solo.tscn" id="23_js3r3"]
-[ext_resource type="PackedScene" uid="uid://8oct1jo1m2wi" path="res://scenes/menu/bestiaire_units.tscn" id="25_units"]
 [ext_resource type="PackedScene" uid="uid://bq8k17c2vur8g" path="res://scenes/menu/connexion.tscn" id="24_unconnect"]
+[ext_resource type="PackedScene" uid="uid://8oct1jo1m2wi" path="res://scenes/menu/bestiaire_units.tscn" id="25_units"]
 [ext_resource type="Texture2D" uid="uid://bqpyevn48enip" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/menu.tres" id="28_tyuks"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sgnfi"]
@@ -327,9 +327,9 @@ sprite_frames = SubResource("SpriteFrames_mgecw")
 [node name="ScrollContainer" type="VBoxContainer" parent="." unique_id=845490020]
 texture_filter = 1
 layout_direction = 3
-offset_left = -253.33333
+offset_left = -254.0
 offset_top = 336.0
-offset_right = -145.33333
+offset_right = -146.0
 offset_bottom = 561.0
 size_flags_horizontal = 3
 mouse_filter = 2

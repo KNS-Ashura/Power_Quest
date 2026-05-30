@@ -6,7 +6,12 @@
 script = ExtResource("1_ot2pa")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=476234077]
-position = Vector2(321, 180)
+position = Vector2(51, 3875)
+limit_left = -2000
+limit_top = -3093
+limit_right = 4278
+limit_bottom = 2990
+limit_smoothed = true
 position_smoothing_enabled = true
 
 [node name="BoiteSelection" type="ColorRect" parent="." unique_id=244269276]
