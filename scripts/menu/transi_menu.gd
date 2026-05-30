@@ -6,7 +6,6 @@ const _FADE_DURATION := 1.0
 
 func _on_pressed() -> void:
 	disabled = true
-	MapSession.reset_online_state()
 
 	var fade := get_node_or_null("../ColorRect") as ColorRect
 	if fade != null:
@@ -20,5 +19,6 @@ func _on_pressed() -> void:
 		tween.tween_property(fade, "modulate:a", 1.0, _FADE_DURATION)
 		await tween.finished
 
-	GameManager.clear_result_overlay()
+	MapSession.reset_online_state()
+	GameManager.reset_session()
 	get_tree().change_scene_to_file(_MENU_SCENE)

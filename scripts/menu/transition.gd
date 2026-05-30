@@ -28,6 +28,7 @@ static var premier_lancement = true
 @onready var btn_back_profil = get_node_or_null("Profil2/BackToMenu")
 @onready var unconnect_menu = get_node_or_null("Unconnect2")
 @onready var btn_back_maps = get_node_or_null("Maps2/BackToMenu")
+@onready var btn_back_units = get_node_or_null("Units2/BackToMenu")
 @onready var btn_back_solo = get_node_or_null("SoloVsIa/BackToMenu")
 @onready var btn_back_multi = get_node_or_null("Multi2/PageGauche/BackToMenu") 
 @onready var multi_menu = get_node_or_null("Multi2")
@@ -132,6 +133,14 @@ func _on_solo_pressed() -> void:
 	_animer_marque_page(mark_solo)
 	_jouer_transition_complete($SoloVsIa)
 
+
+func _on_play_solo_pressed() -> void:
+	_on_solo_pressed()
+
+
+func _on_solo_vs_ia_pressed() -> void:
+	_on_solo_pressed()
+
 func _on_multi_pressed() -> void:
 	if is_transitioning: return 
 	_animer_marque_page(mark_multi)
@@ -156,6 +165,23 @@ func _on_maps_pressed() -> void:
 	if is_transitioning: return 
 	_animer_marque_page(mark_maps)
 	_jouer_transition_complete($Maps2)
+
+
+func open_bestiaire_maps() -> void:
+	if is_transitioning:
+		return
+	_animer_marque_page(mark_maps)
+	await _jouer_transition_complete($Maps2)
+
+
+func open_bestiaire_unit(unit_index: int) -> void:
+	if is_transitioning:
+		return
+	_animer_marque_page(mark_maps)
+	await _jouer_transition_complete($Units2)
+	var units := get_node_or_null("Units2")
+	if units != null and units.has_method("show_unit"):
+		units.show_unit(unit_index)
 
 func _on_settings_pressed() -> void:
 	if is_transitioning: return 
@@ -279,6 +305,7 @@ func _connecter_signaux():
 	if btn_back_settings: btn_back_settings.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_profil:   btn_back_profil.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_maps:     btn_back_maps.pressed.connect(_on_menu_principal_pressed)
+	if btn_back_units:    btn_back_units.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_solo:     btn_back_solo.pressed.connect(_on_menu_principal_pressed)
 	if btn_back_multi:    btn_back_multi.pressed.connect(_on_menu_principal_pressed)
 	if unconnect_menu != null and unconnect_menu.has_signal("auth_completed"):
@@ -296,7 +323,7 @@ func _sauvegarder_positions_initiales():
 		if m: original_positions[m] = m.position.x
 
 func _cacher_tous_les_sous_menus():
-	var menus = ["SoloVsIa", "Multi2", "Profil2", "Unconnect2", "Maps2", "Settings2"]
+	var menus = ["SoloVsIa", "Multi2", "Profil2", "Unconnect2", "Maps2", "Units2", "Settings2"]
 	for m in menus:
 		if has_node(m): get_node(m).visible = false
 

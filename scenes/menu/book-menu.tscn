@@ -3,7 +3,6 @@
 [ext_resource type="Texture2D" uid="uid://b5dgpc16rep5r" path="res://assets/menu/book-ui/PNG/Open_book.png" id="1_kwy3m"]
 [ext_resource type="Script" uid="uid://cja2fawnfedra" path="res://scripts/menu/transition.gd" id="1_tyuks"]
 [ext_resource type="Texture2D" uid="uid://dvgohh6acunsg" path="res://assets/menu/img-sur-mesure/undead.jpg" id="2_j816d"]
-[ext_resource type="Texture2D" uid="uid://ba2h1xdwiqi6g" path="res://assets/menu/img-sur-mesure/Scene_book_menu/banniere.tres" id="2_mcy4f"]
 [ext_resource type="Texture2D" uid="uid://bbqwt5xi1wsnu" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton1.tres" id="3_0qj5p"]
 [ext_resource type="Texture2D" uid="uid://cti4meatxnoth" path="res://assets/menu/book-ui/PNG/pages_apper.png" id="3_stbfh"]
 [ext_resource type="Texture2D" uid="uid://b1acwktknhlj8" path="res://assets/menu/book-ui/PNG/pages_desappear-Sheet.png" id="4_cmifk"]
@@ -16,17 +15,19 @@
 [ext_resource type="Texture2D" uid="uid://eaxdf7ja0oja" path="res://assets/menu/img-sur-mesure/Scene_book_menu/boutons/bouton5.tres" id="9_7tbvn"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="11_omw2x"]
 [ext_resource type="Texture2D" uid="uid://num0npuwnhvv" path="res://assets/menu/img-sur-mesure/barre.tres" id="11_vkhoe"]
+[ext_resource type="Texture2D" uid="uid://bwllmgn02pf32" path="res://assets/menu/book-ui/PNG/title.png" id="15_80032"]
 [ext_resource type="Texture2D" uid="uid://bfk836876devf" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_solo.tres" id="16_d7gke"]
 [ext_resource type="Texture2D" uid="uid://bskg1xw1xufob" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_multi.tres" id="17_omw2x"]
 [ext_resource type="Texture2D" uid="uid://bdagx8ykg4fdj" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_profil.tres" id="18_g3da1"]
 [ext_resource type="Texture2D" uid="uid://gopjwqw0tfmc" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_maps.tres" id="19_215tk"]
-[ext_resource type="PackedScene" uid="uid://d74ucthb4nas" path="res://scenes/menu/maps.tscn" id="19_kfwy2"]
+[ext_resource type="PackedScene" uid="uid://d74ucthb4nas" path="res://scenes/menu/bestiaire_map.tscn" id="19_kfwy2"]
 [ext_resource type="Texture2D" uid="uid://b08ec5nobg8ia" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/BM_settings.tres" id="20_fd2mj"]
-[ext_resource type="PackedScene" uid="uid://dlsbp28ol6lc4" path="res://scenes/menu/multi_menu.tscn" id="20_ljd70"]
+[ext_resource type="PackedScene" uid="uid://dlsbp28ol6lc4" path="res://scenes/menu/multiplayer.tscn" id="20_ljd70"]
 [ext_resource type="PackedScene" uid="uid://bxl1ogeltlbvq" path="res://scenes/menu/profil.tscn" id="21_ry8bh"]
 [ext_resource type="PackedScene" uid="uid://ctcktsumn5tr0" path="res://scenes/menu/settings.tscn" id="22_bjixh"]
-[ext_resource type="PackedScene" uid="uid://3gyev7vui3ra" path="res://scenes/menu/solo_vs_ia.tscn" id="23_js3r3"]
-[ext_resource type="PackedScene" uid="uid://bq8k17c2vur8g" path="res://scenes/menu/unconnect.tscn" id="24_unconnect"]
+[ext_resource type="PackedScene" uid="uid://3gyev7vui3ra" path="res://scenes/menu/solo.tscn" id="23_js3r3"]
+[ext_resource type="PackedScene" uid="uid://8oct1jo1m2wi" path="res://scenes/menu/bestiaire_units.tscn" id="25_units"]
+[ext_resource type="PackedScene" uid="uid://bq8k17c2vur8g" path="res://scenes/menu/connexion.tscn" id="24_unconnect"]
 [ext_resource type="Texture2D" uid="uid://bqpyevn48enip" path="res://assets/menu/img-sur-mesure/Scene_book_menu/bookmarks/menu.tres" id="28_tyuks"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sgnfi"]
@@ -282,6 +283,10 @@ animations = [{
 
 [sub_resource type="Theme" id="Theme_46enr"]
 VScrollBar/styles/grabber = SubResource("StyleBoxFlat_cx6fd")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j816d"]
+atlas = ExtResource("15_80032")
+region = Rect2(4.8653092, 56.23346, 229.648, 46.26519)
 
 [node name="BookMenu" type="Node2D" unique_id=550500115]
 position = Vector2(320, -177)
@@ -593,7 +598,7 @@ offset_left = 36.0
 offset_top = 139.0
 offset_right = 608.0
 offset_bottom = 259.0
-texture = ExtResource("2_mcy4f")
+texture = SubResource("AtlasTexture_j816d")
 expand_mode = 1
 
 [node name="Titre" type="Label" parent="MenuContent/HboxBanniere" unique_id=237579701]
@@ -634,6 +639,10 @@ stretch_mode = 3
 flip_h = true
 
 [node name="Maps2" parent="." unique_id=551856575 instance=ExtResource("19_kfwy2")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Units2" parent="." unique_id=551856576 instance=ExtResource("25_units")]
 unique_name_in_owner = true
 visible = false
 

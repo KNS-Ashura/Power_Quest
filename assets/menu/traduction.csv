@@ -135,6 +135,7 @@ SB_PLAYER;Player;Joueur;Spieler
 SB_TROOPS;Troops;Troupes;Truppen
 SB_CAMPS;Camps;Camps;Lager
 SB_GOLD;Gold;Or;Gold
+SB_YOU;You;Toi;Du
 END_VICTORY;VICTORY !;VICTOIRE !;SIEG !
 END_DEFEAT;DEFEAT;DÉFAITE;NIEDERLAGE
 END_GO_TO_MENU;GO TO MENU;RETOUR AU MENU;ZUM MENÜ
@@ -144,3 +145,20 @@ AI_LABEL;AI;IA;KI
 MAP_NAME_1;Undead Land;Terre des morts-vivants;Untoten-Land
 MAP_NAME_2;Desert Land;Terre désertique;Wüstenland
 MAP_NAME_3;Glowing Cave;Caverne lumineuse;Leuchtende Höhle
+MENU_MAIN_UNITS;UNITS;UNITÉS;EINHEITEN
+BESTIAIRE_HP;HP: {0};PV : {0};LP: {0}
+BESTIAIRE_DAMAGE;Damage: {0};Dégâts : {0};Schaden: {0}
+BESTIAIRE_SPEED;Speed: {0};Vitesse : {0};Geschwindigkeit: {0}
+BESTIAIRE_RANGE;Range: {0};Portée : {0};Reichweite: {0}
+BESTIAIRE_PRICE;Price: {0};Prix : {0};Preis: {0}
+BESTIAIRE_BUILD_TIME;Build time: {0}s;Production : {0}s;Bauzeit: {0}s
+UNIT_DESC_INFANTRY;Versatile front-line fighter, cheap and reliable.;Combattant de première ligne polyvalent, économique et fiable.;Vielseitiger Frontkämpfer, günstig und zuverlässig.
+UNIT_DESC_RANGE;Ranged attacker with good reach.;Attaquant à distance avec bonne portée.;Fernkämpfer mit guter Reichweite.
+UNIT_DESC_HEAVY;Slow but heavily armored unit.;Unité lente mais très blindée.;Langsame, schwer gepanzerte Einheit.
+UNIT_DESC_SUPPORT;Buffs nearby allies in combat.;Renforce les alliés proches au combat.;Verstärkt nahe Verbündete im Kampf.
+UNIT_DESC_HEAL;Heals wounded allies over time.;Soigne les alliés blessés sur la durée.;Heilt verbündete Einheiten über Zeit.
+UNIT_DESC_ANTI_ARMOR;Specialist against armored targets.;Spécialiste contre les cibles blindées.;Spezialist gegen gepanzerte Ziele.
+UNIT_DESC_MORTAR;Long-range artillery with area damage.;Artillerie longue portée à dégâts de zone.;Artillerie mit Flächenschaden.
+UNIT_DESC_WATER_TRANSPORT;Carries land units across water.;Transporte les unités terrestres sur l'eau.;Transportiert Landeinheiten über Wasser.
+UNIT_DESC_WATER_TANK;Naval armored assault unit.;Unité d'assaut blindée navale.;Gepanzerte Marine-Angriffseinheit.
+UNIT_DESC_WATER_RANGE;Ranged naval unit for coastal control.;Unité navale à distance pour le littoral.;Fernkampf-Marineeinheit für Küstenkontrolle.

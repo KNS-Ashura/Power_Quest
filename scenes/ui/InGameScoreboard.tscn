@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://dcem8atw6rpgk"]
+
+[ext_resource type="Script" uid="uid://b6yw3tdk8exrb" path="res://scripts/ui/in_game_scoreboard.gd" id="1_fyyvr"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_0xsyb"]
+
+[node name="InGameScoreboard" type="CanvasLayer" unique_id=1881910651]
+layer = 15
+script = ExtResource("1_fyyvr")
+
+[node name="MainPanel" type="Control" parent="." unique_id=413965287]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 0.99999964
+offset_top = -86.0
+offset_right = 419.0
+offset_bottom = 124.0
+scale = Vector2(0.86176395, 0.799546)
+
+[node name="ColorRect2" type="ColorRect" parent="MainPanel" unique_id=1671149439]
+visible = false
+layout_mode = 0
+offset_left = 6.9624615
+offset_top = 113.81459
+offset_right = 196.96246
+offset_bottom = 231.81459
+scale = Vector2(1.9917706, 1.797383)
+color = Color(0.4627451, 0.21176471, 0.49411765, 0.5254902)
+
+[node name="ColorRect" type="ColorRect" parent="MainPanel" unique_id=974968501]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 117.99999
+offset_right = 202.0
+offset_bottom = 236.0
+scale = Vector2(1.9264599, 1.7139444)
+color = Color(0.8980392, 0.8392157, 0.6313726, 0.6745098)
+
+[node name="TableauContainer" type="VBoxContainer" parent="MainPanel" unique_id=1345715887]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 117.0
+offset_right = 384.0
+offset_bottom = 312.0
+
+[node name="InGameScore" type="HBoxContainer" parent="MainPanel/TableauContainer" unique_id=1869903192]
+layout_mode = 2
+
+[node name="Player" type="Label" parent="MainPanel/TableauContainer/InGameScore" unique_id=936324835]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("2_0xsyb")
+theme_override_font_sizes/font_size = 24
+text = "SB_PLAYER"
+horizontal_alignment = 1
+
+[node name="NbrTroups" type="Label" parent="MainPanel/TableauContainer/InGameScore" unique_id=2059346684]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("2_0xsyb")
+theme_override_font_sizes/font_size = 24
+text = "SB_TROOPS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NbrCamps" type="Label" parent="MainPanel/TableauContainer/InGameScore" unique_id=621088744]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("2_0xsyb")
+theme_override_font_sizes/font_size = 24
+text = "SB_CAMPS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NbrGold" type="Label" parent="MainPanel/TableauContainer/InGameScore" unique_id=407513879]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_fonts/font = ExtResource("2_0xsyb")
+theme_override_font_sizes/font_size = 24
+text = "SB_GOLD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ListeJoueurs" type="VBoxContainer" parent="MainPanel/TableauContainer" unique_id=1835601780]
+layout_mode = 2
+size_flags_vertical = 3

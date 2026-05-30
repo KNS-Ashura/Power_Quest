@@ -1,0 +1,543 @@
+[gd_scene format=3 uid="uid://d74ucthb4nas"]
+
+[ext_resource type="Script" uid="uid://3pwkjv8xg38j" path="res://scripts/menu/bestiaire_map.gd" id="1_qu2rq"]
+[ext_resource type="Texture2D" uid="uid://ba2h1xdwiqi6g" path="res://assets/menu/img-sur-mesure/Scene_book_menu/banniere.tres" id="2_ayc3u"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="3_v3obs"]
+[ext_resource type="Texture2D" uid="uid://bgfouk2777d0y" path="res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres" id="4_br04b"]
+[ext_resource type="Texture2D" uid="uid://dhdu4i3v8lbt8" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/flecheGauche.tres" id="5_qu2rq"]
+[ext_resource type="Texture2D" uid="uid://bj33ymrdqsbh1" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/bandeau.tres" id="6_704k5"]
+[ext_resource type="Texture2D" uid="uid://h08ks7kxf5ps" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/flechesDroite.tres" id="7_g7bwi"]
+[ext_resource type="Texture2D" uid="uid://dl0eca1ghtfo4" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/biome_bandeau.tres" id="11_mqgjn"]
+[ext_resource type="Texture2D" uid="uid://c5acoqnynuryq" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/bouton_biome.tres" id="12_nlwm2"]
+[ext_resource type="Texture2D" uid="uid://num0npuwnhvv" path="res://assets/menu/img-sur-mesure/barre.tres" id="13_xq0ds"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nlwm2"]
+atlas = ExtResource("4_br04b")
+
+[node name="Maps" type="Node2D" unique_id=551856575]
+script = ExtResource("1_qu2rq")
+
+[node name="PageGauche" type="Control" parent="." unique_id=1111861922]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 56.0
+offset_top = 240.0
+offset_right = 626.0
+offset_bottom = 360.0
+
+[node name="TextureRect" type="TextureRect" parent="PageGauche" unique_id=721780506]
+texture_filter = 1
+layout_mode = 0
+offset_top = -12.0
+offset_right = 575.0
+offset_bottom = 108.0
+texture = ExtResource("2_ayc3u")
+
+[node name="Map" type="Label" parent="PageGauche" unique_id=1620247253]
+texture_filter = 1
+layout_mode = 0
+offset_left = 61.0
+offset_top = 42.0
+offset_right = 231.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 32
+text = "MENU_MAIN_MAPS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerQuest" type="Label" parent="PageGauche" unique_id=1218377543]
+texture_filter = 1
+layout_mode = 0
+offset_left = 356.0
+offset_top = 42.0
+offset_right = 516.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 32
+text = "POWER QUEST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContenuGauche" type="VBoxContainer" parent="PageGauche" unique_id=2010119275]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 126.0
+offset_right = 221.0
+offset_bottom = 231.0
+scale = Vector2(1.1906861, 1.1595752)
+
+[node name="CarteImage" type="TextureRect" parent="PageGauche/ContenuGauche" unique_id=926656311]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+texture = SubResource("AtlasTexture_nlwm2")
+stretch_mode = 5
+
+[node name="BandeauEtFleches" type="HBoxContainer" parent="PageGauche" unique_id=3804892]
+layout_mode = 0
+offset_left = 5.999998
+offset_top = 313.0
+offset_right = 111.0
+offset_bottom = 325.0
+scale = Vector2(2.5, 2.5)
+
+[node name="FlecheGauche" type="TextureButton" parent="PageGauche/BandeauEtFleches" unique_id=645537234]
+texture_filter = 1
+layout_mode = 2
+texture_normal = ExtResource("5_qu2rq")
+
+[node name="BandeauBleu" type="TextureRect" parent="PageGauche/BandeauEtFleches" unique_id=323594057]
+texture_filter = 1
+custom_minimum_size = Vector2(85, 0)
+layout_mode = 2
+texture = ExtResource("6_704k5")
+
+[node name="FlecheDroite" type="TextureButton" parent="PageGauche/BandeauEtFleches" unique_id=167558092]
+texture_filter = 1
+layout_mode = 2
+texture_normal = ExtResource("7_g7bwi")
+
+[node name="NomDeLaMap" type="Label" parent="PageGauche" unique_id=1914533610]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = 314.0
+offset_right = 243.0
+offset_bottom = 341.0
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 24
+text = "MAP_GREEN_ISLAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PageDroite" type="Control" parent="." unique_id=2083192063]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 350.0
+offset_top = 350.0
+offset_right = 630.0
+offset_bottom = 580.0
+
+[node name="ControlBiome1" type="Control" parent="PageDroite" unique_id=1520962234]
+anchors_preset = 0
+offset_left = -13.0
+offset_top = -119.0
+offset_right = 27.0
+offset_bottom = -79.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome1" unique_id=2112977092]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome1" unique_id=913547618]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome1" unique_id=688478347]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome2" type="Control" parent="PageDroite" unique_id=553835568]
+anchors_preset = 0
+offset_left = 122.0
+offset_top = -119.0
+offset_right = 159.0
+offset_bottom = -79.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome2" unique_id=832558527]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome2" unique_id=1249270772]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome2" unique_id=9378043]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome3" type="Control" parent="PageDroite" unique_id=1526995346]
+anchors_preset = 0
+offset_left = -12.0
+offset_top = -81.0
+offset_right = 28.0
+offset_bottom = -41.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome3" unique_id=1808232212]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome3" unique_id=1389283736]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome3" unique_id=2114597727]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome4" type="Control" parent="PageDroite" unique_id=1295267889]
+anchors_preset = 0
+offset_left = 123.0
+offset_top = -81.0
+offset_right = 163.0
+offset_bottom = -41.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome4" unique_id=635103543]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome4" unique_id=291931170]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome4" unique_id=236652092]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome5" type="Control" parent="PageDroite" unique_id=1350511122]
+anchors_preset = 0
+offset_left = -12.0
+offset_top = -42.0
+offset_right = 28.0
+offset_bottom = -2.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome5" unique_id=270058565]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome5" unique_id=1984709643]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome5" unique_id=1263778910]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome6" type="Control" parent="PageDroite" unique_id=503649805]
+anchors_preset = 0
+offset_left = 124.0
+offset_top = -41.0
+offset_right = 164.0
+offset_bottom = -1.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome6" unique_id=1359177186]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome6" unique_id=1567492898]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome6" unique_id=224864293]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome7" type="Control" parent="PageDroite" unique_id=1448728333]
+anchors_preset = 0
+offset_left = -12.0
+offset_top = -2.0
+offset_right = 28.0
+offset_bottom = 38.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome7" unique_id=1049124149]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome7" unique_id=219587713]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome7" unique_id=787960909]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome8" type="Control" parent="PageDroite" unique_id=53821577]
+anchors_preset = 0
+offset_left = 123.0
+offset_top = -2.0
+offset_right = 163.0
+offset_bottom = 38.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome8" unique_id=1924312308]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome8" unique_id=1310190828]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome8" unique_id=1459641270]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 139.0
+offset_right = 148.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome9" type="Control" parent="PageDroite" unique_id=233586295]
+anchors_preset = 0
+offset_left = -13.0
+offset_top = 39.0
+offset_right = 27.0
+offset_bottom = 79.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome9" unique_id=1791226147]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome9" unique_id=1074664760]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome9" unique_id=910841693]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlBiome10" type="Control" parent="PageDroite" unique_id=1674244544]
+anchors_preset = 0
+offset_left = 122.0
+offset_top = 39.0
+offset_right = 162.0
+offset_bottom = 79.0
+
+[node name="ZoneBiome1" type="TextureButton" parent="PageDroite/ControlBiome10" unique_id=2114662605]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 138.0
+offset_right = 82.0
+offset_bottom = 149.76471
+scale = Vector2(1.9848015, 2.2495286)
+texture_normal = ExtResource("11_mqgjn")
+
+[node name="TextureRect" type="TextureRect" parent="PageDroite/ControlBiome10" unique_id=1774975663]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 134.0
+offset_right = 26.0
+offset_bottom = 149.0
+texture = ExtResource("12_nlwm2")
+
+[node name="CURSED" type="Label" parent="PageDroite/ControlBiome10" unique_id=1735795577]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 139.0
+offset_right = 137.0
+offset_bottom = 162.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 22
+text = "MAP_CURSED_LAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackToMenu" type="TextureButton" parent="." unique_id=900001001]
+offset_left = 73.0
+offset_top = 591.0
+offset_right = 113.0
+offset_bottom = 603.0
+scale = Vector2(1.4081132, 1.7675955)
+texture_normal = ExtResource("6_704k5")
+
+[node name="Reliure" type="TextureRect" parent="." unique_id=148384718]
+texture_filter = 1
+offset_left = 408.00003
+offset_top = 587.00006
+offset_right = 476.00003
+offset_bottom = 594.00006
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("13_xq0ds")
+
+[node name="Label" type="Label" parent="." unique_id=900001002]
+offset_left = 52.0
+offset_top = 591.0
+offset_right = 180.0
+offset_bottom = 615.0
+scale = Vector2(0.7904327, 0.7873478)
+theme_override_fonts/font = ExtResource("3_v3obs")
+theme_override_font_sizes/font_size = 24
+text = "UI_BACK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]
+[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheDroite" to="." method="_on_fleche_droite_pressed"]
