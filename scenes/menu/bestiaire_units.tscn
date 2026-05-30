@@ -1,0 +1,188 @@
+[gd_scene format=3 uid="uid://8oct1jo1m2wi"]
+
+[ext_resource type="Script" uid="uid://40s65phb1qtn" path="res://scripts/menu/bestiaire_units.gd" id="1_uj2da"]
+[ext_resource type="Texture2D" uid="uid://ba2h1xdwiqi6g" path="res://assets/menu/img-sur-mesure/Scene_book_menu/banniere.tres" id="2_5lw21"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="3_8y8c2"]
+[ext_resource type="Texture2D" uid="uid://dhdu4i3v8lbt8" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/flecheGauche.tres" id="5_wokrb"]
+[ext_resource type="Texture2D" uid="uid://bj33ymrdqsbh1" path="res://assets/menu/img-sur-mesure/scene_maps/assets_generale/bandeau.tres" id="6_2rn02"]
+[ext_resource type="Texture2D" uid="uid://num0npuwnhvv" path="res://assets/menu/img-sur-mesure/barre.tres" id="10_0dxqt"]
+
+[node name="Maps" type="Node2D" unique_id=551856575]
+script = ExtResource("1_uj2da")
+
+[node name="PageGauche" type="Control" parent="." unique_id=1111861922]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 56.0
+offset_top = 240.0
+offset_right = 626.0
+offset_bottom = 360.0
+
+[node name="TextureRect" type="TextureRect" parent="PageGauche" unique_id=721780506]
+texture_filter = 1
+layout_mode = 0
+offset_top = -12.0
+offset_right = 575.0
+offset_bottom = 108.0
+texture = ExtResource("2_5lw21")
+
+[node name="Map" type="Label" parent="PageGauche" unique_id=1620247253]
+texture_filter = 1
+layout_mode = 0
+offset_left = 61.0
+offset_top = 42.0
+offset_right = 231.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 32
+text = "MENU_MAIN_UNITS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerQuest" type="Label" parent="PageGauche" unique_id=1218377543]
+texture_filter = 1
+layout_mode = 0
+offset_left = 355.0
+offset_top = 42.0
+offset_right = 515.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 32
+text = "POWER QUEST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContenuGauche" type="VBoxContainer" parent="PageGauche" unique_id=2010119275]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 96.0
+offset_right = 129.0
+offset_bottom = 201.0
+scale = Vector2(2.2, 2.2)
+
+[node name="UnitPreviewHost" type="Node2D" parent="PageGauche/ContenuGauche" unique_id=926656312]
+unique_name_in_owner = true
+position = Vector2(30, 5)
+
+[node name="BandeauEtFleches" type="HBoxContainer" parent="PageGauche" unique_id=3804892]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 297.0
+offset_right = 140.0
+offset_bottom = 309.0
+scale = Vector2(2.5, 2.5)
+
+[node name="BandeauBleu" type="TextureRect" parent="PageGauche/BandeauEtFleches" unique_id=323594057]
+texture_filter = 1
+custom_minimum_size = Vector2(85, 0)
+layout_mode = 2
+texture = ExtResource("6_2rn02")
+
+[node name="NomDeLaMap" type="Label" parent="PageGauche" unique_id=1914533610]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 37.0
+offset_top = 298.0
+offset_right = 248.0
+offset_bottom = 325.0
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 24
+text = "MAP_GREEN_ISLAND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PageDroite" type="Control" parent="." unique_id=2083192063]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 350.0
+offset_top = 350.0
+offset_right = 630.0
+offset_bottom = 580.0
+
+[node name="Description1" type="Label" parent="PageDroite" unique_id=637368797]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 39.0
+offset_top = 11.0
+offset_right = 239.0
+offset_bottom = 144.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 20
+text = "MAP_DESC_TEST"
+autowrap_mode = 3
+uppercase = true
+text_direction = 1
+
+[node name="StatsBlock" type="Label" parent="PageDroite" unique_id=637368798]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 39.0
+offset_top = 76.0
+offset_right = 239.0
+offset_bottom = 276.0
+theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
+theme_override_colors/font_shadow_color = Color(0.64705884, 0.50980395, 0.3647059, 1)
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="BackToMenu" type="TextureButton" parent="." unique_id=900002001]
+offset_left = 56.0
+offset_top = 606.0
+offset_right = 200.0
+offset_bottom = 636.0
+
+[node name="Reliure" type="TextureRect" parent="." unique_id=148384718]
+texture_filter = 1
+offset_left = 408.00003
+offset_top = 587.00006
+offset_right = 476.00003
+offset_bottom = 594.00006
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("10_0dxqt")
+
+[node name="retour" type="Control" parent="." unique_id=54459168]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 67.0
+offset_top = 573.0
+offset_right = 177.0
+offset_bottom = 613.0
+size_flags_stretch_ratio = 1.09
+
+[node name="BandeauBleu" type="TextureRect" parent="retour" unique_id=2087339159]
+texture_filter = 1
+custom_minimum_size = Vector2(85, 0)
+layout_mode = 0
+offset_left = 30.0
+offset_top = 6.999939
+offset_right = 115.0
+offset_bottom = 18.999939
+scale = Vector2(1.1743456, 2.208504)
+texture = ExtResource("6_2rn02")
+
+[node name="Label" type="Label" parent="retour" unique_id=900002002]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 7.0
+offset_right = 145.0
+offset_bottom = 31.0
+theme_override_fonts/font = ExtResource("3_8y8c2")
+theme_override_font_sizes/font_size = 24
+text = "UI_BACK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FlecheGauche" type="TextureButton" parent="retour" unique_id=645537234]
+texture_filter = 1
+layout_mode = 0
+offset_left = 1.0
+offset_top = 7.0
+offset_right = 31.0
+offset_bottom = 19.0
+scale = Vector2(4.441443, 2.4955864)
+texture_normal = ExtResource("5_wokrb")
+
+[connection signal="pressed" from="retour/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]

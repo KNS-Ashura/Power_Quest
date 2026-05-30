@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cui68p4q4p4m"]
 
 [ext_resource type="Script" uid="uid://bowkmm0vjgh7c" path="res://scripts/ui/production_ui.gd" id="1_ui"]
-[ext_resource type="Texture2D" uid="uid://cswpogmds0ysq" path="res://assets/menu/img-sur-mesure/scene_multi/bouton_inverse.tres" id="2_badge"]
+[ext_resource type="Texture2D" path="res://assets/menu/img-sur-mesure/scene_multi/bouton_inverse.tres" id="2_badge"]
 [ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="2_et8kq"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://bdwtv2mtupcdq" path="res://assets/menu/icons/Icons.png" id="5_icons"]
@@ -31,10 +31,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1668.0
-offset_top = 20.0
-offset_right = -1527.0
-offset_bottom = 52.0
+offset_left = -196.0
+offset_top = 704.0
+offset_right = -55.0
+offset_bottom = 736.0
 grow_horizontal = 0
 texture = ExtResource("2_et8kq")
 

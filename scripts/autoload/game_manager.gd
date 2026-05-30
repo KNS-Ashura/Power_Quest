@@ -25,6 +25,7 @@ func init_match() -> void:
 	local_eliminated = false
 	_result_reported = false
 	_match_started_at = Time.get_unix_time_from_system()
+	Economy.reset_for_match()
 	if not global_timer.is_stopped():
 		global_timer.stop()
 	global_timer.start()
@@ -188,8 +189,8 @@ func _report_match_result(win: bool) -> void:
 	NetworkSession.submit_match_result(win, elapsed)
 
 
-const VICTORY_SCENE := "res://scenes/menu/Scene_Victory.tscn"
-const DEFEAT_SCENE := "res://scenes/menu/Scene_defeat.tscn"
+const VICTORY_SCENE := "res://scenes/ui/Scene_Victory.tscn"
+const DEFEAT_SCENE := "res://scenes/ui/Scene_defeat.tscn"
 
 var last_match_duration_sec: int = 0
 var _result_overlay: CanvasLayer = null
@@ -235,3 +236,14 @@ func clear_result_overlay() -> void:
 	if _result_overlay != null and is_instance_valid(_result_overlay):
 		_result_overlay.queue_free()
 	_result_overlay = null
+
+
+## Remet à zéro l'état de partie (retour menu ou nouvelle partie).
+func reset_session() -> void:
+	match_over = false
+	local_eliminated = false
+	_result_reported = false
+	_result_overlay = null
+	Economy.reset_for_match()
+	if AIManager.has_method("init_match"):
+		AIManager.init_match()

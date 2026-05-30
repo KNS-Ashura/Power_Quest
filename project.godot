@@ -20,7 +20,6 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
-TranslationBootstrap="*res://scripts/autoload/translation_bootstrap.gd"
 MapSession="*res://scripts/autoload/map_session.gd"
 Economy="*res://scripts/autoload/economy.gd"
 RegionManager="*res://scripts/autoload/region_manager.gd"
@@ -34,6 +33,7 @@ NetworkSession="*res://scripts/network/network_session.gd"
 OnlineMatch="*res://scripts/network/online_match.gd"
 OnlineGameSync="*res://scripts/network/online_game_sync.gd"
 UserPrefs="*res://scripts/autoload/user_prefs.gd"
+TranslationBootstrap="*res://scripts/autoload/translation_bootstrap.gd"
 
 [display]
 

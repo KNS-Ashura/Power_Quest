@@ -2,12 +2,14 @@ extends Node2D
 
 const MAP_SLOT_NAME := "MapSlot"
 const MINIMAP_SCENE := preload("res://scenes/ui/minimap.tscn")
+const SCOREBOARD_SCENE := preload("res://scenes/ui/InGameScoreboard.tscn")
 const LEGACY_MAP_ROOT_NAMES: Array[String] = ["Undead-Land", "Cave-Land"]
 
 
 func _ready() -> void:
 	_remove_legacy_embedded_maps()
 	_ensure_minimap_ui()
+	_ensure_scoreboard_ui()
 	_load_active_map()
 	call_deferred("_init_match_systems")
 
@@ -16,6 +18,12 @@ func _ensure_minimap_ui() -> void:
 	if get_node_or_null("MinimapUI") != null:
 		return
 	add_child(MINIMAP_SCENE.instantiate())
+
+
+func _ensure_scoreboard_ui() -> void:
+	if get_node_or_null("InGameScoreboard") != null:
+		return
+	add_child(SCOREBOARD_SCENE.instantiate())
 
 
 func _init_match_systems() -> void:

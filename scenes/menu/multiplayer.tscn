@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://dlsbp28ol6lc4"]
+
+[ext_resource type="Script" path="res://scripts/menu/multi_menu_network.gd" id="1_multi"]
+[ext_resource type="Texture2D" uid="uid://bwllmgn02pf32" path="res://assets/menu/book-ui/PNG/title.png" id="2_jifyb"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="3_font"]
+[ext_resource type="Texture2D" uid="uid://bgfouk2777d0y" path="res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres" id="4_preview"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aibjl"]
+atlas = ExtResource("2_jifyb")
+region = Rect2(4.460823, 151.62698, 230.77612, 46.920822)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_preview"]
+atlas = ExtResource("4_preview")
+
+[node name="Multi" type="Node2D" unique_id=312905313]
+script = ExtResource("1_multi")
+
+[node name="PageGauche" type="Control" parent="." unique_id=200001]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 56.0
+offset_top = 240.0
+offset_right = 626.0
+offset_bottom = 360.0
+
+[node name="TextureRect" type="TextureRect" parent="PageGauche" unique_id=200002]
+texture_filter = 1
+layout_mode = 0
+offset_top = -12.0
+offset_right = 575.0
+offset_bottom = 108.0
+texture = SubResource("AtlasTexture_aibjl")
+
+[node name="TitleMulti" type="Label" parent="PageGauche" unique_id=200003]
+texture_filter = 1
+layout_mode = 0
+offset_left = 46.0
+offset_top = 42.0
+offset_right = 238.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 32
+text = "MULTI_TITLE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PowerQuest" type="Label" parent="PageGauche" unique_id=200004]
+texture_filter = 1
+layout_mode = 0
+offset_left = 355.0
+offset_top = 42.0
+offset_right = 515.0
+offset_bottom = 77.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 32
+text = "POWER QUEST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MapPreview" type="TextureRect" parent="PageGauche" unique_id=200005]
+layout_mode = 0
+offset_left = 304.0
+offset_top = 119.0
+offset_right = 544.0
+offset_bottom = 329.0
+texture = SubResource("AtlasTexture_preview")
+stretch_mode = 5
+
+[node name="JoinRoom" type="Button" parent="PageGauche" unique_id=200007]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 244.0
+offset_right = 268.0
+offset_bottom = 290.0
+text = "MULTI_JOIN"
+
+[node name="BackToMenu" type="Button" parent="PageGauche" unique_id=200008]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 334.0
+offset_right = 130.0
+offset_bottom = 365.0
+text = "MULTI_BACK"
+
+[connection signal="pressed" from="PageGauche/JoinRoom" to="." method="_on_join_room_pressed"]
