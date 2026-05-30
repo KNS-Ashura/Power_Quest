@@ -37,6 +37,30 @@ static func is_selection_hotkey(keycode: int) -> bool:
 	return unit_type_from_selection_hotkey(keycode) >= 0
 
 
+## Clé de traduction du nom selon le type d'unité (affichage localisé).
+const NAME_KEY_BY_TYPE: Dictionary = {
+	UnitType.INFANTRY: "UNIT_INFANTRY",
+	UnitType.ARCHER: "UNIT_RANGE",
+	UnitType.HEAVY: "UNIT_HEAVY",
+	UnitType.SUPPORT: "UNIT_SUPPORT",
+	UnitType.HEAL: "UNIT_HEAL",
+	UnitType.ANTI_ARMOR: "UNIT_ANTI_ARMOR",
+	UnitType.MORTAR: "UNIT_MORTAR",
+	UnitType.WATER_TRANSPORT: "UNIT_WATER_TRANSPORT",
+	UnitType.WATER_TANK: "UNIT_WATER_TANK",
+	UnitType.WATER_RANGE: "UNIT_WATER_RANGE",
+}
+
+
+## Nom traduit de l'unité (selon la langue active). Repli sur le nom brut.
+func display_name() -> String:
+	var key: String = str(NAME_KEY_BY_TYPE.get(unit_type, ""))
+	if key == "":
+		return name
+	var translated := TranslationServer.translate(key)
+	return translated if translated != key else name
+
+
 @export var unit_type: UnitType = UnitType.INFANTRY
 @export var name: String = "Soldier"
 @export var price: int = 50

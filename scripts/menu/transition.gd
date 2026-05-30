@@ -41,8 +41,10 @@ var _profile_redirect_scheduled: bool = false
 var _logout_redirect_scheduled: bool = false
 
 func _ready():
+	# La langue est gérée par UserPrefs (préférence locale + compte). On la
+	# (ré)applique au cas où, sans écraser le choix de l'utilisateur.
 	if premier_lancement:
-		TranslationServer.set_locale("en")
+		UserPrefs.set_language(UserPrefs.get_language(), false)
 		premier_lancement = false
 	
 	menu_ui.visible = false
@@ -91,7 +93,9 @@ func _on_menu_principal_pressed() -> void:
 	var tween_out = create_tween()
 	if current_active_menu:
 		tween_out.tween_property(current_active_menu, "modulate:a", 0.0, 0.2)
-	await tween_out.finished
+		await tween_out.finished
+	else:
+		tween_out.kill()
 	
 	if current_active_menu:
 		current_active_menu.visible = false
@@ -212,12 +216,19 @@ func _jouer_transition_complete(target_menu: Node) -> void:
 	is_transitioning = true
 
 	var tween_out = create_tween()
+	var has_out_anim := false
 	if current_active_menu:
 		tween_out.tween_property(current_active_menu, "modulate:a", 0.0, 0.2)
+		has_out_anim = true
 	elif menu_ui.visible: 
 		tween_out.tween_property(menu_ui, "modulate:a", 0.0, 0.2)
 		tween_out.parallel().tween_property(scroll_container, "modulate:a", 0.0, 0.2)
-	await tween_out.finished
+		has_out_anim = true
+	# Évite l'erreur "Tween started with no Tweeners" quand rien n'est à animer.
+	if has_out_anim:
+		await tween_out.finished
+	else:
+		tween_out.kill()
 	
 	menu_ui.visible = false
 	scroll_container.visible = false

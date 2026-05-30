@@ -47,7 +47,7 @@ func _refresh_profile_ui() -> void:
 	NetworkSession.request_player_profile()
 	NetworkSession.request_leaderboard()
 	if _status_label != null:
-		_status_label.text = "Connecté"
+		_status_label.text = tr("PROFILE_CONNECTED")
 	_apply_username_display(NetworkSession.profile_cache)
 
 
@@ -66,7 +66,7 @@ func _on_profile_updated(profile: Dictionary) -> void:
 	if _level_label != null:
 		_level_label.text = str(int(profile.get("level", 0)))
 	if _status_label != null:
-		_status_label.text = "Connecté"
+		_status_label.text = tr("PROFILE_CONNECTED")
 
 
 func _apply_username_display(_profile: Dictionary) -> void:
@@ -77,7 +77,7 @@ func _apply_username_display(_profile: Dictionary) -> void:
 
 func _clear_profile_display() -> void:
 	if _status_label != null:
-		_status_label.text = "Profil indisponible sans connexion."
+		_status_label.text = tr("PROFILE_OFFLINE")
 	if _pseudo_label != null:
 		_pseudo_label.text = "--"
 	if _level_label != null:

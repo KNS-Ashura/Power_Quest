@@ -13,6 +13,8 @@ signal match_failed(message: String)
 signal game_connected
 signal game_connection_failed(message: String)
 signal online_match_begin
+## Préférences (langue, etc.) lues depuis le stockage Nakama lié au compte.
+signal preferences_loaded(prefs: Dictionary)
 
 const MAIN_SCENE := "res://scenes/jeu/Main.scn"
 const MIN_PLAYERS_TO_START := 2
@@ -79,6 +81,17 @@ func _ready() -> void:
 	add_child(_http)
 	_http.request_completed.connect(_on_http_completed)
 	_load_or_create_device_id()
+	# Reconnexion auto : si des identifiants sont sauvegardés (persistés en
+	# IndexedDB sur le Web), on se reconnecte tout seul au lancement / refresh.
+	call_deferred("_try_auto_reconnect")
+
+
+func _try_auto_reconnect() -> void:
+	if is_account_logged_in():
+		return
+	if not has_saved_account_credentials():
+		return
+	authenticate()
 
 
 func is_account_logged_in() -> bool:
@@ -146,13 +159,13 @@ func register_account(email: String, password: String, username: String) -> void
 	var p := password
 	var u := AuthValidation.sanitize_username(username)
 	if e == "" or p == "" or u == "":
-		auth_failed.emit("Email, pseudo et mot de passe requis.")
+		auth_failed.emit(tr("AUTH_NEED_FIELDS"))
 		return
 	if not AuthValidation.is_valid_email(e):
-		auth_failed.emit("Adresse email invalide.")
+		auth_failed.emit(tr("AUTH_INVALID_EMAIL"))
 		return
 	if not AuthValidation.is_valid_username(u):
-		auth_failed.emit("Pseudo invalide (3-20 caractères, lettres/chiffres/_).")
+		auth_failed.emit(tr("AUTH_USERNAME_RULES"))
 		return
 	var pwd_err := AuthValidation.is_valid_password(p)
 	if pwd_err != "":
@@ -180,10 +193,10 @@ func login_account(email: String, password: String) -> void:
 	var e := AuthValidation.sanitize_email(email)
 	var p := password
 	if e == "" or p == "":
-		auth_failed.emit("Email et mot de passe requis.")
+		auth_failed.emit(tr("AUTH_NEED_EMAIL_PWD"))
 		return
 	if not AuthValidation.is_valid_email(e):
-		auth_failed.emit("Adresse email invalide.")
+		auth_failed.emit(tr("AUTH_INVALID_EMAIL"))
 		return
 	var pwd_err := AuthValidation.is_valid_password(p)
 	if pwd_err != "":
@@ -235,6 +248,83 @@ func request_player_profile() -> void:
 	if not is_authenticated:
 		return
 	_rpc("get_player_profile")
+
+
+## --- Préférences liées au compte (stockage Nakama natif, aucun module serveur requis) ---
+
+const PREFS_COLLECTION := "pq_prefs"
+const PREFS_KEY := "settings"
+
+
+## Lit les préférences du compte (langue, etc.) → émet preferences_loaded.
+func request_account_preferences() -> void:
+	if not is_account_logged_in():
+		return
+	var body := JSON.stringify({
+		"object_ids": [{"collection": PREFS_COLLECTION, "key": PREFS_KEY}]
+	})
+	_enqueue_http({
+		"kind": "prefs_read",
+		"url": "%s/v2/storage" % NetworkConfig.nakama_base_url(),
+		"method": HTTPClient.METHOD_POST,
+		"headers": _nakama_headers(true),
+		"body": body,
+	})
+
+
+## Écrit les préférences du compte (best-effort : un échec n'interrompt rien).
+func save_account_preferences(prefs: Dictionary) -> void:
+	if not is_account_logged_in():
+		return
+	var body := JSON.stringify({
+		"objects": [{
+			"collection": PREFS_COLLECTION,
+			"key": PREFS_KEY,
+			"value": JSON.stringify(prefs),
+			"permission_read": 1,
+			"permission_write": 1,
+		}]
+	})
+	_enqueue_http({
+		"kind": "prefs_write",
+		"url": "%s/v2/storage" % NetworkConfig.nakama_base_url(),
+		"method": HTTPClient.METHOD_PUT,
+		"headers": _nakama_headers(true),
+		"body": body,
+	})
+
+
+func _extract_prefs_from_storage(parsed: Variant, raw_text: String) -> Dictionary:
+	var objects: Array = []
+	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("objects"):
+		var o: Variant = parsed["objects"]
+		if typeof(o) == TYPE_ARRAY:
+			objects = o
+	if objects.is_empty():
+		return _extract_prefs_from_text(raw_text)
+	var first: Variant = objects[0]
+	if typeof(first) != TYPE_DICTIONARY:
+		return {}
+	var value_variant: Variant = (first as Dictionary).get("value", "")
+	if typeof(value_variant) == TYPE_DICTIONARY:
+		return value_variant as Dictionary
+	var decoded: Variant = _parse_json_safe(str(value_variant))
+	if typeof(decoded) == TYPE_DICTIONARY:
+		return decoded as Dictionary
+	return _extract_prefs_from_text(raw_text)
+
+
+## Repli Web : extrait "language":"xx" du texte brut (valeur potentiellement échappée).
+func _extract_prefs_from_text(text: String) -> Dictionary:
+	var out := {}
+	if text.is_empty():
+		return out
+	var re := RegEx.new()
+	if re.compile("\\\\?\"language\\\\?\"\\s*:\\s*\\\\?\"([a-zA-Z]{2})\\\\?\"") == OK:
+		var m := re.search(text)
+		if m:
+			out["language"] = m.get_string(1)
+	return out
 
 
 func request_account_info() -> void:
@@ -369,11 +459,11 @@ func authenticate() -> void:
 		auth_ready.emit()
 		return
 	if not FileAccess.file_exists("user://account_credentials.json"):
-		auth_failed.emit("Connecte-toi ou crée un compte avant de lancer une partie.")
+		auth_failed.emit(tr("AUTH_LOGIN_FIRST"))
 		return
 	var parsed := _read_saved_credentials()
 	if parsed.is_empty():
-		auth_failed.emit("Identifiants locaux invalides. Reconnecte-toi.")
+		auth_failed.emit(tr("AUTH_LOCAL_INVALID"))
 		return
 	var email := str(parsed.get("email", ""))
 	_apply_saved_username_hints(email)
@@ -382,7 +472,7 @@ func authenticate() -> void:
 
 func join_ranked_queue() -> void:
 	if not is_account_logged_in():
-		match_failed.emit("Connecte-toi avec un compte avant de jouer en ligne.")
+		match_failed.emit(tr("AUTH_ACCOUNT_REQUIRED"))
 		return
 	_awaiting_join_ack = true
 	_in_queue = false
@@ -673,6 +763,16 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 			_pump_http_queue()
 			return
 		_handle_error(_friendly_auth_error(response_code, parsed, text))
+		_pump_http_queue()
+		return
+
+	# Préférences liées au compte (stockage Nakama). Best-effort : pas d'erreur bloquante.
+	if http_kind == "prefs_write":
+		_pump_http_queue()
+		return
+	if http_kind == "prefs_read":
+		if _http_is_success(response_code):
+			preferences_loaded.emit(_extract_prefs_from_storage(parsed, text))
 		_pump_http_queue()
 		return
 
@@ -1345,21 +1445,21 @@ func _friendly_auth_error(response_code: int, parsed, raw_text: String) -> Strin
 	if typeof(parsed) == TYPE_DICTIONARY:
 		var msg := str(parsed.get("message", "")).to_lower()
 		if response_code == 401 or response_code == 403:
-			return "Email ou mot de passe incorrect."
+			return tr("AUTH_WRONG_CREDENTIALS")
 		if response_code == 409 or "already" in msg or "exists" in msg or "unique" in msg:
 			if "username" in msg or "pseudo" in msg:
-				return "Ce pseudo est déjà pris. Choisis-en un autre."
-			return "Cet email ou ce pseudo est déjà utilisé."
+				return tr("AUTH_USERNAME_TAKEN")
+			return tr("AUTH_EMAIL_OR_USER_TAKEN")
 		if response_code == 400:
 			if "email" in msg:
-				return "Format d'email invalide."
+				return tr("AUTH_EMAIL_FORMAT")
 			if "password" in msg:
-				return "Mot de passe invalide."
+				return tr("AUTH_PASSWORD_INVALID")
 			if "username" in msg:
-				return "Pseudo invalide ou déjà pris."
-			return "Données invalides. Vérifie email, pseudo et mot de passe."
+				return tr("AUTH_USERNAME_INVALID_TAKEN")
+			return tr("AUTH_DATA_INVALID")
 	if response_code == 0:
-		return "Impossible de joindre le serveur. Vérifie ta connexion."
+		return tr("NET_SERVER_UNREACHABLE")
 	if response_code >= 200 and response_code < 300:
 		return "Réponse serveur inattendue. Réexporte le client Web puis redéploie sur le VPS."
 	if typeof(parsed) == TYPE_DICTIONARY:
@@ -1437,9 +1537,7 @@ func _process(_delta: float) -> void:
 		_map_wait_elapsed += _delta
 		if _map_wait_elapsed >= MAP_WAIT_TIMEOUT:
 			_waiting_map_after_connect = false
-			game_connection_failed.emit(
-				"La map n'a pas démarré. Ouvre un 2e onglet (Multijoueur) ou vérifie le serveur jeu (port 9080)."
-			)
+			game_connection_failed.emit(tr("NET_MAP_NOT_STARTED"))
 	if not _in_queue or not is_authenticated or _match_handoff_started or _awaiting_join_ack:
 		return
 	if _http_busy:

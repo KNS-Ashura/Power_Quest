@@ -1,8 +1,6 @@
 extends Node2D
 
 const MIN_PLAYERS_TO_START := 2
-const JOIN_LABEL := "JOIN ROOM"
-const CANCEL_LABEL := "CANCEL"
 
 signal requires_login
 
@@ -81,20 +79,20 @@ func _start_matchmaking() -> void:
 	# Déjà connecté : lancer la file directement (pas de redirection).
 	if NetworkSession.is_account_logged_in():
 		_enter_matchmaking_ui()
-		_status_label.text = "Connexion à la file..."
+		_status_label.text = tr("MULTI_CONNECTING_QUEUE")
 		NetworkSession.join_ranked_queue()
 		return
 
 	# Identifiants locaux : tenter reconnexion auto, pas de redirection immédiate.
 	if NetworkSession.has_saved_account_credentials():
 		_enter_matchmaking_ui()
-		_status_label.text = "Connexion à Nakama..."
+		_status_label.text = tr("MULTI_CONNECTING_NAKAMA")
 		NetworkSession.authenticate()
 		return
 
 	# Vraiment non connecté : redirection vers la page connexion.
 	_status_label.modulate = Color(1, 0.45, 0.45)
-	_status_label.text = "Connecte-toi pour jouer en ligne."
+	_status_label.text = tr("MULTI_LOGIN_REQUIRED")
 	requires_login.emit()
 
 
@@ -119,13 +117,13 @@ func _cancel_matchmaking(show_message: bool) -> void:
 
 func _reset_idle_ui() -> void:
 	_status_label.modulate = Color.WHITE
-	_status_label.text = "Appuyez sur JOIN ROOM pour rejoindre la file."
+	_status_label.text = tr("MULTI_PRESS_JOIN")
 
 
 func _set_join_button_mode(in_queue: bool) -> void:
 	if _join_room == null:
 		return
-	_join_room.text = CANCEL_LABEL if in_queue else JOIN_LABEL
+	_join_room.text = tr("MULTI_CANCEL") if in_queue else tr("MULTI_JOIN")
 
 
 func _on_auth_ready() -> void:
@@ -134,10 +132,10 @@ func _on_auth_ready() -> void:
 	if not NetworkSession.is_account_logged_in():
 		_cancel_matchmaking(true)
 		_status_label.modulate = Color(1, 0.45, 0.45)
-		_status_label.text = "Session expirée. Reconnecte-toi."
+		_status_label.text = tr("MULTI_SESSION_EXPIRED")
 		requires_login.emit()
 		return
-	_status_label.text = "En attente d'autres joueurs..."
+	_status_label.text = tr("MULTI_WAITING_PLAYERS")
 	NetworkSession.join_ranked_queue()
 
 
@@ -154,29 +152,20 @@ func _on_session_closed() -> void:
 func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> void:
 	if not _in_matchmaking:
 		return
+	var prefix := str(players) + " / " + str(max_players) + " — "
 	if players < MIN_PLAYERS_TO_START:
-		_status_label.text = (
-			str(players)
-			+ " / "
-			+ str(max_players)
-			+ " — en attente ("
-			+ str(MIN_PLAYERS_TO_START)
-			+ " joueurs min.)"
-		)
+		_status_label.text = prefix + tr("MULTI_WAITING_MIN").format([MIN_PLAYERS_TO_START])
 	elif seconds_left > 0:
-		var timer_hint := "10 s" if players < max_players else "5 s (file pleine)"
+		var timer_hint := tr("MULTI_TIMER_FULL") if players >= max_players else "10s"
 		_status_label.text = (
-			str(players)
-			+ " / "
-			+ str(max_players)
-			+ " — lancement dans "
-			+ str(seconds_left)
-			+ " s ("
+			prefix
+			+ tr("MULTI_LAUNCH_IN").format([seconds_left])
+			+ " ("
 			+ timer_hint
 			+ ")"
 		)
 	else:
-		_status_label.text = str(players) + " / " + str(max_players) + " — connexion au serveur…"
+		_status_label.text = prefix + tr("MULTI_CONNECTING_SERVER")
 
 
 func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
@@ -186,7 +175,7 @@ func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
 	var ws := game_ws_url.strip_edges()
 	if ws == "":
 		ws = NetworkSession.resolved_game_ws_url()
-	_status_label.text = "Connexion WebSocket…"
+	_status_label.text = tr("MULTI_WS_CONNECTING")
 	await NetworkSession.connect_to_game_server(ws)
 	_connecting_game = false
 
@@ -194,12 +183,12 @@ func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
 func _on_game_connected() -> void:
 	if not _in_matchmaking:
 		return
-	_status_label.text = "Connecté — lancement dès que 2 joueurs sont prêts…"
+	_status_label.text = tr("MULTI_GAME_CONNECTED")
 
 
 func _on_online_match_begin() -> void:
 	var map_idx := MapSession.active_map_index
-	_status_label.text = "Chargement de la map " + str(map_idx) + "…"
+	_status_label.text = tr("MULTI_LOADING_MAP").format([map_idx])
 
 
 func _on_game_connection_failed(message: String) -> void:
@@ -212,3 +201,10 @@ func _on_match_failed(message: String) -> void:
 	_cancel_matchmaking(true)
 	_status_label.modulate = Color(1, 0.45, 0.45)
 	_status_label.text = message
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready() and _status_label != null:
+		_set_join_button_mode(_in_matchmaking)
+		if not _in_matchmaking and not _connecting_game:
+			_reset_idle_ui()

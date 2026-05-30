@@ -47,7 +47,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("1_rbqvm")
 theme_override_font_sizes/font_size = 24
-text = "Player"
+text = "SB_PLAYER"
 horizontal_alignment = 1
 
 [node name="NbrTroups" type="Label" parent="MainPanel/TableauContainer/InGameScore" unique_id=2059346684]
@@ -56,7 +56,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("1_rbqvm")
 theme_override_font_sizes/font_size = 24
-text = "Troups"
+text = "SB_TROOPS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -66,7 +66,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("1_rbqvm")
 theme_override_font_sizes/font_size = 24
-text = "Camps"
+text = "SB_CAMPS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -76,7 +76,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("1_rbqvm")
 theme_override_font_sizes/font_size = 24
-text = "Gold"
+text = "SB_GOLD"
 horizontal_alignment = 1
 vertical_alignment = 1
 

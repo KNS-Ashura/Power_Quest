@@ -56,14 +56,14 @@ func set_team_display_names(names: PackedStringArray) -> void:
 
 func get_team_display_name(team_id: int) -> String:
 	if is_neutral_team(team_id):
-		return "Neutre"
+		return tr("TEAM_NEUTRAL")
 	if team_display_names.has(team_id):
 		var name: String = str(team_display_names[team_id]).strip_edges()
 		if name != "":
 			return name
 	if not is_online_match and team_id == 1:
-		return "Ennemi IA"
-	return "Ennemi"
+		return tr("TEAM_ENEMY_AI")
+	return tr("TEAM_ENEMY")
 
 
 func reset_online_state() -> void:

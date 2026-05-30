@@ -34,7 +34,7 @@ offset_right = 287.0
 offset_bottom = 324.0
 theme_override_fonts/font = ExtResource("9_s7vnq")
 theme_override_font_sizes/font_size = 32
-text = "SOLO VS IA"
+text = "MENU_SOLO_TITLE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -81,7 +81,7 @@ offset_right = 260.0
 offset_bottom = 424.0
 theme_override_fonts/font = ExtResource("9_s7vnq")
 theme_override_font_sizes/font_size = 24
-text = "DEBUTANT"
+text = "AI_BEGINNER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -94,7 +94,7 @@ offset_right = 260.0
 offset_bottom = 388.0
 theme_override_fonts/font = ExtResource("9_s7vnq")
 theme_override_font_sizes/font_size = 24
-text = "AI"
+text = "AI_LABEL"
 horizontal_alignment = 1
 vertical_alignment = 1
 

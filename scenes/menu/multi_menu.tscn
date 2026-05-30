@@ -36,7 +36,7 @@ offset_right = 238.0
 offset_bottom = 77.0
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 32
-text = "MULTI"
+text = "MULTI_TITLE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -68,7 +68,7 @@ offset_left = 24.0
 offset_top = 244.0
 offset_right = 268.0
 offset_bottom = 290.0
-text = "JOIN ROOM"
+text = "MULTI_JOIN"
 
 [node name="BackToMenu" type="Button" parent="PageGauche" unique_id=200008]
 layout_mode = 0
@@ -76,6 +76,6 @@ offset_left = 8.0
 offset_top = 334.0
 offset_right = 130.0
 offset_bottom = 365.0
-text = "BACK"
+text = "MULTI_BACK"
 
 [connection signal="pressed" from="PageGauche/JoinRoom" to="." method="_on_join_room_pressed"]
