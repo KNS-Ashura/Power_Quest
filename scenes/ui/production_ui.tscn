@@ -1,13 +1,10 @@
 [gd_scene format=3 uid="uid://cui68p4q4p4m"]
 
 [ext_resource type="Script" uid="uid://bowkmm0vjgh7c" path="res://scripts/ui/production_ui.gd" id="1_ui"]
+[ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="2_et8kq"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://bmkelnvyln5pm" path="res://assets/menu/img-sur-mesure/menu_bouton.tres" id="3_button"]
-[ext_resource type="Texture2D" uid="uid://b53sso5tv5meb" path="res://assets/menu/img-sur-mesure/scene_multi/bandeau.tres" id="4_panel"]
 [ext_resource type="Texture2D" uid="uid://bdwtv2mtupcdq" path="res://assets/menu/icons/Icons.png" id="5_icons"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
-texture = ExtResource("4_panel")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
 atlas = ExtResource("5_icons")
@@ -24,24 +21,30 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -1.0
+offset_right = 12.0
+offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="GoldPanel" type="PanelContainer" parent="Control" unique_id=1103510580]
+[node name="GoldPanel" type="TextureRect" parent="Control" unique_id=348200187]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -1668.0
 offset_top = 20.0
-offset_right = -1486.0
+offset_right = -1527.0
 offset_bottom = 52.0
 grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+texture = ExtResource("2_et8kq")
 
 [node name="GoldRow" type="HBoxContainer" parent="Control/GoldPanel" unique_id=1698614824]
-layout_mode = 2
+layout_mode = 0
+offset_right = 139.0
+offset_bottom = 32.0
 theme_override_constants/separation = 5
 alignment = 1
 
@@ -60,7 +63,7 @@ theme_override_font_sizes/font_size = 22
 text = "GOLD: 0"
 vertical_alignment = 1
 
-[node name="Panel" type="Panel" parent="Control" unique_id=164534520]
+[node name="Panel" type="TextureRect" parent="Control" unique_id=498169720]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -69,7 +72,6 @@ anchor_bottom = 1.0
 offset_top = -145.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 
 [node name="GridContainer" type="GridContainer" parent="Control/Panel" unique_id=1406184346]
 layout_mode = 1
@@ -78,9 +80,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -507.0
+offset_left = -446.0
 offset_top = -51.5
-offset_right = 133.0
+offset_right = 146.34375
 offset_bottom = 52.5
 grow_horizontal = 2
 grow_vertical = 2
@@ -204,6 +206,171 @@ grow_vertical = 2
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Niveau camp : 1"
+
+[node name="GridContainer2" type="GridContainer" parent="." unique_id=529597284]
+texture_filter = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -446.0
+offset_top = -53.5
+offset_right = 354.0
+offset_bottom = 54.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 20
+columns = 4
+
+[node name="BtnInf" type="TextureButton" parent="GridContainer2" unique_id=1321958025]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnInf" unique_id=1478375835]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "INFANTRY (50G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnArc" type="TextureButton" parent="GridContainer2" unique_id=68705906]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnArc" unique_id=684138418]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 108.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "RANGE (80G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnHeavy" type="TextureButton" parent="GridContainer2" unique_id=612429314]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnHeavy" unique_id=358592072]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "HEAVY (150G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnSupport" type="TextureButton" parent="GridContainer2" unique_id=1522375867]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnSupport" unique_id=172567987]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "SUPPORT (100 G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnHeal" type="TextureButton" parent="GridContainer2" unique_id=500839733]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnHeal" unique_id=249486925]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "HEAL (100G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnAntiArmor" type="TextureButton" parent="GridContainer2" unique_id=1923345486]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 1
+
+[node name="Label" type="Label" parent="GridContainer2/BtnAntiArmor" unique_id=143019503]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 108.0
+offset_bottom = 36.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "ANTI-ARMOR (90G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnMortar" type="TextureButton" parent="GridContainer2" unique_id=1266224554]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnMortar" unique_id=934753885]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "MORTAR (200G)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnUpgrade" type="TextureButton" parent="GridContainer2" unique_id=2016241529]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+texture_normal = ExtResource("2_et8kq")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="GridContainer2/BtnUpgrade" unique_id=1473492692]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 109.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "UPGRADE CAMP"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnInf" to="." method="_on_btn_inf_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer/BtnArc" to="." method="_on_btn_arc_pressed"]

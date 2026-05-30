@@ -1,12 +1,9 @@
 [gd_scene format=3 uid="uid://buceavab1b56w"]
 
 [ext_resource type="Script" uid="uid://d2qfhkd6apipo" path="res://scripts/ui/spell_ui.gd" id="1_spell_ui"]
+[ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="2_6qdp5"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://bmkelnvyln5pm" path="res://assets/menu/img-sur-mesure/menu_bouton.tres" id="3_button"]
-[ext_resource type="Texture2D" uid="uid://b53sso5tv5meb" path="res://assets/menu/img-sur-mesure/scene_multi/bandeau.tres" id="4_panel"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
-texture = ExtResource("4_panel")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_button"]
 texture = ExtResource("3_button")
@@ -23,17 +20,17 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="Panel" parent="Control" unique_id=1628954632]
+[node name="Panel" type="TextureRect" parent="Control" unique_id=1620835020]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 968.0
+offset_left = 1085.0
 offset_top = -911.0
 offset_right = 1658.0
-offset_bottom = -862.0
+offset_bottom = -857.0
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+texture = ExtResource("2_6qdp5")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel" unique_id=1843075608]
 layout_mode = 1
