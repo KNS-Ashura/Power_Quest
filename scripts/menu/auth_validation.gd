@@ -32,9 +32,9 @@ static func is_valid_username(username: String) -> bool:
 
 static func is_valid_password(password: String) -> String:
 	if password.length() < MIN_PASSWORD_LEN:
-		return "Le mot de passe doit contenir au moins %d caractères." % MIN_PASSWORD_LEN
+		return TranslationServer.translate("AUTH_PWD_TOO_SHORT").format([MIN_PASSWORD_LEN])
 	if password.length() > MAX_PASSWORD_LEN:
-		return "Le mot de passe est trop long (max %d caractères)." % MAX_PASSWORD_LEN
+		return TranslationServer.translate("AUTH_PWD_TOO_LONG").format([MAX_PASSWORD_LEN])
 	return ""
 
 

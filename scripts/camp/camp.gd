@@ -750,7 +750,7 @@ func _update_groups_and_visuals() -> void:
 			color_rect.color = Color(0.5, 0.5, 0.5, 0.3)
 		if label_node:
 			label_node.visible = true
-			label_node.text = "NEUTRE" if not is_port() else "PORT NEUTRE"
+			label_node.text = tr("CAMP_NEUTRAL") if not is_port() else tr("CAMP_PORT_NEUTRAL")
 	else:
 		if MapSession.is_hostile_team(team):
 			add_to_group("enemies")
@@ -760,7 +760,7 @@ func _update_groups_and_visuals() -> void:
 		if label_node:
 			label_node.visible = true
 			var owner_label := MapSession.get_team_display_name(int(team))
-			label_node.text = ("PORT %s" % owner_label) if is_port() else owner_label
+			label_node.text = (tr("CAMP_PORT_PREFIX") + " " + owner_label) if is_port() else owner_label
 	queue_redraw()
 
 

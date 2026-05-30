@@ -56,7 +56,7 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_button")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
 theme_override_styles/hover = SubResource("StyleBoxTexture_button")
 theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Heal"
+text = "SPELL_HEAL"
 
 [node name="BtnBoost" type="Button" parent="Control/Panel/HBoxContainer" unique_id=1780866597]
 layout_mode = 2
@@ -67,7 +67,7 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_button")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
 theme_override_styles/hover = SubResource("StyleBoxTexture_button")
 theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Boost"
+text = "SPELL_BOOST"
 
 [node name="BtnMortarSpell" type="Button" parent="Control/Panel/HBoxContainer" unique_id=1974586893]
 layout_mode = 2
@@ -78,7 +78,7 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_button")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
 theme_override_styles/hover = SubResource("StyleBoxTexture_button")
 theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Mortar Ult"
+text = "SPELL_MORTAR_ULT"
 
 [node name="BtnAntiArmor" type="Button" parent="Control/Panel/HBoxContainer" unique_id=751226831]
 layout_mode = 2
@@ -89,7 +89,7 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_button")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
 theme_override_styles/hover = SubResource("StyleBoxTexture_button")
 theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Armor Break"
+text = "SPELL_ARMOR_BREAK"
 
 [node name="BtnWaterTransport" type="Button" parent="Control/Panel/HBoxContainer" unique_id=306778431]
 layout_mode = 2
@@ -100,7 +100,7 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_button")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
 theme_override_styles/hover = SubResource("StyleBoxTexture_button")
 theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Transport"
+text = "SPELL_TRANSPORT"
 
 [connection signal="pressed" from="Control/Panel/HBoxContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
 [connection signal="pressed" from="Control/Panel/HBoxContainer/BtnBoost" to="." method="_on_btn_boost_pressed"]

@@ -32,6 +32,7 @@ NetworkConfig="*res://scripts/network/network_config.gd"
 NetworkSession="*res://scripts/network/network_session.gd"
 OnlineMatch="*res://scripts/network/online_match.gd"
 OnlineGameSync="*res://scripts/network/online_game_sync.gd"
+UserPrefs="*res://scripts/autoload/user_prefs.gd"
 
 [display]
 

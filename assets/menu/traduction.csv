@@ -48,3 +48,98 @@ AI_BEGINNER;BEGINNER;DÉBUTANT;ANFÄNGER
 AI_INTERMEDIATE;INTERMEDIATE;INTERMÉDIAIRE;FORTGESCHRITTEN
 AI_EXPERT;EXPERT;EXPERT;EXPERTE
 BTN_LANG_TOGGLE;ENGLISH;FRANÇAIS;DEUTSCH
+UNIT_INFANTRY;Infantry;Infanterie;Infanterie
+UNIT_RANGE;Range;Archer;Schütze
+UNIT_HEAVY;Heavy;Lourd;Schwer
+UNIT_SUPPORT;Support;Soutien;Unterstützung
+UNIT_HEAL;Heal;Soigneur;Heiler
+UNIT_ANTI_ARMOR;Anti-Armor;Anti-armure;Panzerbrecher
+UNIT_MORTAR;Mortar;Mortier;Mörser
+UNIT_WATER_TRANSPORT;Water Transport;Transport maritime;Wassertransport
+UNIT_WATER_TANK;Water Tank;Char maritime;Wasserpanzer
+UNIT_WATER_RANGE;Water Range;Archer maritime;Wasserschütze
+PROD_QUEUE;Queue:;File :;Warteschlange:
+PROD_QUEUE_EMPTY;Queue empty;File vide;Warteschlange leer
+PROD_PORT_LEVEL;Port level:;Niveau du port :;Hafenstufe:
+PROD_CAMP_LEVEL;Camp level:;Niveau du camp :;Lagerstufe:
+PROD_UPGRADE_PORT;Upgrade Port;Améliorer le port;Hafen ausbauen
+PROD_UPGRADE_CAMP;Upgrade Camp;Améliorer le camp;Lager ausbauen
+PROD_UPGRADE_UNAVAILABLE;Upgrade unavailable;Amélioration indisponible;Ausbau nicht verfügbar
+PROD_PORT_MAX;Port MAX;Port MAX;Hafen MAX
+PROD_CAMP_MAX;Camp MAX;Camp MAX;Lager MAX
+SPELL_HEAL;Heal;Soin;Heilung
+SPELL_BOOST;Boost;Boost;Verstärkung
+SPELL_MORTAR_ULT;Mortar Ult;Mortier Ult;Mörser-Ult
+SPELL_ARMOR_BREAK;Armor Break;Brise-armure;Panzerbruch
+SPELL_TRANSPORT;Transport;Transport;Transport
+SPELL_DISEMBARK;Disembark;Débarquer;Ausschiffen
+SPELL_EMBARK;Embark;Embarquer;Einschiffen
+CAMP_NEUTRAL;NEUTRAL;NEUTRE;NEUTRAL
+CAMP_PORT_NEUTRAL;NEUTRAL PORT;PORT NEUTRE;NEUTRALER HAFEN
+CAMP_PORT_PREFIX;PORT;PORT;HAFEN
+TEAM_NEUTRAL;Neutral;Neutre;Neutral
+TEAM_ENEMY;Enemy;Ennemi;Gegner
+TEAM_ENEMY_AI;AI Enemy;Ennemi IA;KI-Gegner
+MULTI_TITLE;MULTIPLAYER;MULTIJOUEUR;MEHRSPIELER
+MULTI_JOIN;JOIN ROOM;REJOINDRE;BEITRETEN
+MULTI_CANCEL;CANCEL;ANNULER;ABBRECHEN
+MULTI_CONNECTING_QUEUE;Connecting to queue...;Connexion à la file...;Verbinde mit Warteschlange...
+MULTI_CONNECTING_NAKAMA;Connecting to Nakama...;Connexion à Nakama...;Verbinde mit Nakama...
+MULTI_LOGIN_REQUIRED;Log in to play online.;Connecte-toi pour jouer en ligne.;Melde dich an um online zu spielen.
+MULTI_PRESS_JOIN;Press JOIN ROOM to enter the queue.;Appuyez sur REJOINDRE pour rejoindre la file.;Drücke BEITRETEN um der Warteschlange beizutreten.
+MULTI_SESSION_EXPIRED;Session expired. Reconnect.;Session expirée. Reconnecte-toi.;Sitzung abgelaufen. Erneut anmelden.
+MULTI_WAITING_PLAYERS;Waiting for other players...;En attente d'autres joueurs...;Warte auf andere Spieler...
+MULTI_WAITING_MIN;waiting (min {0} players);en attente ({0} joueurs min.);warten (min. {0} Spieler)
+MULTI_LAUNCH_IN;launching in {0}s;lancement dans {0}s;Start in {0}s
+MULTI_TIMER_FULL;room full;file pleine;Raum voll
+MULTI_CONNECTING_SERVER;connecting to server…;connexion au serveur…;Verbinde mit Server…
+MULTI_WS_CONNECTING;Connecting WebSocket…;Connexion WebSocket…;Verbinde WebSocket…
+MULTI_GAME_CONNECTED;Connected — starting when ready…;Connecté — lancement quand tout est prêt…;Verbunden — Start sobald bereit…
+MULTI_LOADING_MAP;Loading map {0}…;Chargement de la carte {0}…;Lade Karte {0}…
+MULTI_BACK;BACK;RETOUR;ZURÜCK
+AUTH_LOGIN_TITLE;LOGIN;CONNEXION;ANMELDUNG
+AUTH_REGISTER_TITLE;SIGN UP;INSCRIPTION;REGISTRIEREN
+AUTH_EMAIL;Email;Email;E-Mail
+AUTH_PASSWORD;Password;Mot de passe;Passwort
+AUTH_USERNAME;Username;Pseudo;Benutzername
+AUTH_BTN_LOGIN;LOG IN;SE CONNECTER;ANMELDEN
+AUTH_BTN_REGISTER;SIGN UP;S'INSCRIRE;REGISTRIEREN
+AUTH_FILL_LOGIN;Fill in email and password.;Remplis l'email et le mot de passe.;Bitte E-Mail und Passwort eingeben.
+AUTH_INVALID_EMAIL;Invalid email address (e.g. name@domain.com).;Adresse email invalide (ex: nom@domaine.com).;Ungültige E-Mail-Adresse (z.B. name@domain.com).
+AUTH_LOGGING_IN;Logging in...;Connexion en cours...;Anmeldung läuft...
+AUTH_FILL_REGISTER;Fill in username, email and password.;Remplis pseudo, email et mot de passe.;Bitte Benutzername E-Mail und Passwort eingeben.
+AUTH_USERNAME_RULES_LONG;Invalid username: 3-20 chars, letters/digits/_ only.;Pseudo invalide : 3-20 caractères, lettres/chiffres/_ uniquement.;Ungültiger Benutzername: 3-20 Zeichen nur Buchstaben/Ziffern/_.
+AUTH_CREATING;Creating account...;Création du compte...;Konto wird erstellt...
+AUTH_SUCCESS;Connected! Redirecting to profile...;Connecté ! Redirection vers le profil...;Verbunden! Weiterleitung zum Profil...
+AUTH_PWD_TOO_SHORT;Password must be at least {0} characters.;Le mot de passe doit contenir au moins {0} caractères.;Das Passwort muss mindestens {0} Zeichen haben.
+AUTH_PWD_TOO_LONG;Password too long (max {0} characters).;Le mot de passe est trop long (max {0} caractères).;Passwort zu lang (max {0} Zeichen).
+AUTH_NEED_FIELDS;Email, username and password required.;Email, pseudo et mot de passe requis.;E-Mail Benutzername und Passwort erforderlich.
+AUTH_NEED_EMAIL_PWD;Email and password required.;Email et mot de passe requis.;E-Mail und Passwort erforderlich.
+AUTH_USERNAME_RULES;Invalid username (3-20 chars, letters/digits/_).;Pseudo invalide (3-20 caractères, lettres/chiffres/_).;Ungültiger Benutzername (3-20 Zeichen Buchstaben/Ziffern/_).
+AUTH_LOGIN_FIRST;Log in or create an account before playing.;Connecte-toi ou crée un compte avant de lancer une partie.;Melde dich an oder erstelle ein Konto bevor du spielst.
+AUTH_LOCAL_INVALID;Invalid local credentials. Reconnect.;Identifiants locaux invalides. Reconnecte-toi.;Ungültige lokale Anmeldedaten. Erneut anmelden.
+AUTH_ACCOUNT_REQUIRED;Log in with an account to play online.;Connecte-toi avec un compte avant de jouer en ligne.;Melde dich mit einem Konto an um online zu spielen.
+AUTH_WRONG_CREDENTIALS;Wrong email or password.;Email ou mot de passe incorrect.;Falsche E-Mail oder Passwort.
+AUTH_USERNAME_TAKEN;This username is taken. Choose another.;Ce pseudo est déjà pris. Choisis-en un autre.;Dieser Benutzername ist vergeben. Wähle einen anderen.
+AUTH_EMAIL_OR_USER_TAKEN;This email or username is already used.;Cet email ou ce pseudo est déjà utilisé.;Diese E-Mail oder dieser Benutzername wird bereits verwendet.
+AUTH_EMAIL_FORMAT;Invalid email format.;Format d'email invalide.;Ungültiges E-Mail-Format.
+AUTH_PASSWORD_INVALID;Invalid password.;Mot de passe invalide.;Ungültiges Passwort.
+AUTH_USERNAME_INVALID_TAKEN;Invalid username or already taken.;Pseudo invalide ou déjà pris.;Ungültiger oder bereits vergebener Benutzername.
+AUTH_DATA_INVALID;Invalid data. Check email username and password.;Données invalides. Vérifie email, pseudo et mot de passe.;Ungültige Daten. Prüfe E-Mail Benutzername und Passwort.
+NET_SERVER_UNREACHABLE;Cannot reach the server. Check your connection.;Impossible de joindre le serveur. Vérifie ta connexion.;Server nicht erreichbar. Prüfe deine Verbindung.
+NET_MAP_NOT_STARTED;The map did not start. Open a 2nd tab (Multiplayer) or check the game server.;La map n'a pas démarré. Ouvre un 2e onglet (Multijoueur) ou vérifie le serveur de jeu.;Die Karte startete nicht. Öffne einen 2. Tab (Mehrspieler) oder prüfe den Spielserver.
+PROFILE_CONNECTED;Connected;Connecté;Verbunden
+PROFILE_OFFLINE;Profile unavailable while offline.;Profil indisponible sans connexion.;Profil offline nicht verfügbar.
+SB_PLAYER;Player;Joueur;Spieler
+SB_TROOPS;Troops;Troupes;Truppen
+SB_CAMPS;Camps;Camps;Lager
+SB_GOLD;Gold;Or;Gold
+END_VICTORY;VICTORY !;VICTOIRE !;SIEG !
+END_DEFEAT;DEFEAT;DÉFAITE;NIEDERLAGE
+END_GO_TO_MENU;GO TO MENU;RETOUR AU MENU;ZUM MENÜ
+END_TIME;Time:;Temps :;Zeit:
+GAME_TITLE;POWER QUEST;POWER QUEST;POWER QUEST
+AI_LABEL;AI;IA;KI
+MAP_NAME_1;Undead Land;Terre des morts-vivants;Untoten-Land
+MAP_NAME_2;Desert Land;Terre désertique;Wüstenland
+MAP_NAME_3;Glowing Cave;Caverne lumineuse;Leuchtende Höhle

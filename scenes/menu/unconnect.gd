@@ -60,17 +60,17 @@ func _on_btn_login_pressed() -> void:
 	var email := AuthValidation.sanitize_email(login_email.text)
 	var password := login_password.text
 	if email == "" or password == "":
-		_show_error("Remplis l'email et le mot de passe.")
+		_show_error(tr("AUTH_FILL_LOGIN"))
 		return
 	if not AuthValidation.is_valid_email(email):
-		_show_error("Adresse email invalide (ex: nom@domaine.com).")
+		_show_error(tr("AUTH_INVALID_EMAIL"))
 		return
 	var pwd_err := AuthValidation.is_valid_password(password)
 	if pwd_err != "":
 		_show_error(pwd_err)
 		return
 	_auth_pending = true
-	_show_status("Connexion en cours...", false)
+	_show_status(tr("AUTH_LOGGING_IN"), false)
 	NetworkSession.login_account(email, password)
 
 
@@ -81,28 +81,32 @@ func _on_btn_register_pressed() -> void:
 	var email := AuthValidation.sanitize_email(register_email.text)
 	var password := register_password.text
 	if username == "" or email == "" or password == "":
-		_show_error("Remplis pseudo, email et mot de passe.")
+		_show_error(tr("AUTH_FILL_REGISTER"))
 		return
 	if not AuthValidation.is_valid_email(email):
-		_show_error("Adresse email invalide (ex: nom@domaine.com).")
+		_show_error(tr("AUTH_INVALID_EMAIL"))
 		return
 	if not AuthValidation.is_valid_username(username):
-		_show_error("Pseudo invalide : 3-20 caractères, lettres/chiffres/_ uniquement.")
+		_show_error(tr("AUTH_USERNAME_RULES_LONG"))
 		return
 	var pwd_err := AuthValidation.is_valid_password(password)
 	if pwd_err != "":
 		_show_error(pwd_err)
 		return
 	_auth_pending = true
-	_show_status("Création du compte...", false)
+	_show_status(tr("AUTH_CREATING"), false)
 	NetworkSession.register_account(email, password, username)
 
 
 func _on_auth_ready() -> void:
 	if not NetworkSession.is_account_logged_in():
 		return
+	# Ignorer la reconnexion auto au lancement (ou refresh) : on ne redirige
+	# vers le profil que si l'utilisateur vient de se connecter/inscrire ici.
+	if not _auth_pending:
+		return
 	_auth_pending = false
-	_show_success("Connecté ! Redirection vers le profil...")
+	_show_success(tr("AUTH_SUCCESS"))
 	auth_completed.emit()
 	await get_tree().create_timer(0.2).timeout
 	var book := get_parent()
