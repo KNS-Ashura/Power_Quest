@@ -53,7 +53,17 @@ func focus_on_local_camps() -> void:
 	for camp in local_camps:
 		center += camp.global_position
 	center /= float(local_camps.size())
-	camera.global_position = center
+	focus_camera_on_world(center)
+
+
+func get_camera() -> Camera2D:
+	return camera
+
+
+func focus_camera_on_world(world_position: Vector2) -> void:
+	if camera == null:
+		return
+	camera.global_position = world_position
 
 
 func _process(delta: float) -> void:

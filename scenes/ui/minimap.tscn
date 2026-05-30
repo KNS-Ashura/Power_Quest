@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://dy5w4nmgdt3fm"]
+
+[ext_resource type="Script" uid="uid://duv2ew8dw01hw" path="res://scripts/ui/minimap.gd" id="1_minimap"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
+
+[node name="MinimapUI" type="CanvasLayer" unique_id=1939720134]
+layer = 5
+
+[node name="Root" type="Control" parent="." unique_id=359721861]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root" unique_id=1725667225]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -206.0
+offset_top = 739.0
+offset_right = -22.0
+offset_bottom = 928.0
+grow_horizontal = 0
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel" unique_id=1431353857]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Root/Panel/VBox" unique_id=934142254]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "MAP"
+horizontal_alignment = 1
+
+[node name="Minimap" type="Control" parent="Root/Panel/VBox" unique_id=1075917672]
+custom_minimum_size = Vector2(172, 172)
+layout_mode = 2
+script = ExtResource("1_minimap")

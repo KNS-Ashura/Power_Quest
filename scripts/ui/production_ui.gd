@@ -2,16 +2,16 @@ extends CanvasLayer
 
 @onready var panel = $Control/Panel
 @onready var gold_label = $Control/GoldPanel/GoldRow/LabelArgent
-@onready var queue_label = $Control/Panel/LabelQueue
-@onready var level_label = $Control/Panel/LabelNiveau
-@onready var btn_upgrade = $Control/Panel/GridContainer/BtnUpgrade
-@onready var btn_inf = $Control/Panel/GridContainer/BtnInf
-@onready var btn_arc = $Control/Panel/GridContainer/BtnArc
-@onready var btn_heavy = $Control/Panel/GridContainer/BtnHeavy
-@onready var btn_support = $Control/Panel/GridContainer/BtnSupport
-@onready var btn_heal = $Control/Panel/GridContainer/BtnHeal
-@onready var btn_anti_armor = $Control/Panel/GridContainer/BtnAntiArmor
-@onready var btn_mortar = $Control/Panel/GridContainer/BtnMortar
+@onready var queue_label = $Control/Panel/GridContainer2/BadgeQueue/Label
+@onready var level_label = $Control/Panel/GridContainer2/BadgeLevel/Label
+@onready var btn_upgrade = $Control/Panel/GridContainer2/BtnUpgrade
+@onready var btn_inf = $Control/Panel/GridContainer2/BtnInf
+@onready var btn_arc = $Control/Panel/GridContainer2/BtnArc
+@onready var btn_heavy = $Control/Panel/GridContainer2/BtnHeavy
+@onready var btn_support = $Control/Panel/GridContainer2/BtnSupport
+@onready var btn_heal = $Control/Panel/GridContainer2/BtnHeal
+@onready var btn_anti_armor = $Control/Panel/GridContainer2/BtnAntiArmor
+@onready var btn_mortar = $Control/Panel/GridContainer2/BtnMortar
 
 var selected_building = null
 var _port_production_mode := false
@@ -61,6 +61,14 @@ func _on_building_changed(building) -> void:
 		level_label.text = ""
 
 
+func _set_production_button_text(btn: BaseButton, text: String) -> void:
+	var label := btn.get_node_or_null("Label") as Label
+	if label:
+		label.text = text
+	elif btn is Button:
+		(btn as Button).text = text
+
+
 func _apply_production_button_layout() -> void:
 	if _port_production_mode:
 		btn_support.hide()
@@ -73,13 +81,13 @@ func _apply_production_button_layout() -> void:
 		btn_heal.show()
 		btn_anti_armor.show()
 		btn_mortar.show()
-		btn_inf.text = "Infantry (50G)"
-		btn_arc.text = "Range (80G)"
-		btn_heavy.text = "Heavy (150G)"
-		btn_support.text = "Support (100G)"
-		btn_heal.text = "Heal (100G)"
-		btn_anti_armor.text = "Anti-Armor (90G)"
-		btn_mortar.text = "Mortier (200G)"
+		_set_production_button_text(btn_inf, "Infantry (50G)")
+		_set_production_button_text(btn_arc, "Range (80G)")
+		_set_production_button_text(btn_heavy, "Heavy (150G)")
+		_set_production_button_text(btn_support, "Support (100G)")
+		_set_production_button_text(btn_heal, "Heal (100G)")
+		_set_production_button_text(btn_anti_armor, "Anti-Armor (90G)")
+		_set_production_button_text(btn_mortar, "Mortier (200G)")
 
 
 func _set_port_button_labels() -> void:
@@ -94,16 +102,16 @@ func _set_port_button_labels() -> void:
 	for i in ids.size():
 		var stat: UnitStats = catalog.get(ids[i])
 		if stat:
-			buttons[i].text = "%s (%sG)" % [stat.name, str(stat.price)]
+			_set_production_button_text(buttons[i], "%s (%sG)" % [stat.name, str(stat.price)])
 		else:
-			buttons[i].text = defaults[i]
+			_set_production_button_text(buttons[i], defaults[i])
 
 
 func _update_queue_display(size, progress) -> void:
 	if size > 0:
-		queue_label.text = "Queue: " + str(size) + " (" + str(int(progress * 100)) + "%)"
+		queue_label.text = "QUEUE: %d (%d%%)" % [size, int(progress * 100)]
 	else:
-		queue_label.text = "Queue empty"
+		queue_label.text = "QUEUE EMPTY"
 	_update_level_display()
 	_refresh_upgrade_button()
 
@@ -114,32 +122,35 @@ func _update_level_display() -> void:
 		return
 	var level = int(selected_building.get("camp_level"))
 	if _port_production_mode:
-		level_label.text = "Port level: " + str(level)
+		level_label.text = "PORT LV. %d" % level
 	else:
-		level_label.text = "Camp level: " + str(level)
+		level_label.text = "CAMP LV. %d" % level
 
 
 func _refresh_upgrade_button() -> void:
 	if not selected_building:
 		btn_upgrade.disabled = true
 		var label := "Upgrade Port" if _port_production_mode else "Upgrade Camp"
-		btn_upgrade.text = label
+		_set_production_button_text(btn_upgrade, label)
 		return
 	if not selected_building.has_method("can_upgrade"):
 		btn_upgrade.disabled = true
-		btn_upgrade.text = "Upgrade unavailable"
+		_set_production_button_text(btn_upgrade, "Upgrade unavailable")
 		return
 
 	if not selected_building.can_upgrade():
 		btn_upgrade.disabled = true
-		btn_upgrade.text = ("Port MAX" if _port_production_mode else "Camp MAX")
+		_set_production_button_text(btn_upgrade, "Port MAX" if _port_production_mode else "Camp MAX")
 		return
 
 	var cost = selected_building.next_upgrade_cost() if selected_building.has_method("next_upgrade_cost") else -1
 	var can_afford = cost > 0 and Economy.gold >= cost
 	btn_upgrade.disabled = not can_afford
 	var upgrade_label := "Upgrade Port" if _port_production_mode else "Upgrade Camp"
-	btn_upgrade.text = "%s (%sG)" % [upgrade_label, str(cost)] if cost > 0 else upgrade_label
+	_set_production_button_text(
+		btn_upgrade,
+		"%s (%sG)" % [upgrade_label, str(cost)] if cost > 0 else upgrade_label
+	)
 
 
 func _on_btn_inf_pressed() -> void:

@@ -22,6 +22,13 @@ const TRANSPORT_FILL_COLOR: Color = Color(0.2, 0.75, 1.0, 0.22)
 const TRANSPORT_MARKED_MODULATE: Color = Color(0.55, 0.85, 1.0, 1.0)
 const TRANSPORT_CARRYING_MODULATE: Color = Color(0.35, 1.0, 0.65, 1.0)
 
+const SPELL_BTN_LABELS := {
+	"heal": "Heal",
+	"boost": "Boost",
+	"mortar": "Mortar Ult",
+	"anti_armor": "Armor Break",
+}
+
 var _selected_healer_count: int = 0
 var _selected_support_count: int = 0
 var _selected_mortar_count: int = 0
@@ -44,6 +51,47 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(_delta: float) -> void:
 	_refresh_button_state()
+
+
+func _spell_cast_availability(unit_type: int) -> Dictionary:
+	var ready_count := 0
+	var min_cd := INF
+	for unit in _get_selected_units_by_type(unit_type):
+		if unit.has_method("can_cast_spell") and unit.can_cast_spell():
+			ready_count += 1
+			continue
+		if unit.has_method("get_spell_cooldown_remaining"):
+			var cd: float = unit.get_spell_cooldown_remaining()
+			if cd > 0.0:
+				min_cd = minf(min_cd, cd)
+	if min_cd == INF:
+		min_cd = 0.0
+	return {"ready": ready_count, "min_cooldown": min_cd}
+
+
+func _apply_spell_button_state(btn: Button, selected_count: int, unit_type: int, label_key: String) -> void:
+	var base_label: String = SPELL_BTN_LABELS.get(label_key, label_key)
+	if selected_count <= 0:
+		btn.disabled = true
+		btn.text = base_label
+		btn.modulate = Color.WHITE
+		return
+
+	var availability: Dictionary = _spell_cast_availability(unit_type)
+	if availability.ready > 0:
+		btn.disabled = false
+		btn.text = base_label
+		btn.modulate = Color.WHITE
+		return
+
+	btn.disabled = true
+	var min_cd: float = availability.min_cooldown
+	if min_cd > 0.0:
+		btn.text = "%s %.0fs" % [base_label, ceil(min_cd)]
+		btn.modulate = Color(0.65, 0.65, 0.65, 1.0)
+	else:
+		btn.text = base_label
+		btn.modulate = Color(0.65, 0.65, 0.65, 1.0)
 
 
 func _refresh_button_state() -> void:
@@ -78,6 +126,10 @@ func _refresh_button_state() -> void:
 			and mortars == _selected_mortar_count \
 			and anti_armors == _selected_anti_armor_count \
 			and transporters == _selected_transporter_count:
+		_apply_spell_button_state(btn_heal, _selected_healer_count, 4, "heal")
+		_apply_spell_button_state(btn_boost, _selected_support_count, 3, "boost")
+		_apply_spell_button_state(btn_mortar_spell, _selected_mortar_count, 6, "mortar")
+		_apply_spell_button_state(btn_anti_armor, _selected_anti_armor_count, 5, "anti_armor")
 		_update_transport_button_visuals()
 		return
 
@@ -87,10 +139,10 @@ func _refresh_button_state() -> void:
 	_selected_anti_armor_count = anti_armors
 	_selected_transporter_count = transporters
 
-	btn_heal.disabled = _selected_healer_count <= 0
-	btn_boost.disabled = _selected_support_count <= 0
-	btn_mortar_spell.disabled = _selected_mortar_count <= 0
-	btn_anti_armor.disabled = _selected_anti_armor_count <= 0
+	_apply_spell_button_state(btn_heal, _selected_healer_count, 4, "heal")
+	_apply_spell_button_state(btn_boost, _selected_support_count, 3, "boost")
+	_apply_spell_button_state(btn_mortar_spell, _selected_mortar_count, 6, "mortar")
+	_apply_spell_button_state(btn_anti_armor, _selected_anti_armor_count, 5, "anti_armor")
 	_update_transport_button_visuals()
 
 

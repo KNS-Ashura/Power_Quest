@@ -619,6 +619,10 @@ func get_water_transport_cooldown_remaining() -> float:
 	return PlayerTransportControllerRef.get_cooldown_remaining(self)
 
 
+func get_spell_cooldown_remaining() -> float:
+	return maxf(0.0, cooldown_actuel_sort)
+
+
 func get_water_transport_phase() -> int:
 	return PlayerTransportControllerRef.get_phase(self)
 

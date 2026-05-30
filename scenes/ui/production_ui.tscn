@@ -1,17 +1,14 @@
 [gd_scene format=3 uid="uid://cui68p4q4p4m"]
 
 [ext_resource type="Script" uid="uid://bowkmm0vjgh7c" path="res://scripts/ui/production_ui.gd" id="1_ui"]
+[ext_resource type="Texture2D" uid="uid://cswpogmds0ysq" path="res://assets/menu/img-sur-mesure/scene_multi/bouton_inverse.tres" id="2_badge"]
 [ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="2_et8kq"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
-[ext_resource type="Texture2D" uid="uid://bmkelnvyln5pm" path="res://assets/menu/img-sur-mesure/menu_bouton.tres" id="3_button"]
 [ext_resource type="Texture2D" uid="uid://bdwtv2mtupcdq" path="res://assets/menu/icons/Icons.png" id="5_icons"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
 atlas = ExtResource("5_icons")
 region = Rect2(20.00073, 35.727226, 23.561487, 23.921211)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_button"]
-texture = ExtResource("3_button")
 
 [node name="ProductionUI" type="CanvasLayer" unique_id=846747788]
 script = ExtResource("1_ui")
@@ -73,165 +70,31 @@ offset_top = -145.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="GridContainer" type="GridContainer" parent="Control/Panel" unique_id=1406184346]
+[node name="GridContainer2" type="GridContainer" parent="Control/Panel" unique_id=529597284]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -446.0
-offset_top = -51.5
-offset_right = 146.34375
-offset_bottom = 52.5
+offset_left = -498.0
+offset_top = -64.5
+offset_right = 608.25
+offset_bottom = 43.5
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(1.28, 1)
-theme_override_constants/h_separation = 15
-theme_override_constants/v_separation = 10
-columns = 4
-
-[node name="BtnInf" type="Button" parent="Control/Panel/GridContainer" unique_id=1272985626]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Infantry (50G)"
-
-[node name="BtnArc" type="Button" parent="Control/Panel/GridContainer" unique_id=294927998]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Range (80G)"
-
-[node name="BtnHeavy" type="Button" parent="Control/Panel/GridContainer" unique_id=399910550]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Heavy (150G)"
-
-[node name="BtnSupport" type="Button" parent="Control/Panel/GridContainer" unique_id=400000001]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Support (100G)"
-
-[node name="BtnHeal" type="Button" parent="Control/Panel/GridContainer" unique_id=400000002]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Heal (100G)"
-
-[node name="BtnAntiArmor" type="Button" parent="Control/Panel/GridContainer" unique_id=400000003]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Anti-Armor (90G)"
-
-[node name="BtnMortar" type="Button" parent="Control/Panel/GridContainer" unique_id=400000004]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Mortier (200G)"
-
-[node name="BtnUpgrade" type="Button" parent="Control/Panel/GridContainer" unique_id=400000005]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_button")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_button")
-theme_override_styles/hover = SubResource("StyleBoxTexture_button")
-theme_override_styles/disabled = SubResource("StyleBoxTexture_button")
-text = "Upgrade Camp"
-
-[node name="LabelQueue" type="Label" parent="Control/Panel" unique_id=1765385264]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 1198.0
-offset_top = -9.5
-offset_right = 1298.0
-offset_bottom = 13.5
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-text = "File vide"
-
-[node name="LabelNiveau" type="Label" parent="Control/Panel" unique_id=1765385265]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 934.0
-offset_top = -9.5
-offset_right = 1074.0
-offset_bottom = 13.5
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-text = "Niveau camp : 1"
-
-[node name="GridContainer2" type="GridContainer" parent="." unique_id=529597284]
-texture_filter = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -446.0
-offset_top = -53.5
-offset_right = 354.0
-offset_bottom = 54.5
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
 theme_override_constants/h_separation = 40
 theme_override_constants/v_separation = 20
-columns = 4
+columns = 5
 
-[node name="BtnInf" type="TextureButton" parent="GridContainer2" unique_id=1321958025]
+[node name="BtnInf" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=1321958025]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnInf" unique_id=1478375835]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnInf" unique_id=1478375835]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 4.0
@@ -244,13 +107,13 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="BtnArc" type="TextureButton" parent="GridContainer2" unique_id=68705906]
+[node name="BtnArc" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=68705906]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnArc" unique_id=684138418]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnArc" unique_id=684138418]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 4.0
@@ -262,13 +125,13 @@ text = "RANGE (80G)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BtnHeavy" type="TextureButton" parent="GridContainer2" unique_id=612429314]
+[node name="BtnHeavy" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=612429314]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnHeavy" unique_id=358592072]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnHeavy" unique_id=358592072]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 4.0
@@ -280,13 +143,13 @@ text = "HEAVY (150G)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BtnSupport" type="TextureButton" parent="GridContainer2" unique_id=1522375867]
+[node name="BtnSupport" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=1522375867]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnSupport" unique_id=172567987]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnSupport" unique_id=172567987]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 4.0
@@ -294,17 +157,37 @@ offset_right = 107.0
 offset_bottom = 37.0
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 18
-text = "SUPPORT (100 G)"
+text = "SUPPORT (100G)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BtnHeal" type="TextureButton" parent="GridContainer2" unique_id=500839733]
+[node name="BadgeLevel" type="TextureRect" parent="Control/Panel/GridContainer2" unique_id=1765385265]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_badge")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BadgeLevel" unique_id=1765385266]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "CAMP LV. 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnHeal" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=500839733]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnHeal" unique_id=249486925]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnHeal" unique_id=249486925]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 4.0
@@ -316,13 +199,13 @@ text = "HEAL (100G)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BtnAntiArmor" type="TextureButton" parent="GridContainer2" unique_id=1923345486]
+[node name="BtnAntiArmor" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=1923345486]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 1
 
-[node name="Label" type="Label" parent="GridContainer2/BtnAntiArmor" unique_id=143019503]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnAntiArmor" unique_id=143019503]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 4.0
@@ -335,13 +218,13 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="BtnMortar" type="TextureButton" parent="GridContainer2" unique_id=1266224554]
+[node name="BtnMortar" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=1266224554]
 custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnMortar" unique_id=934753885]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnMortar" unique_id=934753885]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 4.0
@@ -353,13 +236,13 @@ text = "MORTAR (200G)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BtnUpgrade" type="TextureButton" parent="GridContainer2" unique_id=2016241529]
-custom_minimum_size = Vector2(0, 44)
+[node name="BtnUpgrade" type="TextureButton" parent="Control/Panel/GridContainer2" unique_id=2016241529]
+custom_minimum_size = Vector2(110, 44)
 layout_mode = 2
 texture_normal = ExtResource("2_et8kq")
 stretch_mode = 0
 
-[node name="Label" type="Label" parent="GridContainer2/BtnUpgrade" unique_id=1473492692]
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BtnUpgrade" unique_id=1473492692]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 4.0
@@ -372,11 +255,31 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnInf" to="." method="_on_btn_inf_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnArc" to="." method="_on_btn_arc_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnHeavy" to="." method="_on_btn_lourd_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnSupport" to="." method="_on_btn_support_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnHeal" to="." method="_on_btn_heal_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnMortar" to="." method="_on_btn_mortar_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer/BtnUpgrade" to="." method="_on_btn_upgrade_pressed"]
+[node name="BadgeQueue" type="TextureRect" parent="Control/Panel/GridContainer2" unique_id=1765385264]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_badge")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Control/Panel/GridContainer2/BadgeQueue" unique_id=1765385267]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "QUEUE EMPTY"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnInf" to="." method="_on_btn_inf_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnArc" to="." method="_on_btn_arc_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnHeavy" to="." method="_on_btn_lourd_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnSupport" to="." method="_on_btn_support_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnHeal" to="." method="_on_btn_heal_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnMortar" to="." method="_on_btn_mortar_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnUpgrade" to="." method="_on_btn_upgrade_pressed"]
