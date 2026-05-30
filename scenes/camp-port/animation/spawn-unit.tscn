@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://t7157s6pkv3g"]
+
+[ext_resource type="Script" uid="uid://bvx64v8ln7d87" path="res://scripts/camp/camp_site_vfx.gd" id="1_2uksn"]
+[ext_resource type="Texture2D" uid="uid://dwfwbo66qqo2f" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_1.png" id="2_40wyr"]
+[ext_resource type="Texture2D" uid="uid://c7vur15xa2be5" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_2.png" id="3_qlmqk"]
+[ext_resource type="Texture2D" uid="uid://bgys73424rvx7" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_3.png" id="4_6rbfd"]
+[ext_resource type="Texture2D" uid="uid://b8etgf871ie6p" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_4.png" id="5_ckc1n"]
+[ext_resource type="Texture2D" uid="uid://ybl75xid5fwi" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_5.png" id="6_ojaxt"]
+[ext_resource type="Texture2D" uid="uid://oetg2ijig6db" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_6.png" id="7_48aqq"]
+[ext_resource type="Texture2D" uid="uid://da32lpidb0bkp" path="res://assets/objects/camps-anim/Smoke_ring/Smoke_ring1/Smoke_ring1_7.png" id="8_mxnax"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_40wyr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_qlmqk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_6rbfd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_ckc1n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_ojaxt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_48aqq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_mxnax")
+}],
+"loop": true,
+"name": &"spawn",
+"speed": 6.7
+}]
+
+[node name="SpawnUnitVfx" type="Node2D" unique_id=1847293651]
+script = ExtResource("1_2uksn")
+animation_name = "spawn"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1593847265]
+position = Vector2(7.6293945e-06, -1.1444092e-05)
+scale = Vector2(1.9895313, 2.0044532)
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"spawn"
+frame = 2
+frame_progress = 0.00915508
