@@ -1,7 +1,7 @@
 extends Node
 
 var cycle_time: float = 30.0
-var cycle_gold_bonus: int = 100
+var cycle_gold_bonus: int = 50
 var reinforcement_count: int = 2
 var match_over: bool = false
 var local_eliminated: bool = false

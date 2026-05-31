@@ -11,7 +11,7 @@ enum SiteType { CAMP, PORT }
 
 @export var team: Owner = Owner.NEUTRAL
 @export var site_type: SiteType = SiteType.CAMP
-@export var income_per_second: int = 5
+@export var income_per_second: int = 2
 @export var hp_max: int = 500
 @export_range(1, 3, 1) var camp_level: int = 1
 @export var production_time_multiplier: float = 1.0
@@ -244,15 +244,15 @@ func _apply_full_visual_from_template() -> void:
 func _apply_level_config() -> void:
 	match camp_level:
 		2:
-			income_per_second = 7
+			income_per_second = 3
 			hp_max = 700
 			production_time_multiplier = 0.85
 		3:
-			income_per_second = 10
+			income_per_second = 5
 			hp_max = 1000
 			production_time_multiplier = 0.7
 		_:
-			income_per_second = 5
+			income_per_second = 2
 			hp_max = 500
 			production_time_multiplier = 1.0
 	current_hp = hp_max

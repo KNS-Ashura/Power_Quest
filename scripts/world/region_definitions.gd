@@ -1,10 +1,12 @@
 extends RefCounted
 
 ## Extra gold per second per site when its region is fully controlled.
-const BONUS_INCOME_PER_SITE := 3
+const BONUS_INCOME_PER_SITE := 2
+## One-time gold for the local player when they capture a full region.
+const REGION_CAPTURE_GOLD_PLAYER := 60
 
 ## Maps that build regions from camp positions when no manual REGIONS entry exists.
-const AUTO_REGION_MAPS: Array[int] = [3]
+const AUTO_REGION_MAPS: Array[int] = []
 
 const AUTO_REGION_NAMES := {
 	1: "Upper Cavern",
@@ -30,18 +32,32 @@ const REGIONS := {
 	},
 	2: {
 		1: {
-			"sites": ["camp3", "camp4", "camp5", "camp6", "camp10", "port", "port4"],
+			"sites": ["camp10", "camp3", "camp4", "camp6", "camp5", "port4", "port1"],
 			"name": "Northwest Region"
 		},
 		2: {
-			"sites": ["camp1", "camp2", "camp7", "camp9", "port2", "port5"],
+			"sites": ["camp11", "camp8", "camp2", "port5", "port2"],
 			"name": "East Region"
 		},
 		3: {
-			"sites": ["camp8", "camp11", "camp12", "port6", "port7"],
+			"sites": ["camp13", "camp12", "camp1", "camp7", "camp9", "port6", "port7", "port3"],
 			"name": "South Region"
 		},
-	}
+	},
+	3: {
+		1: {
+			"sites": ["camp10", "camp9", "camp7", "port1", "port5", "port2"],
+			"name": "Upper Cavern"
+		},
+		2: {
+			"sites": ["camp6", "camp5", "camp2", "camp1", "camp12", "camp13", "camp3", "port6", "port7"],
+			"name": "Crystal Depths"
+		},
+		3: {
+			"sites": ["camp11", "camp8", "camp4", "port4", "port3"],
+			"name": "Lower Grotto"
+		},
+	},
 }
 
 

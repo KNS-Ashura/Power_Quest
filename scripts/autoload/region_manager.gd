@@ -30,7 +30,9 @@ func init_match() -> void:
 		return
 
 	var by_name: Dictionary = {}
+	var all_sites: Array = []
 	for site in get_tree().get_nodes_in_group("camps"):
+		all_sites.append(site)
 		by_name[site.name] = site
 
 	for region_id in defs:
@@ -38,8 +40,9 @@ func init_match() -> void:
 		var names: Array = config.get("sites", [])
 		var sites: Array = []
 		for node_name in names:
-			if by_name.has(node_name):
-				sites.append(by_name[node_name])
+			var site := _resolve_site(by_name, all_sites, String(node_name))
+			if site != null:
+				sites.append(site)
 			else:
 				push_warning("RegionManager: site '%s' not found (region %s)" % [node_name, region_id])
 		if not sites.is_empty():
@@ -162,6 +165,56 @@ func region_name(region_id: int) -> String:
 	return ""
 
 
+func _resolve_site(by_name: Dictionary, all_sites: Array, node_name: String) -> Node:
+	if by_name.has(node_name):
+		return by_name[node_name]
+	for alias in _site_name_aliases(node_name):
+		if by_name.has(alias):
+			return by_name[alias]
+	var target_number := _site_number_from_name(node_name)
+	if target_number < 0:
+		return null
+	for site in all_sites:
+		if _site_number_from_name(site.name) == target_number \
+				and _same_site_kind(node_name, site.name):
+			return site
+	return null
+
+
+func _site_name_aliases(node_name: String) -> Array[String]:
+	var key := node_name.to_lower()
+	if key == "port":
+		return ["port1"]
+	if key == "port1":
+		return ["port"]
+	if key == "camp":
+		return ["camp1"]
+	if key == "camp1":
+		return ["camp"]
+	return []
+
+
+func _site_number_from_name(node_name: String) -> int:
+	var key := node_name.to_lower()
+	if key == "camp" or key == "port":
+		return 1
+	if key.begins_with("camp"):
+		var suffix := key.substr(4)
+		return int(suffix) if suffix.is_valid_int() else -1
+	if key.begins_with("port"):
+		var suffix := key.substr(4)
+		return int(suffix) if suffix.is_valid_int() else -1
+	return -1
+
+
+func _same_site_kind(expected_name: String, actual_name: String) -> bool:
+	var expected := expected_name.to_lower()
+	var actual := actual_name.to_lower()
+	var expected_is_port := expected == "port" or expected.begins_with("port")
+	var actual_is_port := actual == "port" or actual.begins_with("port")
+	return expected_is_port == actual_is_port
+
+
 func _build_auto_regions_by_position() -> void:
 	var sites: Array = get_tree().get_nodes_in_group("camps")
 	if sites.is_empty():
@@ -197,6 +250,8 @@ func _recalculate_all() -> void:
 		if current >= 0 and current != 2:
 			region_captured.emit(region_id, current, region_name(region_id))
 			play_region_capture_vfx(region_id, current)
+			if MapSession.is_local_team(current):
+				Economy.add_gold(_RegionDefs.REGION_CAPTURE_GOLD_PLAYER)
 	_refresh_active_see_tints()
 
 

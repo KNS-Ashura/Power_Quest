@@ -5,10 +5,12 @@ const CAMP_RADIUS := 3.5
 const UNIT_RADIUS := 1.2
 const BOUNDS_PADDING := 128.0
 const BOUNDS_LAYER_PRIORITY: Array[String] = ["water", "ground1", "ground2", "road", "chemin"]
+const REDRAW_INTERVAL := 0.1
 
 var _world_bounds := Rect2(0, 0, 1920, 1080)
 var _map_draw_rect := Rect2()
 var _bounds_ready := false
+var _redraw_accum := 0.0
 
 
 func _ready() -> void:
@@ -17,9 +19,13 @@ func _ready() -> void:
 	call_deferred("_refresh_world_bounds")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _bounds_ready:
 		return
+	_redraw_accum += delta
+	if _redraw_accum < REDRAW_INTERVAL:
+		return
+	_redraw_accum = 0.0
 	queue_redraw()
 
 
