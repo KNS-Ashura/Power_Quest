@@ -1,7 +1,7 @@
 extends RefCounted
 class_name TranslationKeys
 
-## Généré depuis assets/menu/traduction.csv — source de vérité pour l'export Web.
+## Generated from assets/menu/traduction.csv — source of truth for Web export.
 
 const MSG_EN := {
 	"AI_BEGINNER": "BEGINNER",

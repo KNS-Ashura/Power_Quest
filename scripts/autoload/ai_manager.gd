@@ -127,7 +127,7 @@ func init_match() -> void:
 
 
 func _on_global_cycle() -> void:
-	# Aucune IA en multijoueur : tout est contrôlé par des joueurs humains.
+	# No AI in multiplayer: everything is controlled by human players.
 	if MapSession.is_online_match:
 		return
 	ai_gold += GameManager.cycle_gold_bonus
@@ -137,7 +137,7 @@ func _on_global_cycle() -> void:
 
 
 func _on_think() -> void:
-	# Aucune IA en multijoueur.
+	# No AI in multiplayer.
 	if MapSession.is_online_match:
 		return
 	if GameManager.match_over:

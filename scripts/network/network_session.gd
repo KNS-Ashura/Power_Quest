@@ -1,7 +1,7 @@
 extends Node
 
-## Client Nakama (HTTP) + connexion au serveur de jeu (WebSocket).
-## MVP : pas d'addon nakama-godot requis.
+## Nakama client (HTTP) + game server connection (WebSocket).
+## MVP: no nakama-godot addon required.
 
 signal auth_ready
 signal auth_failed(message: String)
@@ -13,18 +13,18 @@ signal match_failed(message: String)
 signal game_connected
 signal game_connection_failed(message: String)
 signal online_match_begin
-## Préférences (langue, etc.) lues depuis le stockage Nakama lié au compte.
+## Account-linked preferences (language, etc.) from Nakama storage.
 signal preferences_loaded(prefs: Dictionary)
 
 const MAIN_SCENE := "res://scenes/jeu/Main.scn"
 const MIN_PLAYERS_TO_START := 2
 const MAX_PLAYERS_TO_START := 8
-## Fenêtre d'attente après le 2e joueur pour laisser arriver le reste du groupe (jusqu'à 8).
+## Grace window after the 2nd player so the rest of the group can join (up to 8).
 const LOBBY_START_GRACE_SEC := 5.0
 const FALLBACK_GAME_WS_URL := "wss://powerquest.robinmatelot.codes/game/"
 const WS_CONNECT_RETRIES := 3
 const WS_CONNECT_RETRY_DELAY_SEC := 1.5
-## Corps RPC Nakama : le serveur attend une chaîne JSON, pas un objet. Vide = deux guillemets.
+## Nakama RPC body: server expects a JSON string, not an object. Empty = two quotes.
 const NAKAMA_RPC_BODY_EMPTY := '""'
 
 var is_authenticated: bool = false
@@ -39,7 +39,7 @@ var _auth_mode: String = "" # "account" or "device"
 var _pending_auth_email: String = ""
 var _pending_auth_password: String = ""
 var _pending_auth_username: String = ""
-## Pseudo choisi à l'inscription — prioritaire sur le username auto Nakama (souvent aléatoire).
+## Username chosen at signup — overrides auto Nakama username (often random).
 var _session_username_override: String = ""
 var _leave_queue_pending: bool = false
 var _awaiting_join_ack: bool = false
@@ -72,12 +72,12 @@ const MAP_WAIT_TIMEOUT := 25.0
 
 
 func _ready() -> void:
-	# Le binaire --server n'a pas besoin du client Nakama / HTTP.
+	# --server binary does not need the Nakama / HTTP client.
 	if ServerMode.is_dedicated_server:
 		return
 	_use_browser_http = WebNakamaHttp.is_available()
 	if _use_browser_http:
-		# Injecte le pont fetch() au runtime (indépendant de index.html / export_presets).
+		# Inject fetch() bridge at runtime (independent of index.html / export_presets).
 		if not WebNakamaHttp.ensure_bridge():
 			_use_browser_http = false
 			call_deferred("_warn_missing_web_bridge")
@@ -162,7 +162,7 @@ func get_display_username() -> String:
 		var from_file := _load_saved_username_for_email(account_email)
 		if _is_human_username(from_file):
 			return from_file
-	return "Joueur"
+	return "Player"
 
 
 func sanitize_display_username(value: String) -> String:
@@ -175,12 +175,12 @@ func sanitize_display_username(value: String) -> String:
 func register_peer_display_name(peer_id: int, display_name: String) -> void:
 	var cleaned := sanitize_display_username(display_name)
 	if cleaned == "":
-		cleaned = "Joueur %d" % peer_id
+		cleaned = "Player %d" % peer_id
 	_peer_display_names[peer_id] = cleaned
 
 
 func get_peer_display_name(peer_id: int) -> String:
-	return str(_peer_display_names.get(peer_id, "Joueur %d" % peer_id))
+	return str(_peer_display_names.get(peer_id, "Player %d" % peer_id))
 
 
 func clear_peer_display_names() -> void:
@@ -192,7 +192,7 @@ func _is_human_username(value: String) -> bool:
 		return false
 	if value.length() < 2 or value.length() > 20:
 		return false
-	# Évite d'afficher un UUID / id technique à la place du pseudo.
+	# Avoid showing a UUID / technical id instead of the display name.
 	if value.length() >= 32 and value.count("-") >= 4:
 		return false
 	return true
@@ -219,7 +219,7 @@ func register_account(email: String, password: String, username: String) -> void
 	_pending_auth_password = p
 	_pending_auth_username = u
 	_session_username_override = u
-	# Nakama : username en query ET dans le corps (selon version / proxy).
+	# Nakama: username in query AND body (depends on version / proxy).
 	var url := "%s/v2/account/authenticate/email?create=true&username=%s" % [
 		NetworkConfig.nakama_base_url(),
 		u.uri_encode()
@@ -295,13 +295,13 @@ func request_player_profile() -> void:
 	_rpc("get_player_profile")
 
 
-## --- Préférences liées au compte (stockage Nakama natif, aucun module serveur requis) ---
+## --- Account-linked preferences (native Nakama storage, no server module) ---
 
 const PREFS_COLLECTION := "pq_prefs"
 const PREFS_KEY := "settings"
 
 
-## Lit les préférences du compte (langue, etc.) → émet preferences_loaded.
+## Read account preferences (language, etc.) → emits preferences_loaded.
 func request_account_preferences() -> void:
 	if not is_account_logged_in():
 		return
@@ -317,7 +317,7 @@ func request_account_preferences() -> void:
 	})
 
 
-## Écrit les préférences du compte (best-effort : un échec n'interrompt rien).
+## Write account preferences (best-effort: failure is non-blocking).
 func save_account_preferences(prefs: Dictionary) -> void:
 	if not is_account_logged_in():
 		return
@@ -359,7 +359,7 @@ func _extract_prefs_from_storage(parsed: Variant, raw_text: String) -> Dictionar
 	return _extract_prefs_from_text(raw_text)
 
 
-## Repli Web : extrait "language":"xx" du texte brut (valeur potentiellement échappée).
+## Web fallback: extract "language":"xx" from raw text (possibly escaped).
 func _extract_prefs_from_text(text: String) -> Dictionary:
 	var out := {}
 	if text.is_empty():
@@ -397,7 +397,7 @@ func _complete_auth_success() -> void:
 	if profile_cache.is_empty():
 		profile_cache = {}
 	var display_name := get_display_username()
-	if display_name != "Joueur":
+	if display_name != "Player":
 		profile_cache["username"] = display_name
 		profile_updated.emit(profile_cache.duplicate(true))
 	_save_persisted_session()
@@ -422,7 +422,7 @@ func _credentials_are_usable(creds: Dictionary) -> bool:
 
 
 func _read_saved_credentials() -> Dictionary:
-	# Web : localStorage fait foi (IndexedDB user:// peut être vide ou obsolète).
+	# Web: localStorage is authoritative (IndexedDB user:// may be empty or stale).
 	if OS.has_feature("web"):
 		var from_web := _read_web_saved_credentials()
 		if _credentials_are_usable(from_web):
@@ -665,11 +665,11 @@ func _delete_saved_credentials() -> void:
 
 
 func _load_or_create_device_id() -> void:
-	# Nakama exige un device id de 10 à 128 caractères.
+	# Nakama requires a device id between 10 and 128 characters.
 	const MIN_LEN := 10
 	const MAX_LEN := 128
 	if OS.has_feature("web"):
-		# Navigateur : 1 id persistant + suffixe par onglet (sessionStorage) pour tester à 2 onglets.
+		# Browser: one persistent id + per-tab suffix (sessionStorage) for two-tab testing.
 		device_id = _web_device_id()
 		return
 	var path := "user://device_id.txt"
@@ -765,9 +765,9 @@ func leave_ranked_queue() -> void:
 	_rpc("leave_queue")
 
 
-## inner_json : objet JSON sérialisé (ex. '{"limit":20}').
-## Nakama HTTP RPC attend le payload comme CHAÎNE JSON encodée → on (re)stringifie.
-## Sinon : 400 "cannot unmarshal object into Go value of type string".
+## inner_json: serialized JSON object (e.g. '{"limit":20}').
+## Nakama HTTP RPC expects payload as an encoded JSON STRING → we (re)stringify.
+## Otherwise: 400 "cannot unmarshal object into Go value of type string".
 func _rpc(id: String, inner_json: String = "") -> void:
 	var url := "%s/v2/rpc/%s" % [NetworkConfig.nakama_base_url(), id]
 	var headers := _nakama_headers(true)
@@ -785,7 +785,7 @@ func _warn_missing_web_bridge() -> void:
 		return
 	_web_bridge_warned = true
 	push_warning(
-		"[NetworkSession] Pont fetch() non injecté — repli sur HTTPRequest Godot."
+		"[NetworkSession] fetch() bridge not injected — falling back to Godot HTTPRequest."
 	)
 
 
@@ -850,7 +850,7 @@ func _apply_http_job_meta(job: Dictionary) -> void:
 		_http.remove_meta("desired_username")
 
 
-## Export Web : envoie via fetch() navigateur (asynchrone), réponse lue dans _poll_web_request().
+## Web export: send via browser fetch() (async); response read in _poll_web_request().
 func _start_web_request(job: Dictionary) -> void:
 	_http_busy = true
 	_apply_http_job_meta(job)
@@ -863,7 +863,7 @@ func _start_web_request(job: Dictionary) -> void:
 	if not WebNakamaHttp.send(_web_pending_id, url, method, headers, body):
 		_web_pending_id = ""
 		_http_busy = false
-		_handle_error("Réseau Web indisponible (pont window.PQ).")
+		_handle_error("Web network unavailable (window.PQ bridge).")
 		_pump_http_queue()
 
 
@@ -875,7 +875,7 @@ func _poll_web_request() -> void:
 		if Time.get_ticks_msec() - _web_request_started_ms > WEB_HTTP_TIMEOUT_MS:
 			_web_pending_id = ""
 			_http_busy = false
-			_handle_error("Timeout réseau Web (Nakama injoignable).")
+			_handle_error("Web network timeout (Nakama unreachable).")
 			_pump_http_queue()
 		return
 	_web_pending_id = ""
@@ -883,10 +883,10 @@ func _poll_web_request() -> void:
 	var text := str(res.get("text", ""))
 	if not bool(res.get("ok", false)) and response_code == 0:
 		_http_busy = false
-		_handle_error("Réseau Web : " + str(res.get("error", "fetch échoué")))
+		_handle_error("Web network: " + str(res.get("error", "fetch failed")))
 		_pump_http_queue()
 		return
-	# _on_http_completed remet _http_busy à false et relance le pump.
+	# _on_http_completed clears _http_busy and resumes the pump.
 	_on_http_completed(
 		HTTPRequest.RESULT_SUCCESS, response_code, PackedStringArray(), text.to_utf8_buffer()
 	)
@@ -902,7 +902,7 @@ func _http_body_to_text(body: PackedByteArray) -> String:
 	var text := body.get_string_from_utf8()
 	if text.is_empty():
 		text = body.get_string_from_ascii()
-	# Export Web : octets nuls dans le corps → JSON.parse échoue alors que le token est là.
+	# Web export: null bytes in body → JSON.parse fails even when token is present.
 	return text.replace("\u0000", "").strip_edges()
 
 
@@ -953,7 +953,7 @@ func _extract_auth_fields_from_text(text: String) -> Dictionary:
 	return out
 
 
-## Repli Web : extrait "username":"..." du texte brut quand JSON.parse échoue.
+## Web fallback: extract "username":"..." from raw text when JSON.parse fails.
 func _extract_username_from_text(text: String) -> String:
 	if text.is_empty():
 		return ""
@@ -1015,7 +1015,7 @@ func _apply_auth_session_from_fields(fields: Dictionary, was_registration: bool)
 
 
 func _nakama_headers(with_session: bool) -> PackedStringArray:
-	# Export Web : ne pas demander gzip (sinon erreur Godot code 8 / stream_peer_gzip).
+	# Web export: do not request gzip (else Godot error code 8 / stream_peer_gzip).
 	var headers := PackedStringArray([
 		"Content-Type: application/json",
 		"Accept-Encoding: identity",
@@ -1040,7 +1040,7 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	var text := _http_body_to_text(body)
 	var parsed: Variant = _parse_json_safe(text)
 
-	# Auth : le token peut être présent même si JSON.parse échoue (export Web / WASM).
+	# Auth: token may be present even when JSON.parse fails (Web export / WASM).
 	if http_kind == "auth_account" and _http_is_success(response_code):
 		var was_registration := bool(_http.get_meta("is_registration", false)) if _http.has_meta("is_registration") else false
 		if _http.has_meta("is_registration"):
@@ -1057,7 +1057,7 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		_pump_http_queue()
 		return
 
-	# Préférences liées au compte (stockage Nakama). Best-effort : pas d'erreur bloquante.
+	# Account preferences (Nakama storage). Best-effort: non-blocking on failure.
 	if http_kind == "prefs_write":
 		_pump_http_queue()
 		return
@@ -1067,10 +1067,10 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 		_pump_http_queue()
 		return
 
-	# Nakama renvoie parfois HTTP 200/204 avec corps vide (ex. PUT account) — ce n'est pas une erreur.
+	# Nakama sometimes returns HTTP 200/204 with empty body (e.g. PUT account) — not an error.
 	if parsed == null and _http_is_success(response_code):
 		if http_kind == "account_info":
-			# Repli Web : si le JSON n'a pas parsé, on tente d'extraire le pseudo du texte brut.
+			# Web fallback: if JSON did not parse, try extracting username from raw text.
 			var fallback_user := _extract_username_from_text(text)
 			if _is_human_username(fallback_user) and _session_username_override == "":
 				account_username = fallback_user
@@ -1102,13 +1102,13 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	if parsed == null:
 		var preview := text.substr(0, mini(160, text.length())).strip_edges()
 		push_warning(
-			"[NetworkSession] Réponse non-JSON HTTP "
+			"[NetworkSession] Non-JSON HTTP response "
 			+ str(response_code)
 			+ " : "
 			+ preview
 		)
 		_handle_error(
-			"Réponse serveur illisible (HTTP " + str(response_code) + "). Réexporte le client Web."
+			"Unreadable server response (HTTP " + str(response_code) + "). Re-export the Web client."
 		)
 		return
 
@@ -1194,7 +1194,7 @@ func _decode_nakama_rpc_payload(parsed: Variant) -> Variant:
 		var decoded: Variant = _parse_json_safe(inner_text)
 		if typeof(decoded) == TYPE_DICTIONARY:
 			return decoded
-		# Export Web : parfois la chaîne payload garde des \" littéraux.
+		# Web export: payload string sometimes keeps literal \".
 		var unescaped := inner_text.replace('\\"', '"')
 		decoded = _parse_json_safe(unescaped)
 		if typeof(decoded) == TYPE_DICTIONARY:
@@ -1214,18 +1214,18 @@ func _decode_nakama_rpc_payload_from_text(text: String) -> Variant:
 			return decoded
 		if not (wrapper as Dictionary).has("payload"):
 			return wrapper
-	# Parse Godot/WASM KO : extraire la chaîne payload à la main puis re-parser.
+	# Godot/WASM parse failed: extract payload string manually then re-parse.
 	var inner_text := _extract_payload_string_literal(text)
 	if inner_text != "":
 		var inner_parsed: Variant = _parse_json_safe(inner_text)
 		if typeof(inner_parsed) == TYPE_DICTIONARY:
 			return inner_parsed
-	# Réponse RPC sans enveloppe, ou JSON tronqué.
+	# RPC response without envelope, or truncated JSON.
 	var direct: Variant = _parse_json_safe(_extract_json_object_text(text))
 	if typeof(direct) == TYPE_DICTIONARY:
 		return direct
-	# Détecter "left" UNIQUEMENT sur la vraie valeur "status":"left"
-	# (sinon "seconds_left" déclenche un faux positif → 0/8).
+	# Detect "left" ONLY on the real value "status":"left"
+	# (else "seconds_left" triggers a false positive → 0/8).
 	if _text_has_status_left(text):
 		return {"status": "left", "players": 0}
 	if _looks_like_queue_rpc_text(text):
@@ -1234,7 +1234,7 @@ func _decode_nakama_rpc_payload_from_text(text: String) -> Variant:
 
 
 func _text_has_status_left(text: String) -> bool:
-	# Gère le JSON échappé ("status":"left") et non échappé (\"status\":\"left\").
+	# Handles escaped ("status":"left") and unescaped (\"status\":\"left\") JSON.
 	var t := text.replace('\\"', '"').replace("\\\\", "\\")
 	return t.find("\"status\":\"left\"") >= 0 or t.find("\"status\": \"left\"") >= 0
 
@@ -1286,7 +1286,7 @@ func _extract_payload_string_literal(text: String) -> String:
 
 
 func _extract_queue_fields_from_text(text: String) -> Dictionary:
-	# Déséchappe d'abord : les payloads RPC arrivent souvent en JSON échappé
+	# Unescape first: RPC payloads often arrive as escaped JSON
 	# (ex. \"players\":2), sinon les regex ne matchent rien.
 	var t := text.replace('\\"', '"').replace("\\\\", "\\")
 	var out := {"status": "waiting", "players": 1, "max_players": 8, "seconds_left": 60}
@@ -1372,13 +1372,13 @@ func _handle_rpc_response(rpc_id: String, code: int, payload: Dictionary, raw_te
 				"rpc_" + rpc_id,
 				"[NetworkSession] RPC "
 				+ rpc_id
-				+ " illisible (HTTP "
+				+ " unreadable (HTTP "
 				+ str(code)
 				+ "): "
 				+ preview
 			)
 			match_failed.emit(
-				"Réponse RPC invalide (" + rpc_id + "). Aperçu : " + preview
+				"Invalid RPC response (" + rpc_id + "). Preview: " + preview
 			)
 			return
 
@@ -1450,7 +1450,7 @@ func _apply_queue_payload(payload: Dictionary) -> void:
 	var players := int(payload.get("players", 0))
 	var max_p := int(payload.get("max_players", 8))
 	var seconds := int(payload.get("seconds_left", 60))
-	# Évite 0/8 : queue_status peut arriver avant que join_queue ait fini côté serveur.
+	# Avoid 0/8: queue_status may arrive before join_queue finishes on the server.
 	if status == "waiting" and players <= 0 and (_in_queue or _awaiting_join_ack):
 		if _in_queue and not _awaiting_join_ack:
 			_awaiting_join_ack = true
@@ -1467,7 +1467,7 @@ func _apply_queue_payload(payload: Dictionary) -> void:
 		var ws := str(payload.get("game_ws_url", "")).strip_edges()
 		if ws == "":
 			ws = resolved_game_ws_url()
-		print("[NetworkSession] Match prêt — ws=%s" % ws)
+		print("[NetworkSession] Match ready — ws=%s" % ws)
 		match_ready.emit(match_id, ws)
 
 
@@ -1489,7 +1489,7 @@ func _normalize_game_ws_url(url: String) -> String:
 
 func connect_to_game_server(ws_url: String = "") -> void:
 	if _ws_connecting:
-		print("[NetworkSession] Connexion WebSocket déjà en cours, ignorée.")
+		print("[NetworkSession] WebSocket connection already in progress, ignored.")
 		return
 	var primary_url := ws_url.strip_edges() if ws_url != "" else resolved_game_ws_url()
 	if primary_url == "":
@@ -1517,7 +1517,7 @@ func connect_to_game_server(ws_url: String = "") -> void:
 				rpc_register_for_match.rpc_id(1, get_display_username())
 				_retry_register_while_waiting()
 				print(
-					"[NetworkSession] WebSocket jeu connecté — enregistrement (peer %d)."
+					"[NetworkSession] Game WebSocket connected — registering (peer %d)."
 					% multiplayer.get_unique_id()
 				)
 				return
@@ -1535,10 +1535,10 @@ func _try_connect_game_ws(url: String) -> String:
 		_match_peer.close()
 		_match_peer = null
 	_match_peer = WebSocketMultiplayerPeer.new()
-	print("[NetworkSession] Connexion WebSocket → ", url)
+	print("[NetworkSession] Connecting WebSocket → ", url)
 	var err := _match_peer.create_client(url)
 	if err != OK:
-		return "WebSocket client erreur %s (URL: %s)" % [str(err), url]
+		return "WebSocket client error %s (URL: %s)" % [str(err), url]
 	multiplayer.multiplayer_peer = _match_peer
 	await get_tree().process_frame
 
@@ -1550,15 +1550,15 @@ func _try_connect_game_ws(url: String) -> String:
 			return ""
 		if st == WebSocketMultiplayerPeer.CONNECTION_DISCONNECTED:
 			return (
-				"WebSocket refusé (URL: %s). Le serveur jeu (port 9080) est-il actif ? "
+				"WebSocket refused (URL: %s). Is the game server (port 9080) running? "
 				+ "VPS : systemctl status powerquest-game — Apache : ProxyPass /game/ → ws://127.0.0.1:9080/"
 			) % url
 		if Time.get_ticks_msec() - start_ms > timeout_ms:
 			return (
-				"Timeout WebSocket (%s). Vérifie powerquest-game sur le VPS (port 9080)."
+				"WebSocket timeout (%s). Check powerquest-game on the VPS (port 9080)."
 			) % url
 		await get_tree().create_timer(0.1).timeout
-	return "Connexion WebSocket interrompue."
+	return "WebSocket connection interrupted."
 
 
 func _retry_register_while_waiting() -> void:
@@ -1571,13 +1571,13 @@ func _retry_register_while_waiting() -> void:
 		if _match_peer.get_connection_status() != WebSocketMultiplayerPeer.CONNECTION_CONNECTED:
 			continue
 		print(
-			"[NetworkSession] Nouvel enregistrement serveur (tentative %d)."
+			"[NetworkSession] Re-registering with server (attempt %d)."
 			% (attempt + 2)
 		)
 		rpc_register_for_match.rpc_id(1, get_display_username())
 
 
-## Chaque client annonce sa présence ; le serveur lance la map à 2+ joueurs.
+## Each client announces presence; server starts the map at 2+ players.
 @rpc("any_peer", "reliable")
 func rpc_register_for_match(display_name: String = "") -> void:
 	if not multiplayer.is_server():
@@ -1588,13 +1588,13 @@ func rpc_register_for_match(display_name: String = "") -> void:
 	register_peer_display_name(peer_id, display_name)
 	_server_registered_peers.append(peer_id)
 	print(
-		"[NetworkSession] Client enregistré peer %d (%d connectés, max %d)."
+		"[NetworkSession] Client registered peer %d (%d connected, max %d)."
 		% [peer_id, _server_registered_peers.size(), MAX_PLAYERS_TO_START]
 	)
 	_consider_match_start()
 
 
-## Le peer WebSocket vit sur cet autoload pour survivre au change_scene (serveur dédié).
+## WebSocket peer lives on this autoload to survive change_scene (dedicated server).
 func attach_server_peer(peer: WebSocketMultiplayerPeer) -> void:
 	_match_peer = peer
 	multiplayer.multiplayer_peer = peer
@@ -1602,20 +1602,20 @@ func attach_server_peer(peer: WebSocketMultiplayerPeer) -> void:
 		peer.peer_connected.connect(_on_server_peer_connected)
 	if not peer.peer_disconnected.is_connected(_on_server_peer_disconnected):
 		peer.peer_disconnected.connect(_on_server_peer_disconnected)
-	print("[NetworkSession] Peer serveur attaché (autoload — survit au change_scene).")
+	print("[NetworkSession] Server peer attached (autoload — survives change_scene).")
 
 
 func _on_server_peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server():
 		return
-	print("[NetworkSession] Client WebSocket connecté: ", peer_id)
+	print("[NetworkSession] WebSocket client connected: ", peer_id)
 	_consider_match_start()
 
 
 func _on_server_peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server():
 		return
-	print("[NetworkSession] Client WebSocket déconnecté: ", peer_id)
+	print("[NetworkSession] WebSocket client disconnected: ", peer_id)
 	_server_registered_peers.erase(peer_id)
 	if _server_match_started and MapSession.is_online_match and MapSession.online_camps_ready:
 		OnlineGameSync.handle_player_abandoned(peer_id)
@@ -1623,19 +1623,19 @@ func _on_server_peer_disconnected(peer_id: int) -> void:
 		reset_server_match_state()
 
 
-## Nombre de joueurs présents (enregistrés ou simplement connectés en secours).
+## Present player count (registered or connected peers as fallback).
 func _current_player_count() -> int:
 	return maxi(_server_registered_peers.size(), multiplayer.get_peers().size())
 
 
-## Décide quand lancer : tout de suite si plein (8), sinon après une fenêtre de grâce
-## dès qu'on a le minimum (laisse le reste du groupe se connecter, jusqu'à 8).
+## Decide when to start: immediately if full (8), else after a grace window
+## once minimum is met (lets the rest of the group connect, up to 8).
 func _consider_match_start() -> void:
 	if _server_match_started:
 		return
 	var count := _current_player_count()
 	if count >= MAX_PLAYERS_TO_START:
-		print("[NetworkSession] Lobby plein (%d) — lancement immédiat." % count)
+		print("[NetworkSession] Lobby full (%d) — starting immediately." % count)
 		server_begin_online_match(MAX_PLAYERS_TO_START)
 		return
 	if count >= MIN_PLAYERS_TO_START:
@@ -1647,7 +1647,7 @@ func _schedule_match_start_after_grace() -> void:
 		return
 	_match_start_check_scheduled = true
 	print(
-		"[NetworkSession] %d joueurs — attente %.0fs pour le groupe complet."
+		"[NetworkSession] %d players — waiting %.0fs for full group."
 		% [_current_player_count(), LOBBY_START_GRACE_SEC]
 	)
 	await get_tree().create_timer(LOBBY_START_GRACE_SEC).timeout
@@ -1657,7 +1657,7 @@ func _schedule_match_start_after_grace() -> void:
 	var count := _current_player_count()
 	if count < MIN_PLAYERS_TO_START:
 		return
-	print("[NetworkSession] Lancement après grâce — %d joueurs." % count)
+	print("[NetworkSession] Starting after grace — %d players." % count)
 	server_begin_online_match(count)
 
 
@@ -1668,14 +1668,14 @@ func server_begin_online_match(player_count: int = MIN_PLAYERS_TO_START) -> void
 	_server_registered_peers.clear()
 	_waiting_map_after_connect = false
 	var map_index := MapSession.pick_random_online_map_index()
-	print("[NetworkSession] Lancement partie (%d joueurs, map %d)." % [player_count, map_index])
+	print("[NetworkSession] Starting match (%d players, map %d)." % [player_count, map_index])
 	MapSession.active_map_index = map_index
 	MapSession.is_online_match = true
 	MapSession.local_team = 0
 	MapSession.online_player_count = player_count
 
 	var peers := multiplayer.get_peers()
-	print("[NetworkSession] Envoi RPC begin_match à %d client(s)." % peers.size())
+	print("[NetworkSession] Sending begin_match RPC to %d client(s)." % peers.size())
 	for peer_id in peers:
 		rpc_begin_online_match.rpc_id(peer_id, player_count, map_index)
 	await get_tree().create_timer(0.25).timeout
@@ -1696,7 +1696,7 @@ func is_server_match_running() -> bool:
 	return _server_match_started
 
 
-## Appelé par le serveur de jeu quand 2+ clients sont connectés (RPC).
+## Called by the game server when 2+ clients are connected (RPC).
 @rpc("authority", "call_remote", "reliable")
 func rpc_begin_online_match(
 	player_count: int = MIN_PLAYERS_TO_START, map_index: int = 0
@@ -1706,7 +1706,7 @@ func rpc_begin_online_match(
 	var map_idx := MapSession.normalize_online_map_index(
 		map_index if map_index > 0 else MapSession.active_map_index
 	)
-	print("[NetworkSession] Client — démarrage map %d (%d joueurs)." % [map_idx, player_count])
+	print("[NetworkSession] Client — loading map %d (%d players)." % [map_idx, player_count])
 	_waiting_map_after_connect = false
 	_load_online_match_scene(player_count, map_idx)
 
@@ -1727,20 +1727,20 @@ func _load_online_match_scene(
 func _http_result_message(result: int) -> String:
 	match result:
 		HTTPRequest.RESULT_CANT_CONNECT:
-			return "Connexion impossible (réseau ou API injoignable)"
+			return "Connection failed (network or unreachable API)"
 		HTTPRequest.RESULT_CANT_RESOLVE:
-			return "Nom de domaine introuvable (DNS)"
+			return "Domain name not found (DNS)"
 		HTTPRequest.RESULT_CONNECTION_ERROR:
-			return "Connexion coupée — CORS Nakama ou WebSocket /game (souvent 503 = serveur jeu arrêté sur le VPS)"
+			return "Connection dropped — Nakama CORS or WebSocket /game (often 503 = game server stopped on VPS)"
 		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR:
-			return "Erreur certificat SSL (HTTPS)"
+			return "SSL certificate error (HTTPS)"
 		HTTPRequest.RESULT_REQUEST_FAILED:
-			return "Requête refusée par le navigateur (CORS ou mixed content)"
+			return "Request blocked by browser (CORS or mixed content)"
 		8:
-			# RESULT_BODY_DECODE_ERROR (selon versions Godot) — souvent gzip sur /v2
-			return "Réponse illisible (gzip) — réexport Web + Apache sans compression sur /v2"
+			# RESULT_BODY_DECODE_ERROR (Godot versions) — often gzip on /v2
+			return "Unreadable response (gzip) — re-export Web + Apache without compression on /v2"
 		_:
-			return "Erreur HTTP Godot code %s" % str(result)
+			return "Godot HTTP error code %s" % str(result)
 
 
 func _normalize_entries(value: Variant) -> Array:
@@ -1776,12 +1776,12 @@ func _friendly_auth_error(response_code: int, parsed, raw_text: String) -> Strin
 	if response_code == 0:
 		return tr("NET_SERVER_UNREACHABLE")
 	if response_code >= 200 and response_code < 300:
-		return "Réponse serveur inattendue. Réexporte le client Web puis redéploie sur le VPS."
+		return "Unexpected server response. Re-export the Web client and redeploy on the VPS."
 	if typeof(parsed) == TYPE_DICTIONARY:
 		var msg := str(parsed.get("message", "")).strip_edges()
 		if msg != "":
 			return msg
-	return "Connexion refusée (HTTP %s)." % str(response_code)
+	return "Connection refused (HTTP %s)." % str(response_code)
 
 
 func _format_nakama_error(parsed, raw_text: String) -> String:
@@ -1848,14 +1848,14 @@ func _handle_error(msg: String) -> void:
 	if _in_queue:
 		match_failed.emit(msg)
 	elif is_authenticated:
-		# Ne pas déconnecter l'utilisateur pour une erreur HTTP secondaire (ex. leave_queue).
+		# Do not log the user out for a secondary HTTP error (e.g. leave_queue).
 		push_warning("[NetworkSession] " + msg)
 	else:
 		auth_failed.emit(msg)
 
 
 func _process(_delta: float) -> void:
-	# Export Web : récupère la réponse fetch() en cours (asynchrone).
+	# Web export: poll in-flight fetch() response (async).
 	if _web_pending_id != "":
 		_poll_web_request()
 	if _waiting_map_after_connect:

@@ -1,6 +1,6 @@
 extends Node
 
-## Détecte --server et charge game_server_main au lieu du menu client.
+## Detects --server and loads game_server_main instead of the client menu.
 
 var is_dedicated_server: bool = false
 

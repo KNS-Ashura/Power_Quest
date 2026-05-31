@@ -32,7 +32,7 @@ func _ready() -> void:
 
 	if _join_room == null:
 		_status_label.modulate = Color(1, 0.45, 0.45)
-		_status_label.text = "Bouton JOIN introuvable dans la scène Multi."
+		_status_label.text = "JOIN button not found in Multi scene."
 
 
 func _safe_connect_pressed(btn: BaseButton, callback: Callable) -> void:
@@ -76,14 +76,14 @@ func _on_join_room_pressed() -> void:
 
 
 func _start_matchmaking() -> void:
-	# Déjà connecté : lancer la file directement (pas de redirection).
+	# Already logged in: join queue directly (no redirect).
 	if NetworkSession.is_account_logged_in():
 		_enter_matchmaking_ui()
 		_status_label.text = tr("MULTI_CONNECTING_QUEUE")
 		NetworkSession.join_ranked_queue()
 		return
 
-	# Identifiants locaux : tenter reconnexion auto, pas de redirection immédiate.
+	# Saved credentials: try auto reconnect, no immediate redirect.
 	if NetworkSession.has_saved_account_credentials():
 		_enter_matchmaking_ui()
 		_status_label.text = tr("MULTI_CONNECTING_NAKAMA")
@@ -95,7 +95,7 @@ func _start_matchmaking() -> void:
 			requires_login.emit()
 		return
 
-	# Vraiment non connecté : redirection vers la page connexion.
+	# Not logged in: redirect to login page.
 	_status_label.modulate = Color(1, 0.45, 0.45)
 	_status_label.text = tr("MULTI_LOGIN_REQUIRED")
 	requires_login.emit()

@@ -1,7 +1,7 @@
 extends Node2D
 
-## Panneau victoire/défaite en overlay : centré au-dessus de la partie en cours.
-## Le ColorRect reste invisible tant qu'on n'appuie pas sur « retour menu ».
+## Win/loss overlay panel: centered above the ongoing match.
+## ColorRect stays invisible until "return to menu" is pressed.
 
 const _PANEL_CENTER := Vector2(131.0, 92.0)
 
@@ -16,7 +16,7 @@ func _prepare_fade_rect() -> void:
 	var fade := get_node_or_null("ColorRect") as ColorRect
 	if fade == null:
 		return
-	# Invisible pendant l'affichage : le jeu reste visible derrière le panneau.
+	# Hidden during display: the game stays visible behind the panel.
 	fade.visible = false
 	fade.modulate.a = 0.0
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -28,9 +28,9 @@ func _center_panel() -> void:
 
 
 func _populate_labels() -> void:
-	var pseudo := get_node_or_null("Pseudo") as Label
-	if pseudo != null:
-		pseudo.text = NetworkSession.get_display_username()
+	var username_label := get_node_or_null("Pseudo") as Label
+	if username_label != null:
+		username_label.text = NetworkSession.get_display_username()
 
 	var time_lbl := get_node_or_null("TMPGAME") as Label
 	if time_lbl != null:

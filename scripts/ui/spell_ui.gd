@@ -172,10 +172,10 @@ func _update_transport_button_visuals() -> void:
 		btn_water_transport.text = "Transport %.0fs" % ceil(max_cd)
 		btn_water_transport.modulate = Color(0.65, 0.65, 0.65, 1.0)
 	elif any_carrying:
-		btn_water_transport.text = "Debarquer"
+		btn_water_transport.text = "Disembark"
 		btn_water_transport.modulate = TRANSPORT_CARRYING_MODULATE
 	elif any_marked:
-		btn_water_transport.text = "Embarquer"
+		btn_water_transport.text = "Embark"
 		btn_water_transport.modulate = TRANSPORT_MARKED_MODULATE
 	else:
 		btn_water_transport.text = "Transport"
@@ -232,6 +232,8 @@ func _on_btn_water_transport_pressed() -> void:
 		var phase_before: int = transporter.get_water_transport_phase() if transporter.has_method("get_water_transport_phase") else 0
 		if transporter.water_transport_step():
 			steps += 1
+			if MapSession.is_local_team(int(transporter.get("team"))):
+				Sound.play_transport()
 			if phase_before == 0:
 				_show_effect_zone(
 					transporter.global_position,

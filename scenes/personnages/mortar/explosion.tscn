@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://ch4jkmb7dwnw7"]
 
 [ext_resource type="Script" uid="uid://b8og7dh1w0ux5" path="res://scripts/combat/range_projectile_land.gd" id="1_player_gd"]
-[ext_resource type="Texture2D" uid="uid://bjoch30j8v7a4" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion1.png" id="2_32336"]
-[ext_resource type="Texture2D" uid="uid://6ug2spgucxan" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion2.png" id="3_1t2h3"]
-[ext_resource type="Texture2D" uid="uid://c1yottt686u5g" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion3.png" id="4_o5f4q"]
-[ext_resource type="Texture2D" uid="uid://dcrn03qbiv2wn" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion4.png" id="5_uy18d"]
-[ext_resource type="Texture2D" uid="uid://cayhnw644fa3g" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion5.png" id="6_njc0o"]
-[ext_resource type="Texture2D" uid="uid://csgvnskaf583m" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion6.png" id="7_xrskg"]
-[ext_resource type="Texture2D" uid="uid://bghvanq6og16x" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion7.png" id="8_b6ntf"]
-[ext_resource type="Texture2D" uid="uid://dnvgrghsyh1h4" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion8.png" id="9_mlrb4"]
-[ext_resource type="Texture2D" uid="uid://b2xpmyko3kx3u" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion9.png" id="10_mokhs"]
-[ext_resource type="Texture2D" uid="uid://c1hm04xsvqydb" path="res://assets/character/mortar/explosion-ult/Nuclear_explosion10.png" id="11_v78hv"]
+[ext_resource type="Texture2D" uid="uid://r7bmil0f3o88" path="res://assets/character/mortar/explosion/Circle_explosion1.png" id="2_32336"]
+[ext_resource type="Texture2D" uid="uid://ecwk3sjfuo46" path="res://assets/character/mortar/explosion/Circle_explosion2.png" id="3_1t2h3"]
+[ext_resource type="Texture2D" uid="uid://cmiaasqs4n6hy" path="res://assets/character/mortar/explosion/Circle_explosion3.png" id="4_o5f4q"]
+[ext_resource type="Texture2D" uid="uid://b2g2bc188e6v2" path="res://assets/character/mortar/explosion/Circle_explosion4.png" id="5_uy18d"]
+[ext_resource type="Texture2D" uid="uid://d205mh7j10wet" path="res://assets/character/mortar/explosion/Circle_explosion5.png" id="6_njc0o"]
+[ext_resource type="Texture2D" uid="uid://bb7usdlgf65ej" path="res://assets/character/mortar/explosion/Circle_explosion6.png" id="7_xrskg"]
+[ext_resource type="Texture2D" uid="uid://crlo2hrdmtj58" path="res://assets/character/mortar/explosion/Circle_explosion7.png" id="8_b6ntf"]
+[ext_resource type="Texture2D" uid="uid://4uh732drjrso" path="res://assets/character/mortar/explosion/Circle_explosion8.png" id="9_mlrb4"]
+[ext_resource type="Texture2D" uid="uid://cd5gwg11lij2p" path="res://assets/character/mortar/explosion/Circle_explosion9.png" id="10_mokhs"]
+[ext_resource type="Texture2D" uid="uid://b8x87ylsyu3wh" path="res://assets/character/mortar/explosion/Circle_explosion10.png" id="11_v78hv"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
 animations = [{
@@ -54,8 +54,8 @@ animations = [{
 script = ExtResource("1_player_gd")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1830331399]
-position = Vector2(-2, -5.999996)
-scale = Vector2(2.7753904, 2.3730466)
+position = Vector2(3.8146973e-06, 0)
+scale = Vector2(1.4453125, 1.359375)
 sprite_frames = SubResource("SpriteFrames_s1qi2")
 animation = &"explosion"
-frame_progress = 0.10563127
+frame_progress = 0.008894894

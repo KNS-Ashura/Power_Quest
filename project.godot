@@ -29,6 +29,7 @@ RegionManager="*res://scripts/autoload/region_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 AIManager="*res://scripts/autoload/ai_manager.gd"
 Sound="*uid://c6u57jpr1208q"
+Music="*uid://cdcy8g62060wm"
 ScreenAdapter="*res://scripts/autoload/screen_adapter.gd"
 ServerMode="*res://scripts/server/server_mode.gd"
 NetworkConfig="*res://scripts/network/network_config.gd"
@@ -57,7 +58,6 @@ enabled=PackedStringArray()
 
 [internationalization]
 
-locale/fallback="en"
 locale/translations=PackedStringArray("res://assets/menu/traduction.de.translation", "res://assets/menu/traduction.en.translation", "res://assets/menu/traduction.fr.translation")
 
 [layer_names]

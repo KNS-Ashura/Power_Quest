@@ -1,7 +1,7 @@
 extends RefCounted
 class_name MapBounds
 
-## Limites caméra mesurées dans l'éditeur Godot (Camera2D → Limit).
+## Camera limits measured in the Godot editor (Camera2D → Limit).
 const CAMERA_LIMITS_BY_MAP: Dictionary = {
 	1: Rect2(-3963, -3093, 8242, 6080),
 	2: Rect2(-3963, -3093, 8242, 6080),

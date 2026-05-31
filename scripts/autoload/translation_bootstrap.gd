@@ -1,7 +1,7 @@
 extends Node
 
-## Charge les traductions pour l'export Web.
-## Source de vérité : translation_keys.gd (généré depuis traduction.csv).
+## Load translations for Web export.
+## Source of truth: translation_keys.gd (generated from traduction.csv).
 
 var _loaded: bool = false
 
@@ -16,7 +16,7 @@ func ensure_loaded() -> void:
 	var count := TranslationKeys.apply_to_server()
 	_loaded = count > 0
 	if not _loaded:
-		push_warning("[TranslationBootstrap] Aucune traduction chargée.")
+		push_warning("[TranslationBootstrap] No translations loaded.")
 
 
 func normalize_locale(locale: String) -> String:

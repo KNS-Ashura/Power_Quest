@@ -67,6 +67,8 @@ func _load_active_map() -> void:
 		return
 
 	slot.add_child(packed.instantiate())
+	if Music.has_method("play_for_map"):
+		Music.play_for_map(MapSession.active_map_index)
 	call_deferred("_refresh_minimap")
 
 

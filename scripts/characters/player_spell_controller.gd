@@ -5,9 +5,9 @@ class_name PlayerSpellController
 static func can_cast_spell(owner: Node) -> bool:
 	if not owner.stats or owner.is_dying:
 		return false
-	if owner.cooldown_actuel_sort > 0.0:
+	if owner.current_spell_cooldown > 0.0:
 		return false
-	if owner._est_mortar() or owner._est_healer() or (owner.stats.unit_type == UnitStats.UnitType.SUPPORT) or owner._est_anti_armor():
+	if owner._is_mortar() or owner._is_healer() or (owner.stats.unit_type == UnitStats.UnitType.SUPPORT) or owner._is_anti_armor():
 		return true
 	return owner.stats.spell_cooldown > 0.0
 
@@ -15,108 +15,132 @@ static func can_cast_spell(owner: Node) -> bool:
 static func cast_spell(owner: Node) -> bool:
 	if not can_cast_spell(owner):
 		return false
-	if owner._est_mortar():
+	if owner._is_mortar():
 		if cast_spell_mortar_ult(owner):
-			owner.cooldown_actuel_sort = owner.COOLDOWN_SORT_SECONDES
+			owner.current_spell_cooldown = owner.SPELL_COOLDOWN_SECONDS
 			return true
 		return false
-	if owner._est_anti_armor():
+	if owner._is_anti_armor():
 		if cast_spell_anti_armor(owner):
-			owner.cooldown_actuel_sort = owner.COOLDOWN_SORT_SECONDES
+			owner.current_spell_cooldown = owner.SPELL_COOLDOWN_SECONDS
 			return true
 		return false
 
-	var requete := PhysicsShapeQueryParameters2D.new()
-	var cercle := CircleShape2D.new()
-	cercle.radius = 150.0
-	requete.shape = cercle
-	requete.transform = Transform2D(0, owner.global_position)
-	requete.collide_with_areas = false
-	requete.collide_with_bodies = true
+	var query := PhysicsShapeQueryParameters2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = 150.0
+	query.shape = circle
+	query.transform = Transform2D(0, owner.global_position)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
 
-	var resultats: Array = owner.get_world_2d().direct_space_state.intersect_shape(requete)
-	var groupe := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
-	var au_moins_un_effet: bool = false
-	var cibles_sync: Array = []
+	var results: Array = owner.get_world_2d().direct_space_state.intersect_shape(query)
+	var group := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
+	var any_effect: bool = false
+	var target_sync_ids: Array = []
 
-	for res in resultats:
+	for res in results:
 		var obj: Variant = res.collider
-		if not obj or not obj.is_in_group(groupe):
+		if not obj or not obj.is_in_group(group):
 			continue
 		if owner.stats.unit_type == UnitStats.UnitType.SUPPORT and obj.has_method("receive_boost"):
-			obj.receive_boost(owner._duree_sort_boost())
-			au_moins_un_effet = true
-			_append_sync_id(cibles_sync, obj)
-		elif owner.stats.unit_type == UnitStats.UnitType.HEAL and obj.has_method("recevoir_invulnerabilite_sort"):
-			obj.recevoir_invulnerabilite_sort(owner._duree_sort_invulnerabilite())
-			au_moins_un_effet = true
-			_append_sync_id(cibles_sync, obj)
+			obj.receive_boost(owner._boost_spell_duration())
+			any_effect = true
+			_append_sync_id(target_sync_ids, obj)
+		elif owner.stats.unit_type == UnitStats.UnitType.HEAL and obj.has_method("receive_invulnerability_spell"):
+			obj.receive_invulnerability_spell(owner._invulnerability_spell_duration())
+			any_effect = true
+			_append_sync_id(target_sync_ids, obj)
 
-	if not au_moins_un_effet:
+	if not any_effect:
 		return false
 
-	owner.cooldown_actuel_sort = owner.COOLDOWN_SORT_SECONDES
-	_rapport_sort_reseau(owner, cibles_sync)
+	owner.current_spell_cooldown = owner.SPELL_COOLDOWN_SECONDS
+	_report_spell_network(owner, target_sync_ids)
+	_play_spell_sfx(owner)
 	return true
 
 
 static func cast_spell_mortar_ult(owner: Node) -> bool:
-	var niveau: int = owner._niveau_mortar()
-	var nb_cibles: int = 1
-	if niveau == 2:
-		nb_cibles = 2
-	elif niveau >= 3:
-		nb_cibles = 3
+	var level: int = owner._mortar_level()
+	var max_targets: int = 1
+	if level == 2:
+		max_targets = 2
+	elif level >= 3:
+		max_targets = 3
 
-	var cibles: Array = cibles_ennemies_plus_proches_mortar(owner, nb_cibles)
-	if cibles.is_empty():
+	var targets: Array = closest_enemy_targets_mortar(owner, max_targets)
+	if targets.is_empty():
 		return false
 
-	var degats_sort: int = int(round(float(owner.unit_damage) * 1.2))
-	var positions_impact: Array = []
-	for cible in cibles:
-		var position_impact: Vector2 = cible.global_position
-		positions_impact.append(position_impact)
-		owner._spawn_mortar_explosion_vfx(owner.SCENE_MORTAR_EXPLOSION_ULT, position_impact)
-		owner._appliquer_degats_zone(position_impact, 112.0, degats_sort)
-	_rapport_sort_mortar_reseau(owner, positions_impact)
+	var spell_damage: int = int(round(float(owner.unit_damage) * owner.MORTAR_ULT_DAMAGE_MULTIPLIER))
+	var ult_radius: float = owner.MORTAR_ULT_EXPLOSION_RADIUS
+	var impact_positions: Array = []
+	for target in targets:
+		var impact_position: Vector2 = target.global_position
+		impact_positions.append(impact_position)
+		owner._spawn_mortar_explosion_vfx(owner.SCENE_MORTAR_EXPLOSION_ULT, impact_position)
+		owner._apply_area_damage(impact_position, ult_radius, spell_damage)
+	_report_mortar_spell_network(owner, impact_positions)
+	_play_spell_sfx(owner, "nuclear")
 	return true
 
 
-static func rayon_sort_anti_armor(owner: Node) -> float:
-	return owner.RAYON_SORT_ANTI_ARMOR_NIVEAU_1 + float(owner._niveau_unite() - 1) * owner.BONUS_RAYON_SORT_ANTI_ARMOR_PAR_NIVEAU
+static func anti_armor_spell_radius(owner: Node) -> float:
+	return owner.ANTI_ARMOR_SPELL_RADIUS_LEVEL_1 + float(owner._unit_level() - 1) * owner.ANTI_ARMOR_SPELL_RADIUS_BONUS_PER_LEVEL
 
 
-static func duree_sort_anti_armor(owner: Node) -> float:
+static func anti_armor_spell_duration(owner: Node) -> float:
 	if owner.stats and owner.stats.spell_duration > 0.0:
 		return owner.stats.spell_duration
-	return owner.DUREE_SORT_ANTI_ARMOR_NIVEAU_1 + float(owner._niveau_unite() - 1) * owner.BONUS_DUREE_SORT_ANTI_ARMOR_PAR_NIVEAU
+	return owner.ANTI_ARMOR_SPELL_DURATION_LEVEL_1 + float(owner._unit_level() - 1) * owner.ANTI_ARMOR_SPELL_DURATION_BONUS_PER_LEVEL
 
 
 static func cast_spell_anti_armor(owner: Node) -> bool:
-	var cibles: Array[Node2D] = cibles_ennemies_sort_anti_armor(owner)
-	if cibles.is_empty():
+	var targets: Array[Node2D] = anti_armor_spell_enemy_targets(owner)
+	if targets.is_empty():
 		return false
-	var cible: Node2D = cible_plus_de_pv_sort_anti_armor(cibles)
-	if not is_instance_valid(cible):
+	var target: Node2D = highest_hp_anti_armor_target(targets)
+	if not is_instance_valid(target):
 		return false
-	tirer_projectile_sort_anti_armor(owner, cible)
-	var cibles_sync: Array = []
-	_append_sync_id(cibles_sync, cible)
-	_rapport_sort_anti_armor_reseau(owner, cibles_sync)
+	fire_anti_armor_spell_projectile(owner, target)
+	var target_sync_ids: Array = []
+	_append_sync_id(target_sync_ids, target)
+	_report_anti_armor_spell_network(owner, target_sync_ids)
+	_play_spell_sfx(owner, "antiarmor")
 	return true
 
 
-static func cibles_ennemies_sort_anti_armor(owner: Node) -> Array[Node2D]:
-	var requete := PhysicsShapeQueryParameters2D.new()
-	var cercle := CircleShape2D.new()
-	cercle.radius = rayon_sort_anti_armor(owner)
-	requete.shape = cercle
-	requete.transform = Transform2D(0, owner.global_position)
-	requete.collide_with_areas = false
-	requete.collide_with_bodies = true
-	var resultat: Array[Node2D] = []
-	for res in owner.get_world_2d().direct_space_state.intersect_shape(requete):
+static func _play_spell_sfx(owner: Node, kind: String = "") -> void:
+	if not MapSession.is_local_team(int(owner.get("team"))):
+		return
+	match kind:
+		"nuclear":
+			Sound.play_nuclear()
+		"antiarmor":
+			Sound.play_antiarmor()
+		_:
+			if not owner.stats:
+				return
+			match owner.stats.unit_type:
+				UnitStats.UnitType.HEAL:
+					Sound.play_heal()
+				UnitStats.UnitType.SUPPORT:
+					Sound.play_boost()
+				_:
+					pass
+
+
+static func anti_armor_spell_enemy_targets(owner: Node) -> Array[Node2D]:
+	var query := PhysicsShapeQueryParameters2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = anti_armor_spell_radius(owner)
+	query.shape = circle
+	query.transform = Transform2D(0, owner.global_position)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var result: Array[Node2D] = []
+	for res in owner.get_world_2d().direct_space_state.intersect_shape(query):
 		var obj := res.collider as Node2D
 		if obj == null or obj == owner:
 			continue
@@ -126,25 +150,25 @@ static func cibles_ennemies_sort_anti_armor(owner: Node) -> Array[Node2D]:
 			continue
 		if not obj.has_method("take_damage"):
 			continue
-		resultat.append(obj)
-	return resultat
+		result.append(obj)
+	return result
 
 
-static func cible_plus_de_pv_sort_anti_armor(cibles: Array[Node2D]) -> Node2D:
-	var meilleure_cible: Node2D = null
-	var meilleur_pv: int = -1
-	for cible in cibles:
-		if not is_instance_valid(cible):
+static func highest_hp_anti_armor_target(targets: Array[Node2D]) -> Node2D:
+	var best_target: Node2D = null
+	var best_hp: int = -1
+	for target in targets:
+		if not is_instance_valid(target):
 			continue
-		var pv: int = int(cible.get("current_hp")) if cible.get("current_hp") != null else int(cible.get("hp_max"))
-		if meilleure_cible == null or pv > meilleur_pv:
-			meilleure_cible = cible
-			meilleur_pv = pv
-	return meilleure_cible
+		var hp: int = int(target.get("current_hp")) if target.get("current_hp") != null else int(target.get("hp_max"))
+		if best_target == null or hp > best_hp:
+			best_target = target
+			best_hp = hp
+	return best_target
 
 
-static func tirer_projectile_sort_anti_armor(owner: Node, cible: Node2D) -> void:
-	if not is_instance_valid(cible):
+static func fire_anti_armor_spell_projectile(owner: Node, target: Node2D) -> void:
+	if not is_instance_valid(target):
 		return
 	var parent_node := owner.get_parent()
 	if not is_instance_valid(parent_node):
@@ -154,78 +178,78 @@ static func tirer_projectile_sort_anti_armor(owner: Node, cible: Node2D) -> void
 	proj.global_position = owner.global_position
 	if proj.has_method("launch"):
 		proj.launch(
-			cible,
-			duree_sort_anti_armor(owner),
-			owner.MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT,
+			target,
+			anti_armor_spell_duration(owner),
+			owner.ANTI_ARMOR_SPELL_DAMAGE_MULTIPLIER,
 			owner,
-			owner.VITESSE_PROJECTILE_ANTI_ARMOR_SORT
+			owner.ANTI_ARMOR_SPELL_PROJECTILE_SPEED
 		)
 
 
-static func cibles_ennemies_plus_proches_mortar(owner: Node, nb_max: int) -> Array:
-	var cibles: Array = owner.zone_detection.get_overlapping_bodies().filter(func(c):
+static func closest_enemy_targets_mortar(owner: Node, max_count: int) -> Array:
+	var targets: Array = owner.zone_detection.get_overlapping_bodies().filter(func(c):
 		return c != owner and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != owner.team
 	)
-	if cibles.is_empty():
+	if targets.is_empty():
 		return []
 
-	cibles.sort_custom(func(a, b):
+	targets.sort_custom(func(a, b):
 		return owner.global_position.distance_to(a.global_position) < owner.global_position.distance_to(b.global_position)
 	)
 
-	var resultat: Array = []
-	var limite: int = mini(nb_max, cibles.size())
-	for i in range(limite):
-		resultat.append(cibles[i])
-	return resultat
+	var result: Array = []
+	var limit: int = mini(max_count, targets.size())
+	for i in range(limit):
+		result.append(targets[i])
+	return result
 
 
-static func recevoir_invulnerabilite_sort(owner: Node, duree: float) -> void:
-	if duree <= 0.0 or not owner.stats:
+static func receive_invulnerability_spell(owner: Node, duration: float) -> void:
+	if duration <= 0.0 or not owner.stats:
 		return
-	owner.invulnerabilite_actif = true
-	owner.temps_restant_invulnerabilite = maxf(owner.temps_restant_invulnerabilite, duree)
-	owner._appliquer_couleur_unite()
-	owner._mettre_a_jour_effet_visuel(owner)
+	owner.invulnerability_active = true
+	owner.invulnerability_time_remaining = maxf(owner.invulnerability_time_remaining, duration)
+	owner._apply_unit_color()
+	owner._update_visual_effect(owner)
 
 
-static func receive_boost(owner: Node, duree: float) -> void:
-	if duree <= 0.0 or not owner.stats:
+static func receive_boost(owner: Node, duration: float) -> void:
+	if duration <= 0.0 or not owner.stats:
 		return
-	owner.boost_actif = true
-	owner.temps_restant_boost = maxf(owner.temps_restant_boost, duree)
+	owner.boost_active = true
+	owner.boost_time_remaining = maxf(owner.boost_time_remaining, duration)
 	owner.unit_speed = owner.stats.speed * 1.25
 	owner.unit_damage = int(round(owner.stats.damage * 1.25))
 	owner.attack_rate_multiplier = 1.25
-	owner._appliquer_couleur_unite()
-	owner._mettre_a_jour_effet_visuel(owner)
+	owner._apply_unit_color()
+	owner._update_visual_effect(owner)
 
 
-static func receive_anti_armor_spell(owner: Node, duree: float, multiplicateur: float) -> void:
-	if duree <= 0.0 or multiplicateur <= 1.0 or not owner.stats:
+static func receive_anti_armor_spell(owner: Node, duration: float, multiplier: float) -> void:
+	if duration <= 0.0 or multiplier <= 1.0 or not owner.stats:
 		return
-	owner.anti_armor_sort_actif = true
-	owner.temps_restant_anti_armor_sort = maxf(owner.temps_restant_anti_armor_sort, duree)
-	owner.multiplicateur_degats_subis = maxf(owner.multiplicateur_degats_subis, multiplicateur)
-	owner._appliquer_couleur_unite()
+	owner.anti_armor_spell_active = true
+	owner.anti_armor_spell_time_remaining = maxf(owner.anti_armor_spell_time_remaining, duration)
+	owner.incoming_damage_multiplier = maxf(owner.incoming_damage_multiplier, multiplier)
+	owner._apply_unit_color()
 
 
-static func attack_rate_actuelle(owner: Node) -> float:
-	var cadence_base: float = owner.stats.attack_rate if owner.stats and "attack_rate" in owner.stats else 1.0
-	return cadence_base * owner.attack_rate_multiplier
+static func current_attack_rate(owner: Node) -> float:
+	var base_rate: float = owner.stats.attack_rate if owner.stats and "attack_rate" in owner.stats else 1.0
+	return base_rate * owner.attack_rate_multiplier
 
 
-static func couleur_unite(owner: Node) -> Color:
-	if owner.invulnerabilite_actif and owner.boost_actif:
+static func unit_color(owner: Node) -> Color:
+	if owner.invulnerability_active and owner.boost_active:
 		return Color(0.45, 1.0, 0.55)
-	if owner.invulnerabilite_actif:
+	if owner.invulnerability_active:
 		return Color(0.35, 1.0, 0.45)
-	if owner.boost_actif:
+	if owner.boost_active:
 		return Color(1.0, 0.95, 0.25)
-	if owner.anti_armor_sort_actif:
+	if owner.anti_armor_spell_active:
 		return Color(1.0, 0.45, 0.85)
-	# Couleurs RELATIVES au spectateur local : gris = neutre, rouge = ennemi joueur,
-	# blanc = ses propres troupes (jamais en rouge sur son propre écran).
+	# Colors relative to the local viewer: gray = neutral, red = hostile player,
+	# white = own troops (never red on your own screen).
 	var t: int = int(owner.team)
 	if MapSession.is_neutral_team(t):
 		return Color(0.6, 0.6, 0.6)
@@ -234,9 +258,9 @@ static func couleur_unite(owner: Node) -> Color:
 	return Color.WHITE
 
 
-static func appliquer_couleur_unite(owner: Node) -> void:
-	for sprite in owner._sprites_animes_unite():
-		sprite.modulate = couleur_unite(owner)
+static func apply_unit_color(owner: Node) -> void:
+	for sprite in owner._animated_sprites():
+		sprite.modulate = unit_color(owner)
 
 
 static func _append_sync_id(dest: Array, unit: Node) -> void:
@@ -247,7 +271,7 @@ static func _append_sync_id(dest: Array, unit: Node) -> void:
 		dest.append(sid)
 
 
-static func _rapport_sort_reseau(owner: Node, target_sync_ids: Array) -> void:
+static func _report_spell_network(owner: Node, target_sync_ids: Array) -> void:
 	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
 		return
 	if owner.net_sync_id < 0 or bool(owner.get("net_remote_proxy")):
@@ -255,14 +279,14 @@ static func _rapport_sort_reseau(owner: Node, target_sync_ids: Array) -> void:
 	if not MapSession.is_local_team(int(owner.team)):
 		return
 	var spell_type: int = OnlineGameSync.SPELL_INVULN
-	var params: Dictionary = {"duration": owner._duree_sort_invulnerabilite()}
+	var params: Dictionary = {"duration": owner._invulnerability_spell_duration()}
 	if owner.stats and owner.stats.unit_type == UnitStats.UnitType.SUPPORT:
 		spell_type = OnlineGameSync.SPELL_BOOST
-		params = {"duration": owner._duree_sort_boost()}
+		params = {"duration": owner._boost_spell_duration()}
 	OnlineGameSync.report_spell_cast(owner.net_sync_id, spell_type, target_sync_ids, params)
 
 
-static func _rapport_sort_mortar_reseau(owner: Node, positions: Array) -> void:
+static func _report_mortar_spell_network(owner: Node, positions: Array) -> void:
 	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
 		return
 	if owner.net_sync_id < 0 or bool(owner.get("net_remote_proxy")):
@@ -274,7 +298,7 @@ static func _rapport_sort_mortar_reseau(owner: Node, positions: Array) -> void:
 	)
 
 
-static func _rapport_sort_anti_armor_reseau(owner: Node, target_sync_ids: Array) -> void:
+static func _report_anti_armor_spell_network(owner: Node, target_sync_ids: Array) -> void:
 	if not MapSession.is_online_match or not OnlineGameSync.is_online_active():
 		return
 	if owner.net_sync_id < 0 or bool(owner.get("net_remote_proxy")):
@@ -286,8 +310,8 @@ static func _rapport_sort_anti_armor_reseau(owner: Node, target_sync_ids: Array)
 		OnlineGameSync.SPELL_ANTI_ARMOR,
 		target_sync_ids,
 		{
-			"duration": duree_sort_anti_armor(owner),
-			"multiplier": owner.MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT,
+			"duration": anti_armor_spell_duration(owner),
+			"multiplier": owner.ANTI_ARMOR_SPELL_DAMAGE_MULTIPLIER,
 		}
 	)
 
@@ -295,20 +319,20 @@ static func _rapport_sort_anti_armor_reseau(owner: Node, target_sync_ids: Array)
 static func apply_spell_network_remote(
 	owner: Node, spell_type: int, target_sync_ids: Array, params: Dictionary
 ) -> void:
-	owner.cooldown_actuel_sort = owner.COOLDOWN_SORT_SECONDES
+	owner.current_spell_cooldown = owner.SPELL_COOLDOWN_SECONDS
 	match spell_type:
 		OnlineGameSync.SPELL_INVULN:
-			var duree: float = float(params.get("duration", 0.0))
+			var duration: float = float(params.get("duration", 0.0))
 			for sid in target_sync_ids:
 				var unit: Node = OnlineGameSync.get_unit(int(sid))
 				if unit != null:
-					recevoir_invulnerabilite_sort(unit, duree)
+					receive_invulnerability_spell(unit, duration)
 		OnlineGameSync.SPELL_BOOST:
-			var duree_boost: float = float(params.get("duration", 0.0))
+			var boost_duration: float = float(params.get("duration", 0.0))
 			for sid in target_sync_ids:
 				var ally: Node = OnlineGameSync.get_unit(int(sid))
 				if ally != null:
-					receive_boost(ally, duree_boost)
+					receive_boost(ally, boost_duration)
 		OnlineGameSync.SPELL_MORTAR:
 			var positions: Variant = params.get("positions", [])
 			if positions is Array:
@@ -317,6 +341,6 @@ static func apply_spell_network_remote(
 						owner._spawn_mortar_explosion_vfx(owner.SCENE_MORTAR_EXPLOSION_ULT, pos)
 		OnlineGameSync.SPELL_ANTI_ARMOR:
 			for sid in target_sync_ids:
-				var cible: Node = OnlineGameSync.get_unit(int(sid))
-				if cible is Node2D:
-					tirer_projectile_sort_anti_armor(owner, cible as Node2D)
+				var target: Node = OnlineGameSync.get_unit(int(sid))
+				if target is Node2D:
+					fire_anti_armor_spell_projectile(owner, target as Node2D)

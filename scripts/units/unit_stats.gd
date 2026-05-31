@@ -6,8 +6,8 @@ enum UnitType {
 	WATER_TRANSPORT, WATER_TANK, WATER_RANGE
 }
 
-## Touches clavier pour sélectionner toutes les unités alliées de ce type sur la carte.
-## 1-7 : terrestres | 8-9-0 : maritimes
+## Hotkeys to select all allied units of this type on the map.
+## 1-7: land | 8-9-0: naval
 const SELECTION_HOTKEY_BY_TYPE: Dictionary = {
 	UnitType.INFANTRY: KEY_1,
 	UnitType.ARCHER: KEY_2,
@@ -37,7 +37,7 @@ static func is_selection_hotkey(keycode: int) -> bool:
 	return unit_type_from_selection_hotkey(keycode) >= 0
 
 
-## Clé de traduction du nom selon le type d'unité (affichage localisé).
+## Translation key for the unit name by type (localized display).
 const NAME_KEY_BY_TYPE: Dictionary = {
 	UnitType.INFANTRY: "UNIT_INFANTRY",
 	UnitType.ARCHER: "UNIT_RANGE",
@@ -52,7 +52,7 @@ const NAME_KEY_BY_TYPE: Dictionary = {
 }
 
 
-## Nom traduit de l'unité (selon la langue active). Repli sur le nom brut.
+## Localized unit name (active locale). Falls back to the raw resource name.
 func display_name() -> String:
 	var key: String = str(NAME_KEY_BY_TYPE.get(unit_type, ""))
 	if key == "":

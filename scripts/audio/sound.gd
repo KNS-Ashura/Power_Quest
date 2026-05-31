@@ -1,26 +1,88 @@
-extends Node2D
+extends Node
+
+## Global SFX (non-positional). Use AudioStreamPlayer, not 2D — autoload is outside the game world.
+
+const DEFAULT_VOLUME_DB := 0.0
+
+@onready var menu_1: AudioStreamPlayer = $Menu1
+@onready var menu_2: AudioStreamPlayer = $Menu2
+@onready var menu_3: AudioStreamPlayer = $Menu3
+
+@onready var heal: AudioStreamPlayer = $heal
+@onready var boost: AudioStreamPlayer = $boost
+@onready var nuclear: AudioStreamPlayer = $nuclear
+@onready var antiarmor: AudioStreamPlayer = $antiarmor
+@onready var transporter: AudioStreamPlayer = $transporter
+@onready var upgrade: AudioStreamPlayer = $upgrade
+@onready var capture: AudioStreamPlayer = $capture
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass # Replace with function body.
+	_apply_volume_to_all()
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+func set_master_volume_linear(linear_0_to_1: float) -> void:
+	var clamped := clampf(linear_0_to_1, 0.0, 1.0)
+	var db := -80.0 if clamped <= 0.0001 else linear_to_db(clamped)
+	for child in get_children():
+		if child is AudioStreamPlayer:
+			(child as AudioStreamPlayer).volume_db = db
 
-#menu sounds
-@onready var menu_1 = $Menu1
-@onready var menu_2 = $Menu2
-@onready var menu_3 = $Menu3
 
-#menu func
-func play_menu1():
-	menu_1.play()
+func _apply_volume_to_all() -> void:
+	for child in get_children():
+		if child is AudioStreamPlayer:
+			var player := child as AudioStreamPlayer
+			player.volume_db = DEFAULT_VOLUME_DB
+			player.bus = &"Master"
 
-func play_menu2():
-	menu_2.play()
 
-func play_menu3():
-	menu_3.play()
+func _play(player: AudioStreamPlayer) -> void:
+	if player == null or player.stream == null:
+		push_warning("Sound: missing player or stream.")
+		return
+	if not player.playing:
+		player.play()
+	else:
+		player.stop()
+		player.play()
+
+
+func play_menu1() -> void:
+	_play(menu_1)
+
+
+func play_menu2() -> void:
+	_play(menu_2)
+
+
+func play_menu3() -> void:
+	_play(menu_3)
+
+
+func play_heal() -> void:
+	_play(heal)
+
+
+func play_boost() -> void:
+	_play(boost)
+
+
+func play_nuclear() -> void:
+	_play(nuclear)
+
+
+func play_antiarmor() -> void:
+	_play(antiarmor)
+
+
+func play_transport() -> void:
+	_play(transporter)
+
+
+func play_upgrade() -> void:
+	_play(upgrade)
+
+
+func play_capture() -> void:
+	_play(capture)

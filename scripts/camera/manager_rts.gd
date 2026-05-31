@@ -18,7 +18,7 @@ signal selected_building_changed(building)
 @export var zoom_speed: float = 0.1
 @export var auto_camera_limits: bool = true
 @export var camera_limit_padding: float = 0.0
-## Limites manuelles si auto_camera_limits est false.
+## Manual limits when auto_camera_limits is false.
 @export var use_manual_camera_limits: bool = false
 @export var manual_limit_rect: Rect2 = Rect2(-3963, -3093, 8242, 6080)
 

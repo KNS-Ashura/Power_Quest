@@ -16,11 +16,11 @@ func launch(target_node: Node2D, amount: int, shooter_node: Node2D = null) -> vo
 	target = target_node
 	heal_amount = amount
 	shooter = shooter_node
-	_appliquer_couleurs_visibles()
+	_apply_visible_colors()
 	_set_direction_animation()
 
 
-func _appliquer_couleurs_visibles() -> void:
+func _apply_visible_colors() -> void:
 	modulate = Color.WHITE
 	if is_instance_valid(sprite):
 		sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
@@ -53,8 +53,8 @@ func _impact() -> void:
 				target.current_hp = min(target.hp_max, target.current_hp + heal_amount)
 				if target.has_node("ProgressBar"):
 					target.get_node("ProgressBar").value = target.current_hp
-				if shooter.has_method("_attacher_effet_soin_sur"):
-					shooter._attacher_effet_soin_sur(target)
+				if shooter.has_method("_attach_heal_effect_on"):
+					shooter._attach_heal_effect_on(target)
 				if (
 					MapSession.is_online_match
 					and OnlineGameSync.is_online_active()

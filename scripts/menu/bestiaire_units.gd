@@ -1,6 +1,6 @@
 extends Node2D
 
-const BestiaireCatalogue = preload("res://scripts/menu/bestiaire_catalogue.gd")
+const BestiaryCatalogue = preload("res://scripts/menu/bestiaire_catalogue.gd")
 
 @onready var _unit_name: Label = %NomDeLaMap
 @onready var _description: Label = %Description1
@@ -27,9 +27,9 @@ func _notification(what: int) -> void:
 
 func show_unit(unit_index: int) -> void:
 	_current_unit_index = unit_index
-	var entry: Dictionary = BestiaireCatalogue.unit_entry(unit_index)
+	var entry: Dictionary = BestiaryCatalogue.unit_entry(unit_index)
 	var unit_type: int = int(entry.get("type", UnitStats.UnitType.INFANTRY))
-	var stats: UnitStats = BestiaireCatalogue.stats_for_unit_type(unit_type)
+	var stats: UnitStats = BestiaryCatalogue.stats_for_unit_type(unit_type)
 
 	if _unit_name != null:
 		_unit_name.text = tr(str(entry.get("name_key", "")))
@@ -37,7 +37,7 @@ func show_unit(unit_index: int) -> void:
 		_description.uppercase = false
 		_description.text = tr(str(entry.get("desc_key", "")))
 	if _stats != null:
-		_stats.text = BestiaireCatalogue.format_stats(stats)
+		_stats.text = BestiaryCatalogue.format_stats(stats)
 
 	_spawn_preview(unit_type)
 
@@ -47,7 +47,7 @@ func _spawn_preview(unit_type: int) -> void:
 		return
 	for child in _preview_host.get_children():
 		child.queue_free()
-	var scene: PackedScene = BestiaireCatalogue.scene_for_unit_type(unit_type)
+	var scene: PackedScene = BestiaryCatalogue.scene_for_unit_type(unit_type)
 	if scene == null:
 		return
 	var unit := scene.instantiate()
@@ -63,14 +63,14 @@ func _spawn_preview(unit_type: int) -> void:
 			sprite.play(sprite.sprite_frames.get_animation_names()[0])
 
 
-func _on_fleche_gauche_pressed() -> void:
+func _on_arrow_left_pressed() -> void:
 	var book := get_tree().current_scene
-	if book != null and book.has_method("open_bestiaire_maps"):
-		await book.open_bestiaire_maps()
+	if book != null and book.has_method("open_bestiary_maps"):
+		await book.open_bestiary_maps()
 
 
-func _on_fleche_droite_pressed() -> void:
-	var count: int = BestiaireCatalogue.UNITS.size()
+func _on_arrow_right_pressed() -> void:
+	var count: int = BestiaryCatalogue.UNITS.size()
 	if count <= 0:
 		return
 	show_unit((_current_unit_index + 1) % count)
@@ -78,5 +78,5 @@ func _on_fleche_droite_pressed() -> void:
 
 func _on_back_to_menu() -> void:
 	var book := get_tree().current_scene
-	if book != null and book.has_method("_on_menu_principal_pressed"):
-		book._on_menu_principal_pressed()
+	if book != null and book.has_method("_on_main_menu_pressed"):
+		book._on_main_menu_pressed()

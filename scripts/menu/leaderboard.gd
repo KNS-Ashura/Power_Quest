@@ -1,6 +1,6 @@
 extends VBoxContainer
 
-var template_ligne = preload("res://scenes/menu/leader_board_template.tscn")
+const ROW_TEMPLATE: PackedScene = preload("res://scenes/menu/leader_board_template.tscn")
 
 func _ready() -> void:
 	NetworkSession.profile_updated.connect(_on_profile_updated)
@@ -21,17 +21,17 @@ func _rebuild() -> void:
 	for child in get_children():
 		child.queue_free()
 
-	var data_joueurs: Array = NetworkSession.leaderboard_cache
-	if data_joueurs.is_empty():
+	var player_data: Array = NetworkSession.leaderboard_cache
+	if player_data.is_empty():
 		return
 
-	for i in range(data_joueurs.size()):
-		var ligne = template_ligne.instantiate()
-		var node_rank = ligne.get_node_or_null("Rank")
-		var node_name = ligne.get_node_or_null("PlayerName")
-		var node_time = ligne.get_node_or_null("PlayTime")
-		var node_score = ligne.get_node_or_null("Score")
-		var entry: Dictionary = data_joueurs[i]
+	for i in range(player_data.size()):
+		var row: Node = ROW_TEMPLATE.instantiate()
+		var node_rank = row.get_node_or_null("Rank")
+		var node_name = row.get_node_or_null("PlayerName")
+		var node_time = row.get_node_or_null("PlayTime")
+		var node_score = row.get_node_or_null("Score")
+		var entry: Dictionary = player_data[i]
 
 		if node_rank:
 			node_rank.text = str(i + 1) + "."
@@ -63,4 +63,4 @@ func _rebuild() -> void:
 				_:
 					node_rank.add_theme_color_override("font_color", Color("#3a2010"))
 
-		add_child(ligne)
+		add_child(row)

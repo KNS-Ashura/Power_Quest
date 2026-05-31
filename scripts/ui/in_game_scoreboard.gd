@@ -63,20 +63,20 @@ func _build_rows() -> Array:
 		var gold_val: Variant = _gold_for_team(team_id)
 		rows.append({
 			"team": team_id,
-			"nom": _team_display_name(team_id),
-			"troupes": _count_units_for_team(team_id),
+			"name": _team_display_name(team_id),
+			"troops": _count_units_for_team(team_id),
 			"camps": _count_camps_for_team(team_id),
-			"or": gold_val if gold_val != null else -1,
+			"gold": gold_val if gold_val != null else -1,
 			"local": MapSession.is_local_team(team_id),
 		})
 
-	rows.sort_custom(func(a, b):
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if a["local"] != b["local"]:
 			return a["local"]
 		if a["camps"] != b["camps"]:
 			return a["camps"] > b["camps"]
-		if a["troupes"] != b["troupes"]:
-			return a["troupes"] > b["troupes"]
+		if a["troops"] != b["troops"]:
+			return a["troops"] > b["troops"]
 		return int(a["team"]) < int(b["team"])
 	)
 	return rows
@@ -141,9 +141,9 @@ func _gold_for_team(team_id: int) -> Variant:
 
 func _team_display_name(team_id: int) -> String:
 	if MapSession.is_local_team(team_id):
-		var pseudo := NetworkSession.get_display_username().strip_edges()
-		if pseudo != "":
-			return pseudo
+		var username := NetworkSession.get_display_username().strip_edges()
+		if username != "":
+			return username
 		return tr("SB_YOU")
 	return MapSession.get_team_display_name(team_id)
 
@@ -156,13 +156,13 @@ func _add_row(row: Dictionary) -> void:
 	var gold_lbl: Label = line.get_node_or_null("TxtOr") as Label
 
 	if name_lbl:
-		name_lbl.text = str(row.get("nom", ""))
+		name_lbl.text = str(row.get("name", ""))
 	if troops_lbl:
-		troops_lbl.text = str(row.get("troupes", 0))
+		troops_lbl.text = str(row.get("troops", 0))
 	if camps_lbl:
 		camps_lbl.text = str(row.get("camps", 0))
 	if gold_lbl:
-		var gold_val: int = int(row.get("or", -1))
+		var gold_val: int = int(row.get("gold", -1))
 		gold_lbl.text = str(gold_val) if gold_val >= 0 else "—"
 
 	if row.get("local", false):

@@ -4,15 +4,53 @@
 [ext_resource type="AudioStream" uid="uid://dn5wnouc3rou" path="res://assets/sounds/menu1.wav" id="2_luwxf"]
 [ext_resource type="AudioStream" uid="uid://m4e8fc28xnq" path="res://assets/sounds/menu2.wav" id="3_t1vbi"]
 [ext_resource type="AudioStream" uid="uid://b7yhiaqqshsmh" path="res://assets/sounds/menu3.wav" id="4_m2yx0"]
+[ext_resource type="AudioStream" uid="uid://bg68ajiydubs1" path="res://assets/sounds/boost.wav" id="5_pc4k0"]
+[ext_resource type="AudioStream" uid="uid://dxigan0rq1l4c" path="res://assets/sounds/heal.wav" id="6_okpgh"]
+[ext_resource type="AudioStream" uid="uid://dpucuaxgerr0v" path="res://assets/sounds/upgrade.wav" id="7_huv1o"]
+[ext_resource type="AudioStream" uid="uid://c0pkx88ssyq6i" path="res://assets/sounds/capture.wav" id="8_gpy48"]
+[ext_resource type="AudioStream" uid="uid://yqtvvwh6f5fc" path="res://assets/sounds/transporter.wav" id="9_dke8h"]
+[ext_resource type="AudioStream" uid="uid://l8r7hc12bks5" path="res://assets/sounds/antiarmor.wav" id="10_fdq1a"]
+[ext_resource type="AudioStream" uid="uid://c4nlkpytkmul" path="res://assets/sounds/nuclear.wav" id="11_nuclear"]
 
-[node name="Sounds" type="Node2D" unique_id=1907370792]
+[node name="Sounds" type="Node"]
 script = ExtResource("1_10jgt")
 
-[node name="Menu1" type="AudioStreamPlayer2D" parent="." unique_id=1715604848]
+[node name="Menu1" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
 stream = ExtResource("2_luwxf")
 
-[node name="Menu2" type="AudioStreamPlayer2D" parent="." unique_id=1987096139]
+[node name="Menu2" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
 stream = ExtResource("3_t1vbi")
 
-[node name="Menu3" type="AudioStreamPlayer2D" parent="." unique_id=33137904]
+[node name="Menu3" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
 stream = ExtResource("4_m2yx0")
+
+[node name="boost" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("5_pc4k0")
+
+[node name="heal" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("6_okpgh")
+
+[node name="upgrade" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("7_huv1o")
+
+[node name="capture" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("8_gpy48")
+
+[node name="nuclear" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("11_nuclear")
+
+[node name="transporter" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("9_dke8h")
+
+[node name="antiarmor" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+stream = ExtResource("10_fdq1a")

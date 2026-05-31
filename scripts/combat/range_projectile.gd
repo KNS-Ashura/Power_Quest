@@ -22,17 +22,17 @@ func launch(target_node: Node2D, projectile_damage: int, shooter_node: Node2D = 
 		speed = projectile_speed
 	if is_instance_valid(shooter) and shooter.get("team") != null:
 		shooter_team = shooter.team
-	_appliquer_couleurs_visibles()
+	_apply_visible_colors()
 	_set_direction_animation()
 
 
-func _appliquer_couleurs_visibles() -> void:
-	var teinte := Color(1.2, 1.2, 1.2, 1.0)
+func _apply_visible_colors() -> void:
+	var tint := Color(1.2, 1.2, 1.2, 1.0)
 	if scene_file_path.contains("water-range"):
-		teinte = Color(0.55, 1.35, 1.45, 1.0)
+		tint = Color(0.55, 1.35, 1.45, 1.0)
 	modulate = Color.WHITE
 	if is_instance_valid(sprite):
-		sprite.modulate = teinte
+		sprite.modulate = tint
 		sprite.self_modulate = Color.WHITE
 		sprite.z_index = 8
 

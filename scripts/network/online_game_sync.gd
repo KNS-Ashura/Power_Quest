@@ -1,11 +1,11 @@
 extends Node
 
-## Sync multijoueur : spawn, ordres, position, dégâts.
+## Multiplayer sync: spawn, orders, position, damage.
 
 const TEAM_NEUTRAL := 2
 const SYNC_INTERVAL := 0.12
 
-## Types de sort synchronisés (visuels + effets sur cibles connues).
+## Synchronized spell types (visuals + effects on known targets).
 const SPELL_INVULN := 0
 const SPELL_BOOST := 1
 const SPELL_MORTAR := 2
@@ -66,18 +66,18 @@ func _on_local_gold_changed(amount: int) -> void:
 	report_team_gold.rpc_id(1, MapSession.local_team, amount)
 
 
-func notify_unit_spawned(camp: Node, unit: Node, unite_id: int, spawn_pos: Vector2) -> void:
+func notify_unit_spawned(camp: Node, unit: Node, unit_id: int, spawn_pos: Vector2) -> void:
 	if not is_online_active() or camp == null or unit == null:
 		return
 	if multiplayer.is_server():
 		return
-	# Token unique pour apparier l'unité locale à son sync_id même si plusieurs
-	# unités sont spawnées avant la réponse du serveur.
+	# Unique token to pair the local unit with its sync_id even when several
+	# units are spawned before the server responds.
 	var token: int = _next_spawn_token
 	_next_spawn_token += 1
 	_pending_by_token[token] = unit
 	rpc_report_unit_spawn.rpc_id(
-		1, normalize_camp_path(camp), unite_id, spawn_pos, int(camp.get("team")), token
+		1, normalize_camp_path(camp), unit_id, spawn_pos, int(camp.get("team")), token
 	)
 
 
@@ -210,7 +210,7 @@ func handle_player_abandoned(peer_id: int) -> void:
 		rpc_apply_player_abandoned.rpc_id(remaining_peer_id, team_id, camp_paths, sync_ids)
 
 	print(
-		"[OnlineGameSync] Joueur peer %d (équipe %d) a quitté — %d camp(s) neutres, %d unité(s) retirée(s)."
+		"[OnlineGameSync] Player peer %d (team %d) left — %d camp(s) neutralized, %d unit(s) removed."
 		% [peer_id, team_id, camp_paths.size(), sync_ids.size()]
 	)
 
@@ -291,7 +291,7 @@ func _process(delta: float) -> void:
 	_sync_accum += delta
 	if _sync_accum >= SYNC_INTERVAL:
 		_sync_accum = 0.0
-		_envoyer_snapshots_locaux()
+		_send_local_snapshots()
 	if MapSession.online_camps_ready:
 		_gold_sync_accum += delta
 		if _gold_sync_accum >= GOLD_SYNC_INTERVAL:
@@ -311,7 +311,7 @@ func _unit_velocity(unit: Node) -> Vector2:
 	return Vector2.ZERO
 
 
-func _envoyer_snapshots_locaux() -> void:
+func _send_local_snapshots() -> void:
 	for sync_id in _units_by_sync_id.keys():
 		var unit: Node = _units_by_sync_id[sync_id]
 		if not is_instance_valid(unit):
@@ -333,16 +333,16 @@ func _envoyer_snapshots_locaux() -> void:
 
 @rpc("any_peer", "reliable")
 func rpc_report_unit_spawn(
-	camp_path: String, unite_id: int, spawn_pos: Vector2, equipe: int, token: int
+	camp_path: String, unit_id: int, spawn_pos: Vector2, team: int, token: int
 ) -> void:
 	if not multiplayer.is_server():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
 	var expected_team: int = peer_team(sender)
-	if expected_team < 0 or int(equipe) != expected_team:
+	if expected_team < 0 or int(team) != expected_team:
 		push_warning(
-			"[OnlineGameSync] Spawn refusé peer %d (équipe attendue %d, reçue %d)."
-			% [sender, expected_team, equipe]
+			"[OnlineGameSync] Spawn denied for peer %d (expected team %d, got %d)."
+			% [sender, expected_team, team]
 		)
 		return
 	var sync_id: int = _next_sync_id
@@ -352,7 +352,7 @@ func rpc_report_unit_spawn(
 	for peer_id in multiplayer.get_peers():
 		if peer_id == sender:
 			continue
-		rpc_spawn_unit.rpc_id(peer_id, camp_path, unite_id, spawn_pos, equipe, sync_id)
+		rpc_spawn_unit.rpc_id(peer_id, camp_path, unit_id, spawn_pos, team, sync_id)
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -362,7 +362,7 @@ func rpc_assign_sync_id(sync_id: int, token: int) -> void:
 	var unit: Node = _pending_by_token.get(token)
 	_pending_by_token.erase(token)
 	if not is_instance_valid(unit):
-		push_warning("[OnlineGameSync] Unité locale introuvable pour sync_id %d (token %d)." % [sync_id, token])
+		push_warning("[OnlineGameSync] Local unit not found for sync_id %d (token %d)." % [sync_id, token])
 		return
 	unit.net_sync_id = sync_id
 	unit.net_remote_proxy = false
@@ -371,23 +371,23 @@ func rpc_assign_sync_id(sync_id: int, token: int) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func rpc_spawn_unit(
-	camp_path: String, unite_id: int, spawn_pos: Vector2, equipe: int, sync_id: int
+	camp_path: String, unit_id: int, spawn_pos: Vector2, team: int, sync_id: int
 ) -> void:
 	if ServerMode.is_dedicated_server:
 		return
-	var camp: Node = _find_camp_for_spawn(camp_path, spawn_pos, equipe, unite_id)
-	if camp == null or not camp.has_method("spawn_unite_reseau"):
+	var camp: Node = _find_camp_for_spawn(camp_path, spawn_pos, team, unit_id)
+	if camp == null or not camp.has_method("spawn_unit_network"):
 		push_warning(
-			"[OnlineGameSync] Camp introuvable pour spawn (path=%s, unit=%d, team=%d)."
-			% [camp_path, unite_id, equipe]
+			"[OnlineGameSync] Camp not found for spawn (path=%s, unit=%d, team=%d)."
+			% [camp_path, unit_id, team]
 		)
 		return
-	var unit: Node = camp.spawn_unite_reseau(unite_id, spawn_pos, equipe, sync_id)
+	var unit: Node = camp.spawn_unit_network(unit_id, spawn_pos, team, sync_id)
 	if unit != null:
 		register_unit(sync_id, unit)
 
 
-# --- Or (scoreboard) ---
+# --- Gold (scoreboard) ---
 
 @rpc("any_peer", "unreliable")
 func report_team_gold(team_id: int, gold_amount: int) -> void:
@@ -409,7 +409,7 @@ func rpc_team_gold_update(team_id: int, gold_amount: int) -> void:
 	team_gold_changed.emit(team_id, _team_gold[team_id])
 
 
-# --- Ordres (déplacement / attaque) ---
+# --- Orders (move / attack) ---
 
 func report_player_orders(unit_sync_ids: Array, move_to: Vector2, attack_sync_id: int) -> void:
 	if not is_online_active() or unit_sync_ids.is_empty():
@@ -434,12 +434,12 @@ func rpc_report_orders(unit_sync_ids: Array, move_to: Vector2, attack_sync_id: i
 func rpc_apply_orders(unit_sync_ids: Array, move_to: Vector2, attack_sync_id: int) -> void:
 	if ServerMode.is_dedicated_server:
 		return
-	var cible: Node = get_unit(attack_sync_id)
+	var target: Node = get_unit(attack_sync_id)
 	for sid in unit_sync_ids:
 		var unit: Node = get_unit(int(sid))
 		if unit == null or not unit.has_method("apply_network_order"):
 			continue
-		unit.apply_network_order(move_to, cible)
+		unit.apply_network_order(move_to, target)
 
 
 # --- Position (snapshots) ---
@@ -461,7 +461,7 @@ func rpc_report_unit_state(sync_id: int, pos: Vector2, vel: Vector2, hp: int) ->
 func rpc_remote_unit_state(
 	sync_id: int,
 	_unit_path: String,
-	equipe: int,
+	team: int,
 	pos: Vector2,
 	vel: Vector2,
 	hp: int,
@@ -613,7 +613,7 @@ func rpc_apply_death(sync_id: int) -> void:
 			unit.queue_free()
 
 
-# --- Capture de camp (mort du gardien) ---
+# --- Camp capture (guardian death) ---
 
 func report_camp_capture(camp_path: String, new_team: int) -> void:
 	if not is_online_active() or camp_path.is_empty():
@@ -627,8 +627,8 @@ func report_camp_capture(camp_path: String, new_team: int) -> void:
 func rpc_report_camp_capture(camp_path: String, new_team: int) -> void:
 	if not multiplayer.is_server():
 		return
-	# Anti-doublon : ignore les rapports identiques (plusieurs clients peuvent voir
-	# le même gardien mourir), mais laisse passer un vrai changement de propriétaire.
+	# Dedup: ignore identical reports (multiple clients may see the same
+	# guardian die), but allow a real ownership change.
 	if int(_captured_camp_state.get(camp_path, -99)) == new_team:
 		return
 	_captured_camp_state[camp_path] = new_team

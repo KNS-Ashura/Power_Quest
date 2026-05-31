@@ -1,27 +1,27 @@
 extends Node
 
-## URLs de production — à adapter sur le VPS.
-## En dev local : lancer Nakama (deploy/docker-compose) + serveur Godot --server.
+## Production URLs — adjust on the VPS.
+## Local dev: run Nakama (deploy/docker-compose) + Godot server with --server.
 
 @export var nakama_scheme: String = "https"
-## Même domaine que le jeu Web → pas de CORS (proxy /v2 et /game dans 000-default-le-ssl.conf).
+## Same domain as the Web game → no CORS (proxy /v2 and /game in 000-default-le-ssl.conf).
 @export var nakama_host: String = "powerquest.robinmatelot.codes"
 @export var nakama_port: int = 443
 @export var nakama_server_key: String = "defaultkey"
 
-## Slash final important pour Apache ProxyPass /game/ → ws://127.0.0.1:9080/
+## Trailing slash required for Apache ProxyPass /game/ → ws://127.0.0.1:9080/
 const PROD_GAME_WS_URL := "wss://powerquest.robinmatelot.codes/game/"
 
 @export var game_ws_url: String = PROD_GAME_WS_URL
 
-## Dev local (surcharge si host = localhost dans l'éditeur)
+## Local dev (override when host is localhost in the editor)
 @export var dev_nakama_host: String = "127.0.0.1"
 @export var dev_nakama_port: int = 7350
 @export var dev_game_ws_url: String = "ws://127.0.0.1:9080"
 
 
 func use_dev_endpoints() -> bool:
-	# Sur le VPS : ne pas définir PQ_DEV. En local : export PQ_DEV=1
+	# On VPS: do not set PQ_DEV. Locally: export PQ_DEV=1
 	return OS.get_environment("PQ_DEV") == "1"
 
 

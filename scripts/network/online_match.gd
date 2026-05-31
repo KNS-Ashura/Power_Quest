@@ -1,15 +1,15 @@
 extends Node
 
-## Initialisation multijoueur autoritaire (serveur) : slots joueurs + répartition des camps.
+## Authoritative multiplayer setup (server): player slots + camp distribution.
 
 signal setup_complete
 
 const TEAM_NEUTRAL := 2
 
 
-## Convertit un slot (0..N-1) en ID d'équipe en évitant l'ID neutre (2),
-## pour supporter jusqu'à 8 joueurs sans collision avec le neutre.
-## slots 0,1,2,3,4,5,6,7 -> équipes 0,1,3,4,5,6,7,8
+## Maps slot index (0..N-1) to team id, skipping neutral id (2),
+## so up to 8 players never collide with the neutral team.
+## slots 0,1,2,3,4,5,6,7 -> teams 0,1,3,4,5,6,7,8
 func _slot_to_team(slot: int) -> int:
 	return slot if slot < TEAM_NEUTRAL else slot + 1
 
@@ -30,14 +30,14 @@ func _server_setup() -> void:
 	await get_tree().process_frame
 	var camps := _sorted_camps()
 	if camps.is_empty():
-		push_warning("[OnlineMatch] Aucun camp sur la map.")
+		push_warning("[OnlineMatch] No camps on the map.")
 		return
 
 	var peers: Array = multiplayer.get_peers()
 	peers.sort()
 	var player_count: int = peers.size()
 	if player_count < 1:
-		push_warning("[OnlineMatch] Aucun client connecté.")
+		push_warning("[OnlineMatch] No clients connected.")
 		return
 
 	MapSession.online_player_count = player_count
@@ -58,7 +58,7 @@ func _server_setup() -> void:
 
 	_apply_camp_assignments(paths, teams)
 	print(
-		"[OnlineMatch] %d joueurs, %d sites (%d neutres, 2 sites/joueur)."
+		"[OnlineMatch] %d players, %d sites (%d neutral, 2 sites/player)."
 		% [player_count, paths.size(), neutral_count]
 	)
 
@@ -72,17 +72,17 @@ func _server_setup() -> void:
 	setup_complete.emit()
 
 
-## Chaque joueur démarre avec EXACTEMENT 2 sites : au moins 1 camp normal
-## + un 2e site (camp OU port). Tous les autres sites restent NEUTRES (avec gardien).
+## Each player starts with EXACTLY 2 sites: at least one normal camp
+## plus a second site (camp OR port). All other sites stay NEUTRAL (with guardian).
 func _distribute_camps_among_players(camps: Array, player_count: int) -> Dictionary:
 	var assignments: Dictionary = {}
-	# Tout neutre par défaut.
+	# Neutral by default.
 	for c in camps:
 		assignments[c] = TEAM_NEUTRAL
 	if player_count <= 0:
 		return assignments
 
-	# Sépare les camps normaux des ports.
+	# Split regular camps from ports.
 	var regular: Array = []
 	var ports: Array = []
 	for c in camps:
@@ -93,7 +93,7 @@ func _distribute_camps_among_players(camps: Array, player_count: int) -> Diction
 	regular.shuffle()
 	ports.shuffle()
 
-	# 1er site garanti par joueur : un CAMP normal (repli sur port si trop peu de camps).
+	# First guaranteed site per player: a regular camp (fallback to port if too few camps).
 	var reg_idx: int = 0
 	var port_idx: int = 0
 	for slot in range(player_count):
@@ -105,7 +105,7 @@ func _distribute_camps_among_players(camps: Array, player_count: int) -> Diction
 			assignments[ports[port_idx]] = team_id
 			port_idx += 1
 
-	# 2e site par joueur : un site restant au hasard (camp ou port).
+	# Second site per player: a random remaining site (camp or port).
 	var pool: Array = []
 	pool.append_array(regular.slice(reg_idx, regular.size()))
 	pool.append_array(ports.slice(port_idx, ports.size()))
@@ -119,7 +119,7 @@ func _distribute_camps_among_players(camps: Array, player_count: int) -> Diction
 	return assignments
 
 
-## Noms d'équipe indexés par ID d'équipe (pas par slot), car les IDs sautent le neutre.
+## Team names indexed by team id (not slot), because ids skip the neutral team.
 func _build_team_display_names(peers: Array, player_count: int) -> PackedStringArray:
 	var max_team: int = _slot_to_team(player_count - 1) if player_count > 0 else 0
 	var names := PackedStringArray()
@@ -166,7 +166,7 @@ func rpc_match_player_setup(
 	_apply_camp_assignments(paths, teams)
 	MapSession.online_camps_ready = true
 	_refresh_all_camp_visuals()
-	print("[OnlineMatch] Client prêt — équipe locale %d / %d joueurs." % [team, player_count])
+	print("[OnlineMatch] Client ready — local team %d / %d players." % [team, player_count])
 	setup_complete.emit()
 
 

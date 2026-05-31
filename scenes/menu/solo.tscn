@@ -220,7 +220,7 @@ text = "MAP_GREEN_ISLAND"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[connection signal="pressed" from="LVL_IA/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]
-[connection signal="pressed" from="LVL_IA/FlecheDroite" to="." method="_on_fleche_droite_pressed"]
-[connection signal="pressed" from="MapChoice/FlecheGauche2" to="." method="_on_fleche_gauche_2_pressed"]
-[connection signal="pressed" from="MapChoice/FlecheDroite2" to="." method="_on_fleche_droite_2_pressed"]
+[connection signal="pressed" from="LVL_IA/FlecheGauche" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="LVL_IA/FlecheDroite" to="." method="_on_arrow_right_pressed"]
+[connection signal="pressed" from="MapChoice/FlecheGauche2" to="." method="_on_map_arrow_left_pressed"]
+[connection signal="pressed" from="MapChoice/FlecheDroite2" to="." method="_on_map_arrow_right_pressed"]

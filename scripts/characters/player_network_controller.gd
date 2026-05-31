@@ -2,25 +2,25 @@ extends RefCounted
 class_name PlayerNetworkController
 
 
-static func deal_combat_damage(owner: Node, cible: Node, degats: int) -> void:
-	if not cible.has_method("take_damage"):
+static func deal_combat_damage(owner: Node, target: Node, damage: int) -> void:
+	if not target.has_method("take_damage"):
 		return
 	if MapSession.is_online_match and OnlineGameSync.is_online_active():
 		if MapSession.is_local_team(owner.team):
-			var target_sync: int = int(cible.get("net_sync_id")) if cible.get("net_sync_id") != null else -1
+			var target_sync: int = int(target.get("net_sync_id")) if target.get("net_sync_id") != null else -1
 			if target_sync >= 0:
-				cible.take_damage(degats, owner, owner.team)
+				target.take_damage(damage, owner, owner.team)
 				if owner.net_sync_id >= 0:
-					OnlineGameSync.report_damage(owner.net_sync_id, target_sync, degats, int(owner.team))
+					OnlineGameSync.report_damage(owner.net_sync_id, target_sync, damage, int(owner.team))
 				return
-		if bool(cible.get("net_remote_proxy")):
+		if bool(target.get("net_remote_proxy")):
 			return
-	cible.take_damage(degats, owner, owner.team)
+	target.take_damage(damage, owner, owner.team)
 
 
-static func take_damage_network_remote(owner: Node, montant: int, auteur_team: int) -> void:
+static func take_damage_network_remote(owner: Node, amount: int, attacker_team: int) -> void:
 	owner._network_damage = true
-	owner.take_damage(montant, null, auteur_team)
+	owner.take_damage(amount, null, attacker_team)
 	owner._network_damage = false
 
 
@@ -51,8 +51,8 @@ static func apply_heal_network_remote(owner: Node, amount: int, caster_sync_id: 
 	if owner.has_node("ProgressBar"):
 		owner.get_node("ProgressBar").value = owner.current_hp
 	var caster: Node = OnlineGameSync.get_unit(caster_sync_id)
-	if is_instance_valid(caster) and caster.has_method("_attacher_effet_soin_sur"):
-		caster._attacher_effet_soin_sur(owner)
+	if is_instance_valid(caster) and caster.has_method("_attach_heal_effect_on"):
+		caster._attach_heal_effect_on(owner)
 
 
 static func force_network_death(owner: Node) -> void:
@@ -69,5 +69,5 @@ static func physics_process_network_proxy(owner: Node, delta: float) -> void:
 	if is_instance_valid(owner.attack_target_node):
 		owner.agent_navigation.target_position = owner.attack_target_node.global_position
 		if owner.attack_target_node in owner.zone_detection.get_overlapping_bodies():
-			owner._on_timer_attaque_timeout()
+			owner._on_attack_timer_timeout()
 	owner.update_animation()

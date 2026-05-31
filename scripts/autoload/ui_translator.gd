@@ -1,6 +1,6 @@
 extends Node
 
-## Applique les traductions aux textes de scène stockés comme clés (MENU_*).
+## Applies translations to scene text stored as keys (MENU_*).
 
 
 func _ready() -> void:

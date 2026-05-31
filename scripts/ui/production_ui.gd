@@ -37,9 +37,9 @@ func _on_building_changed(building) -> void:
 	if selected_building and selected_building.has_signal("production_updated"):
 		if selected_building.production_updated.is_connected(_update_queue_display):
 			selected_building.production_updated.disconnect(_update_queue_display)
-	if selected_building and selected_building.has_signal("camp_upgradedd"):
-		if selected_building.camp_upgradedd.is_connected(_on_camp_upgradedd):
-			selected_building.camp_upgradedd.disconnect(_on_camp_upgradedd)
+	if selected_building and selected_building.has_signal("camp_upgraded"):
+		if selected_building.camp_upgraded.is_connected(_on_camp_upgraded):
+			selected_building.camp_upgraded.disconnect(_on_camp_upgraded)
 
 	selected_building = building
 
@@ -52,8 +52,8 @@ func _on_building_changed(building) -> void:
 		_refresh_upgrade_button()
 		if not selected_building.production_updated.is_connected(_update_queue_display):
 			selected_building.production_updated.connect(_update_queue_display)
-		if selected_building.has_signal("camp_upgradedd") and not selected_building.camp_upgradedd.is_connected(_on_camp_upgradedd):
-			selected_building.camp_upgradedd.connect(_on_camp_upgradedd)
+		if selected_building.has_signal("camp_upgraded") and not selected_building.camp_upgraded.is_connected(_on_camp_upgraded):
+			selected_building.camp_upgraded.connect(_on_camp_upgraded)
 			Sound.play_menu2()
 	else:
 		_port_production_mode = false
@@ -87,7 +87,7 @@ func _apply_production_button_layout() -> void:
 		_set_production_button_text(btn_support, "Support (100G)")
 		_set_production_button_text(btn_heal, "Heal (100G)")
 		_set_production_button_text(btn_anti_armor, "Anti-Armor (90G)")
-		_set_production_button_text(btn_mortar, "Mortier (200G)")
+		_set_production_button_text(btn_mortar, "Mortar (200G)")
 
 
 func _set_port_button_labels() -> void:
@@ -165,7 +165,7 @@ func _on_btn_arc_pressed() -> void:
 		selected_building.request_production(1)
 
 
-func _on_btn_lourd_pressed() -> void:
+func _on_btn_heavy_pressed() -> void:
 	Sound.play_menu1()
 	if selected_building:
 		selected_building.request_production(2)
@@ -199,12 +199,11 @@ func _on_btn_upgrade_pressed() -> void:
 	if not selected_building or not selected_building.has_method("upgrade_camp"):
 		return
 	if selected_building.upgrade_camp():
-		Sound.play_menu1()
 		_update_level_display()
 		_refresh_upgrade_button()
 
 
-func _on_camp_upgradedd(_new_level) -> void:
+func _on_camp_upgraded(_new_level) -> void:
 	_update_level_display()
 	_refresh_upgrade_button()
 	if _port_production_mode:

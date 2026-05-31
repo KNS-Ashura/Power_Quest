@@ -13,38 +13,38 @@ static func update_animation(owner: Node) -> void:
 		if sprite.animation.begins_with("death_"):
 			return
 		if sprite.animation.begins_with("attack_"):
-			var combat_actif: bool = owner.attack_target_node != null \
-				and owner._cible_combat_valide(owner.attack_target_node) \
+			var combat_active: bool = owner.attack_target_node != null \
+				and owner._is_valid_combat_target(owner.attack_target_node) \
 				and owner.attack_target_node in owner.zone_detection.get_overlapping_bodies()
-			if not combat_actif:
-				play_on_sprites(owner, "idle_" + owner.dernier_regard)
+			if not combat_active:
+				play_on_sprites(owner, "idle_" + owner.last_facing_direction)
 			return
 
 	if owner.velocity.length() > 5.0:
 		if abs(owner.velocity.x) > abs(owner.velocity.y):
-			owner.dernier_regard = "r" if owner.velocity.x > 0 else "l"
+			owner.last_facing_direction = "r" if owner.velocity.x > 0 else "l"
 		else:
-			owner.dernier_regard = "f" if owner.velocity.y > 0 else "b"
-		play_on_sprites(owner, "run_" + owner.dernier_regard)
+			owner.last_facing_direction = "f" if owner.velocity.y > 0 else "b"
+		play_on_sprites(owner, "run_" + owner.last_facing_direction)
 	else:
-		play_on_sprites(owner, "idle_" + owner.dernier_regard)
+		play_on_sprites(owner, "idle_" + owner.last_facing_direction)
 
 
-static func play_attack_animation(owner: Node, cible: Node2D) -> void:
-	if not is_instance_valid(cible):
+static func play_attack_animation(owner: Node, target: Node2D) -> void:
+	if not is_instance_valid(target):
 		return
 	if not owner.has_node("AnimatedSprite2D"):
 		return
 
 	var sprite: AnimatedSprite2D = owner.get_node("AnimatedSprite2D")
-	var dir: String = direction_from_target(owner, cible.global_position)
+	var dir: String = direction_from_target(owner, target.global_position)
 	var anim := "attack_" + dir
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
 		play_on_sprites(owner, anim)
 
 
-static func direction_from_target(owner: Node, pos_cible: Vector2) -> String:
-	var delta: Vector2 = pos_cible - owner.global_position
+static func direction_from_target(owner: Node, target_position: Vector2) -> String:
+	var delta: Vector2 = target_position - owner.global_position
 	return DirectionUtilsRef.direction_from_vector(delta)
 
 
@@ -69,12 +69,12 @@ static func play_death_animation(owner: Node) -> bool:
 		return false
 
 	var sprite: AnimatedSprite2D = owner.get_node("AnimatedSprite2D")
-	var anim = "death_" + owner.dernier_regard
+	var anim = "death_" + owner.last_facing_direction
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
-		play_on_sprites(owner, anim, "idle_" + owner.dernier_regard)
+		play_on_sprites(owner, anim, "idle_" + owner.last_facing_direction)
 		return true
-	elif sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_" + owner.dernier_regard):
-		play_on_sprites(owner, "idle_" + owner.dernier_regard)
+	elif sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_" + owner.last_facing_direction):
+		play_on_sprites(owner, "idle_" + owner.last_facing_direction)
 	return false
 
 

@@ -277,7 +277,7 @@ autowrap_mode = 3
 
 [connection signal="pressed" from="Control/Panel/GridContainer2/BtnInf" to="." method="_on_btn_inf_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer2/BtnArc" to="." method="_on_btn_arc_pressed"]
-[connection signal="pressed" from="Control/Panel/GridContainer2/BtnHeavy" to="." method="_on_btn_lourd_pressed"]
+[connection signal="pressed" from="Control/Panel/GridContainer2/BtnHeavy" to="." method="_on_btn_heavy_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer2/BtnSupport" to="." method="_on_btn_support_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer2/BtnHeal" to="." method="_on_btn_heal_pressed"]
 [connection signal="pressed" from="Control/Panel/GridContainer2/BtnAntiArmor" to="." method="_on_btn_anti_armor_pressed"]

@@ -8,9 +8,9 @@ const PlayerSpellControllerRef = preload("res://scripts/characters/player_spell_
 const PlayerMovementControllerRef = preload("res://scripts/characters/player_movement_controller.gd")
 const PlayerCombatControllerRef = preload("res://scripts/characters/player_combat_controller.gd")
 
-signal killed_by(tueur, tueur_team)
+signal killed_by(killer, killer_team)
 
-@export var stats : UnitStats
+@export var stats: UnitStats
 
 enum Owner { PLAYER, ENEMY, NEUTRAL }
 @export var team: Owner = Owner.PLAYER
@@ -21,47 +21,48 @@ var _net_target_position: Vector2 = Vector2.ZERO
 var _net_lerp_active: bool = false
 var _network_damage: bool = false
 
-var hp_max : int = 100
-var current_hp : int = 100
-var unit_speed : float = 150.0
-var unit_damage : int = 10
-var is_selected : bool = false
+var hp_max: int = 100
+var current_hp: int = 100
+var unit_speed: float = 150.0
+var unit_damage: int = 10
+var is_selected: bool = false
 const SCENE_RANGE_PROJECTILE_LOOP = preload("uid://swrp6c3h83xg")
 const SCENE_WATER_RANGE_PROJECTILE_LOOP = preload("uid://djbfyhto8wuop")
 const SCENE_HEALER_PROJECTILE_LOOP = preload("uid://5cvanebkvuv0")
 const SCENE_HEALER_EFFECT = preload("uid://cdvvumicj5qty")
 const SCENE_SUPPORT_EFFECT = preload("uid://ca8jxgt0j8nmw")
 const SCENE_DOUBLE_EFFECT = preload("uid://badrqmpt16vq7")
-const DUREE_INVULN_SORT_NIVEAU_1 := 10.0
-const DUREE_BOOST_SORT_NIVEAU_1 := 20.0
-const BONUS_INVULN_PAR_NIVEAU := 5.0
-const BONUS_BOOST_PAR_NIVEAU := 10.0
+const INVULN_SPELL_DURATION_LEVEL_1 := 10.0
+const BOOST_SPELL_DURATION_LEVEL_1 := 20.0
+const INVULN_DURATION_BONUS_PER_LEVEL := 5.0
+const BOOST_DURATION_BONUS_PER_LEVEL := 10.0
 const SCENE_PORT_GUARDIAN_PROJECTILE_LOOP = preload("res://scenes/personnages/port_guardian/gardian-port-loop-projectile.tscn")
 const SCENE_CAMP_GUARDIAN_PROJECTILE_LOOP = preload("uid://ofkkgjehycuj")
 const SCENE_ANTI_ARMOR_PROJECTILE_LOOP = preload("res://scenes/personnages/anti_armor/anti-armor-loop-projectile.tscn")
-const RAYON_TIR_PASSIF_PORT_GARDIEN := 420.0
-const VITESSE_PROJECTILE_PORT_GARDIEN := 320.0
-const VITESSE_PROJECTILE_CAMP_GARDIEN := 380.0
-const VITESSE_PROJECTILE_ANTI_ARMOR_SORT := 120.0
-const DUREE_EFFET_SOIN_DEFAUT := 4.0
-const NOM_NOEUD_EFFET_BUFF := "BuffEffectVfx"
-const MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT := 2.0
-const DUREE_SORT_ANTI_ARMOR_NIVEAU_1 := 10.0
-const BONUS_DUREE_SORT_ANTI_ARMOR_PAR_NIVEAU := 2.0
-const RAYON_SORT_ANTI_ARMOR_NIVEAU_1 := 150.0
-const BONUS_RAYON_SORT_ANTI_ARMOR_PAR_NIVEAU := 30.0
-const FACTEUR_ZONE_RANGE := 0.65
-const FACTEUR_ZONE_HEALER := 0.6
-const FACTEUR_ZONE_GARDIEN_CAMP := 0.85
+const PORT_GUARDIAN_PASSIVE_SHOT_RADIUS := 420.0
+const PORT_GUARDIAN_PROJECTILE_SPEED := 320.0
+const CAMP_GUARDIAN_PROJECTILE_SPEED := 380.0
+const ANTI_ARMOR_SPELL_PROJECTILE_SPEED := 120.0
+const DEFAULT_HEAL_EFFECT_DURATION := 4.0
+const BUFF_EFFECT_NODE_NAME := "BuffEffectVfx"
+const ANTI_ARMOR_SPELL_DAMAGE_MULTIPLIER := 2.0
+const ANTI_ARMOR_SPELL_DURATION_LEVEL_1 := 10.0
+const ANTI_ARMOR_SPELL_DURATION_BONUS_PER_LEVEL := 2.0
+const ANTI_ARMOR_SPELL_RADIUS_LEVEL_1 := 150.0
+const ANTI_ARMOR_SPELL_RADIUS_BONUS_PER_LEVEL := 30.0
+const RANGE_ZONE_FACTOR := 0.65
+const HEALER_ZONE_FACTOR := 0.6
+const CAMP_GUARDIAN_ZONE_FACTOR := 0.85
 const SCENE_MORTAR_EXPLOSION_BASE = preload("res://scenes/personnages/mortar/explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_POISON = preload("res://scenes/personnages/mortar/poison-explosion.tscn")
-const SCENE_MORTAR_EXPLOSION_FEU = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
+const SCENE_MORTAR_EXPLOSION_FIRE = preload("res://scenes/personnages/mortar/fire-explosion.tscn")
 const SCENE_MORTAR_EXPLOSION_ULT = preload("res://scenes/personnages/mortar/explosion-ult.tscn")
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_1: float = 4.8
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_2: float = 3.9
-const MORTAR_ATTACK_COOLDOWN_NIVEAU_3: float = 3.2
-const MORTAR_SORT_COOLDOWN_DEFAUT: float = 12.0
-const COOLDOWN_SORT_SECONDES := 60.0
+const MORTAR_ATTACK_COOLDOWN_LEVEL_1: float = 1.35
+const MORTAR_ATTACK_COOLDOWN_LEVEL_2: float = 1.1
+const MORTAR_ATTACK_COOLDOWN_LEVEL_3: float = 0.85
+const MORTAR_ULT_DAMAGE_MULTIPLIER := 1.75
+const MORTAR_ULT_EXPLOSION_RADIUS := 130.0
+const SPELL_COOLDOWN_SECONDS := 60.0
 const SCENE_WATER_TRANSPORT_MARK_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect.tscn")
 const SCENE_WATER_TRANSPORT_BOARD_FX = preload("res://scenes/personnages/water-transporter/water-transporter-effect-2.tscn")
 const WATER_TRANSPORT_MARK_RADIUS := 150.0
@@ -74,12 +75,12 @@ const WATER_TRANSPORT_DISEMBARK_SPREAD := 14.0
 const WATER_TRANSPORT_CAP_BY_LEVEL := {1: 5, 2: 8, 3: 11}
 const PROJECTILE_ATTACK_ANIM_DELAY_RANGE := 0.11
 const PROJECTILE_ATTACK_ANIM_DELAY_HEAL := 0.12
-## Navigation 2D (bitmask) — doit correspondre aux régions dans Main :
-## layer 1 (valeur 1) = Nav_ground | layer 2 (valeur 2) = Nav_water
+## Navigation 2D (bitmask) — must match regions in Main:
+## layer 1 (value 1) = Nav_ground | layer 2 (value 2) = Nav_water
 const NAV_LAYER_GROUND := 1
 const NAV_LAYER_WATER := 2
 
-## Calques physique : alliés ne se bloquent pas entre eux (glissement latéral).
+## Physics layers: allies do not block each other (lateral slide).
 const COLLISION_LAYER_WORLD := 1
 const COLLISION_LAYER_PLAYER_UNIT := 2
 const COLLISION_LAYER_ENEMY_UNIT := 4
@@ -91,25 +92,25 @@ const SEPARATION_FORCE := 95.0
 @export var force_water_navigation: bool = false
 
 @onready var agent_navigation = $NavigationAgent2D
-var attack_target_node : Node2D = null
+var attack_target_node: Node2D = null
 @onready var zone_detection = $ZoneDetection
-@onready var timer_attaque = $TimerAttaque
+@onready var attack_timer = $TimerAttaque
 
-var temps_recherche : float = 0.5
-var timer_recherche : float = 0.0
-var timer_tir_passif_gardien : float = 0.0
+var search_interval: float = 0.5
+var search_timer: float = 0.0
+var passive_guardian_shot_timer: float = 0.0
 
-var cooldown_actuel_sort : float = 0.0
-var temps_restant_boost : float = 0.0
-var boost_actif : bool = false
-var invulnerabilite_actif : bool = false
-var temps_restant_invulnerabilite : float = 0.0
-var anti_armor_sort_actif : bool = false
-var temps_restant_anti_armor_sort : float = 0.0
-var multiplicateur_degats_subis : float = 1.0
+var current_spell_cooldown: float = 0.0
+var boost_time_remaining: float = 0.0
+var boost_active: bool = false
+var invulnerability_active: bool = false
+var invulnerability_time_remaining: float = 0.0
+var anti_armor_spell_active: bool = false
+var anti_armor_spell_time_remaining: float = 0.0
+var incoming_damage_multiplier: float = 1.0
 var attack_rate_multiplier: float = 1.0
-var is_dying : bool = false
-var cycle_explosion_mortar : int = 0
+var is_dying: bool = false
+var cycle_explosion_mortar: int = 0
 var is_camp_guardian: bool = false
 var guard_position: Vector2 = Vector2.ZERO
 var guard_defense_radius: float = 260.0
@@ -131,30 +132,30 @@ func _apply_stats_to_unit() -> void:
 	current_hp = hp_max
 	unit_speed = stats.speed
 	unit_damage = stats.damage
-	_appliquer_couleur_unite()
+	_apply_unit_color()
 	if has_node("ProgressBar"):
 		$ProgressBar.max_value = hp_max
 		$ProgressBar.value = current_hp
-	var rayon := _rayon_zone_detection()
+	var radius := _detection_zone_radius()
 	var shape = $ZoneDetection/CollisionShape2D.shape
 	if shape is CircleShape2D:
 		$ZoneDetection/CollisionShape2D.shape = shape.duplicate()
-		$ZoneDetection/CollisionShape2D.shape.radius = rayon
+		$ZoneDetection/CollisionShape2D.shape.radius = radius
 	if is_instance_valid(agent_navigation):
-		agent_navigation.target_desired_distance = max(8.0, rayon - 5.0)
+		agent_navigation.target_desired_distance = max(8.0, radius - 5.0)
 
-func _ready():
+func _ready() -> void:
 	water_transport_base_scale = scale
 	_apply_stats_to_unit()
-	_configurer_calques_navigation()
-	_configurer_mouvement_et_collisions()
+	_configure_navigation_layers()
+	_configure_movement_and_collisions()
 	agent_navigation.path_desired_distance = 10.0
 	await get_tree().process_frame
 	agent_navigation.target_position = global_position
-	timer_attaque.timeout.connect(_on_timer_attaque_timeout)
-	_configurer_animations_mort()
+	attack_timer.timeout.connect(_on_attack_timer_timeout)
+	_configure_death_animations()
 
-func _configurer_calques_navigation() -> void:
+func _configure_navigation_layers() -> void:
 	if not is_instance_valid(agent_navigation):
 		return
 	if _is_naval_unit():
@@ -169,11 +170,11 @@ func _is_naval_unit() -> bool:
 		return stats.unit_type == UnitStats.UnitType.WATER_TANK \
 			or stats.unit_type == UnitStats.UnitType.WATER_RANGE \
 			or stats.unit_type == UnitStats.UnitType.WATER_TRANSPORT
-	var chemin_scene := scene_file_path
-	return chemin_scene.contains("/water-range/") or chemin_scene.contains("/water-tank/")
+	var scene_path := scene_file_path
+	return scene_path.contains("/water-range/") or scene_path.contains("/water-tank/")
 
-func set_selection(etat : bool):
-	is_selected = etat
+func set_selection(selected: bool) -> void:
+	is_selected = selected
 	self.modulate = Color(1.2, 1.2, 1.2) if is_selected else Color(1, 1, 1)
 
 
@@ -187,7 +188,7 @@ func matches_selection_hotkey(keycode: int) -> bool:
 	return UnitStats.selection_hotkey_for_type(stats.unit_type) == keycode
 
 
-func move_to(cible : Vector2):
+func move_to(target_position: Vector2) -> void:
 	if net_remote_proxy:
 		return
 	if is_camp_guardian:
@@ -195,249 +196,249 @@ func move_to(cible : Vector2):
 	attack_target_node = null
 	if is_instance_valid(agent_navigation):
 		agent_navigation.target_desired_distance = 8.0
-	agent_navigation.target_position = cible
+	agent_navigation.target_position = target_position
 
-func _arreter_combat() -> void:
+func _stop_combat() -> void:
 	attack_target_node = null
 	_pending_projectile_ticket += 1
-	if is_instance_valid(timer_attaque):
-		timer_attaque.stop()
+	if is_instance_valid(attack_timer):
+		attack_timer.stop()
 	velocity = Vector2.ZERO
 
-func _cible_combat_valide(cible: Node) -> bool:
-	if cible == null or not is_instance_valid(cible):
+func _is_valid_combat_target(target: Node) -> bool:
+	if target == null or not is_instance_valid(target):
 		return false
-	if not cible.is_inside_tree():
+	if not target.is_inside_tree():
 		return false
-	if "is_dying" in cible and cible.is_dying:
+	if "is_dying" in target and target.is_dying:
 		return false
-	if "current_hp" in cible and cible.current_hp <= 0:
+	if "current_hp" in target and target.current_hp <= 0:
 		return false
-	if _est_healer():
-		if not ("current_hp" in cible and "hp_max" in cible):
+	if _is_healer():
+		if not ("current_hp" in target and "hp_max" in target):
 			return false
-		if cible.get("team") == null or cible.team != team:
+		if target.get("team") == null or target.team != team:
 			return false
-		return cible.current_hp < cible.hp_max
-	if cible.has_method("take_damage"):
-		if cible.is_in_group("camps"):
+		return target.current_hp < target.hp_max
+	if target.has_method("take_damage"):
+		if target.is_in_group("camps"):
 			return false
-		if cible.get("team") != null and cible.team == team:
+		if target.get("team") != null and target.team == team:
 			return false
 		return true
 	return false
 
-func attack_target(cible : Node2D):
+func attack_target(target: Node2D) -> void:
 	if net_remote_proxy:
 		return
-	if not _cible_combat_valide(cible):
+	if not _is_valid_combat_target(target):
 		return
-	if is_camp_guardian and is_instance_valid(cible):
-		if cible.global_position.distance_to(guard_position) > guard_chase_radius:
+	if is_camp_guardian and is_instance_valid(target):
+		if target.global_position.distance_to(guard_position) > guard_chase_radius:
 			return
-	attack_target_node = cible
-	if is_instance_valid(cible):
+	attack_target_node = target
+	if is_instance_valid(target):
 		if is_instance_valid(agent_navigation):
-			agent_navigation.target_desired_distance = max(8.0, _rayon_zone_detection() - 5.0)
-		agent_navigation.target_position = cible.global_position
+			agent_navigation.target_desired_distance = max(8.0, _detection_zone_radius() - 5.0)
+		agent_navigation.target_position = target.global_position
 
-var dernier_regard : String = "f"
+var last_facing_direction: String = "f"
 
-func _physics_process(_delta):
+func _physics_process(_delta: float) -> void:
 	if is_dying:
 		return
 	if net_remote_proxy:
 		_physics_process_network_proxy(_delta)
 		return
 
-	if is_camp_guardian and (_est_gardien_port() or _est_gardien_camp()):
-		_gerer_tirs_passifs_gardien(_delta)
+	if is_camp_guardian and (_is_port_guardian() or _is_camp_guardian_unit()):
+		_handle_passive_guardian_shots(_delta)
 
-	var doit_avancer = true
+	var should_move = true
 	if is_instance_valid(agent_navigation):
 		if is_instance_valid(attack_target_node):
-			agent_navigation.target_desired_distance = max(8.0, _rayon_zone_detection() - 5.0)
+			agent_navigation.target_desired_distance = max(8.0, _detection_zone_radius() - 5.0)
 		else:
 			agent_navigation.target_desired_distance = 8.0
-	
-	if cooldown_actuel_sort > 0:
-		cooldown_actuel_sort -= _delta
+
+	if current_spell_cooldown > 0:
+		current_spell_cooldown -= _delta
 	if water_transport_cooldown > 0.0:
 		water_transport_cooldown = maxf(0.0, water_transport_cooldown - _delta)
-		
-	if boost_actif:
-		temps_restant_boost -= _delta
-		if temps_restant_boost <= 0:
-			boost_actif = false
+
+	if boost_active:
+		boost_time_remaining -= _delta
+		if boost_time_remaining <= 0:
+			boost_active = false
 			unit_speed = stats.speed
 			unit_damage = stats.damage
 			attack_rate_multiplier = 1.0
-			_appliquer_couleur_unite()
-			_mettre_a_jour_effet_visuel(self)
+			_apply_unit_color()
+			_update_visual_effect(self)
 
-	if invulnerabilite_actif:
-		temps_restant_invulnerabilite -= _delta
-		if temps_restant_invulnerabilite <= 0:
-			invulnerabilite_actif = false
-			_appliquer_couleur_unite()
-			_mettre_a_jour_effet_visuel(self)
+	if invulnerability_active:
+		invulnerability_time_remaining -= _delta
+		if invulnerability_time_remaining <= 0:
+			invulnerability_active = false
+			_apply_unit_color()
+			_update_visual_effect(self)
 
-	if anti_armor_sort_actif:
-		temps_restant_anti_armor_sort -= _delta
-		if temps_restant_anti_armor_sort <= 0:
-			anti_armor_sort_actif = false
-			temps_restant_anti_armor_sort = 0.0
-			multiplicateur_degats_subis = 1.0
-			_appliquer_couleur_unite()
-	
-	if is_instance_valid(attack_target_node) and not _cible_combat_valide(attack_target_node):
-		_arreter_combat()
+	if anti_armor_spell_active:
+		anti_armor_spell_time_remaining -= _delta
+		if anti_armor_spell_time_remaining <= 0:
+			anti_armor_spell_active = false
+			anti_armor_spell_time_remaining = 0.0
+			incoming_damage_multiplier = 1.0
+			_apply_unit_color()
+
+	if is_instance_valid(attack_target_node) and not _is_valid_combat_target(attack_target_node):
+		_stop_combat()
 
 	if is_instance_valid(attack_target_node):
-		var cible_valide := attack_target_node
-		if is_camp_guardian and cible_valide.global_position.distance_to(guard_position) > guard_chase_radius:
-			_arreter_combat()
+		var valid_target := attack_target_node
+		if is_camp_guardian and valid_target.global_position.distance_to(guard_position) > guard_chase_radius:
+			_stop_combat()
 			agent_navigation.target_position = guard_position
-			doit_avancer = true
+			should_move = true
 		else:
-			agent_navigation.target_position = cible_valide.global_position
-			var dans_zone: bool = cible_valide in zone_detection.get_overlapping_bodies()
-			if dans_zone:
-				doit_avancer = false
-				if timer_attaque.is_stopped():
-					if _est_mortar():
-						timer_attaque.start(_cooldown_mortar_niveau())
+			agent_navigation.target_position = valid_target.global_position
+			var in_zone: bool = valid_target in zone_detection.get_overlapping_bodies()
+			if in_zone:
+				should_move = false
+				if attack_timer.is_stopped():
+					if _is_mortar():
+						attack_timer.start(_mortar_level_cooldown())
 					else:
-						var cadence = _attack_rate_actuelle()
-						timer_attaque.start(1.0 / cadence)
+						var attack_rate = _current_attack_rate()
+						attack_timer.start(1.0 / attack_rate)
 			else:
-				_arreter_combat()
+				_stop_combat()
 	else:
-		if is_instance_valid(timer_attaque):
-			timer_attaque.stop()
-		timer_recherche -= _delta
-		if timer_recherche <= 0:
-			_rechercher_cible_automatique()
-			timer_recherche = temps_recherche
+		if is_instance_valid(attack_timer):
+			attack_timer.stop()
+		search_timer -= _delta
+		if search_timer <= 0:
+			_search_target_automatically()
+			search_timer = search_interval
 
 		if is_camp_guardian and global_position.distance_to(guard_position) > 8.0:
 			agent_navigation.target_position = guard_position
 		elif agent_navigation.is_navigation_finished():
-			doit_avancer = false
-			
-	if doit_avancer:
-		var prochain_point = agent_navigation.get_next_path_position()
-		_appliquer_deplacement_vers(prochain_point)
+			should_move = false
+
+	if should_move:
+		var next_point = agent_navigation.get_next_path_position()
+		_apply_movement_toward(next_point)
 	else:
 		velocity = Vector2.ZERO
 
 	update_animation()
 
-func _on_timer_attaque_timeout():
-	PlayerCombatControllerRef.on_timer_attaque_timeout(self)
+func _on_attack_timer_timeout() -> void:
+	PlayerCombatControllerRef.on_attack_timer_timeout(self)
 
-func _animer_attaque_melee():
-	PlayerCombatControllerRef.animer_attaque_melee(self)
+func _animate_melee_attack() -> void:
+	PlayerCombatControllerRef.animate_melee_attack(self)
 
-func _rechercher_cible_automatique():
-	PlayerCombatControllerRef.rechercher_cible_automatique(self)
+func _search_target_automatically() -> void:
+	PlayerCombatControllerRef.search_target_automatically(self)
 
-func _est_healer() -> bool:
+func _is_healer() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.HEAL
 
-func _est_range() -> bool:
+func _is_range() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.ARCHER
 
-func _est_water_range_unite() -> bool:
+func _is_water_range_unit() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.WATER_RANGE
 
-func _est_mortar() -> bool:
+func _is_mortar() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.MORTAR
 
-func _est_anti_armor() -> bool:
+func _is_anti_armor() -> bool:
 	return stats != null and stats.unit_type == UnitStats.UnitType.ANTI_ARMOR
 
-func _tirer_projectile_range(cible: Node2D):
-	PlayerCombatControllerRef.tirer_projectile_range(self, cible)
+func _fire_range_projectile(target: Node2D) -> void:
+	PlayerCombatControllerRef.fire_range_projectile(self, target)
 
-func _montant_soin() -> int:
-	return PlayerCombatControllerRef.montant_soin(self)
+func _heal_amount() -> int:
+	return PlayerCombatControllerRef.heal_amount(self)
 
-func _tirer_projectile_heal(cible: Node2D) -> void:
-	PlayerCombatControllerRef.tirer_projectile_heal(self, cible)
-
-
-func _programmer_tir_projectile(cible: Node2D, delay_seconds: float, heal_projectile: bool) -> void:
-	PlayerCombatControllerRef.programmer_tir_projectile(self, cible, delay_seconds, heal_projectile)
+func _fire_heal_projectile(target: Node2D) -> void:
+	PlayerCombatControllerRef.fire_heal_projectile(self, target)
 
 
-func _declencher_tir_projectile(ticket: int, cible: Node2D, heal_projectile: bool) -> void:
-	PlayerCombatControllerRef.declencher_tir_projectile(self, ticket, cible, heal_projectile)
+func _schedule_projectile_shot(target: Node2D, delay_seconds: float, heal_projectile: bool) -> void:
+	PlayerCombatControllerRef.schedule_projectile_shot(self, target, delay_seconds, heal_projectile)
 
-func _est_gardien_port() -> bool:
+
+func _trigger_projectile_shot(ticket: int, target: Node2D, heal_projectile: bool) -> void:
+	PlayerCombatControllerRef.trigger_projectile_shot(self, ticket, target, heal_projectile)
+
+func _is_port_guardian() -> bool:
 	return scene_file_path.contains("/port_guardian/")
 
-func _est_gardien_camp() -> bool:
-	return is_camp_guardian and scene_file_path.contains("/guardian/") and not _est_gardien_port()
+func _is_camp_guardian_unit() -> bool:
+	return is_camp_guardian and scene_file_path.contains("/guardian/") and not _is_port_guardian()
 
-func _niveau_gardien_port() -> int:
+func _port_guardian_level() -> int:
 	if stats == null:
 		return 1
 	return UnitNameUtilsRef.level_from_unit_name(String(stats.name))
 
-func _rayon_zone_detection() -> float:
+func _detection_zone_radius() -> float:
 	if stats == null:
 		return 100.0
-	if _est_healer():
-		return stats.range * FACTEUR_ZONE_HEALER
-	if _est_range():
-		return stats.range * FACTEUR_ZONE_RANGE
-	if is_camp_guardian and not _est_gardien_port():
-		return stats.range * FACTEUR_ZONE_GARDIEN_CAMP
+	if _is_healer():
+		return stats.range * HEALER_ZONE_FACTOR
+	if _is_range():
+		return stats.range * RANGE_ZONE_FACTOR
+	if is_camp_guardian and not _is_port_guardian():
+		return stats.range * CAMP_GUARDIAN_ZONE_FACTOR
 	return stats.range
 
-func _gerer_tirs_passifs_gardien(delta: float) -> void:
-	PlayerCombatControllerRef.gerer_tirs_passifs_gardien(self, delta)
+func _handle_passive_guardian_shots(delta: float) -> void:
+	PlayerCombatControllerRef.handle_passive_guardian_shots(self, delta)
 
-func _ennemis_portee_tir_passif_gardien() -> Array:
-	return PlayerCombatControllerRef.ennemis_portee_tir_passif_gardien(self)
+func _passive_shot_enemies_in_range() -> Array:
+	return PlayerCombatControllerRef.passive_shot_enemies_in_range(self)
 
-func _scene_projectile_gardien_passif() -> PackedScene:
-	return PlayerCombatControllerRef.scene_projectile_gardien_passif(self)
+func _passive_guardian_projectile_scene() -> PackedScene:
+	return PlayerCombatControllerRef.passive_guardian_projectile_scene(self)
 
-func _vitesse_projectile_gardien_passif() -> float:
-	return PlayerCombatControllerRef.vitesse_projectile_gardien_passif(self)
+func _passive_guardian_projectile_speed() -> float:
+	return PlayerCombatControllerRef.passive_guardian_projectile_speed(self)
 
-func _tirer_projectile_gardien_passif(cible: Node2D) -> void:
-	PlayerCombatControllerRef.tirer_projectile_gardien_passif(self, cible)
+func _fire_passive_guardian_projectile(target: Node2D) -> void:
+	PlayerCombatControllerRef.fire_passive_guardian_projectile(self, target)
 
-func _duree_effet_soin() -> float:
-	return DUREE_EFFET_SOIN_DEFAUT
+func _heal_effect_duration() -> float:
+	return DEFAULT_HEAL_EFFECT_DURATION
 
-func _niveau_unite() -> int:
+func _unit_level() -> int:
 	if stats == null:
 		return 1
 	return UnitNameUtilsRef.level_from_unit_name(String(stats.name))
 
-func _duree_sort_invulnerabilite() -> float:
-	var niveau := _niveau_unite()
-	return DUREE_INVULN_SORT_NIVEAU_1 + float(niveau - 1) * BONUS_INVULN_PAR_NIVEAU
+func _invulnerability_spell_duration() -> float:
+	var level := _unit_level()
+	return INVULN_SPELL_DURATION_LEVEL_1 + float(level - 1) * INVULN_DURATION_BONUS_PER_LEVEL
 
-func _duree_sort_boost() -> float:
-	var niveau := _niveau_unite()
-	return DUREE_BOOST_SORT_NIVEAU_1 + float(niveau - 1) * BONUS_BOOST_PAR_NIVEAU
+func _boost_spell_duration() -> float:
+	var level := _unit_level()
+	return BOOST_SPELL_DURATION_LEVEL_1 + float(level - 1) * BOOST_DURATION_BONUS_PER_LEVEL
 
-func _duree_effet_visuel_sur_cible(cible: Node2D) -> float:
-	var duree := 0.0
-	if cible.get("invulnerabilite_actif") and cible.invulnerabilite_actif:
-		duree = maxf(duree, cible.temps_restant_invulnerabilite)
-	if cible.get("boost_actif") and cible.boost_actif:
-		duree = maxf(duree, cible.temps_restant_boost)
-	return duree
+func _visual_effect_duration_on_target(target: Node2D) -> float:
+	var duration := 0.0
+	if target.get("invulnerability_active") and target.invulnerability_active:
+		duration = maxf(duration, target.invulnerability_time_remaining)
+	if target.get("boost_active") and target.boost_active:
+		duration = maxf(duration, target.boost_time_remaining)
+	return duration
 
-func _scene_effet_pour_cible(cible: Node2D) -> PackedScene:
-	var invuln: bool = cible.get("invulnerabilite_actif") == true and bool(cible.invulnerabilite_actif)
-	var boost: bool = cible.get("boost_actif") == true and bool(cible.boost_actif)
+func _effect_scene_for_target(target: Node2D) -> PackedScene:
+	var invuln: bool = target.get("invulnerability_active") == true and bool(target.invulnerability_active)
+	var boost: bool = target.get("boost_active") == true and bool(target.boost_active)
 	if invuln and boost:
 		return SCENE_DOUBLE_EFFECT
 	if invuln:
@@ -446,75 +447,75 @@ func _scene_effet_pour_cible(cible: Node2D) -> PackedScene:
 		return SCENE_SUPPORT_EFFECT
 	return null
 
-func _mettre_a_jour_effet_visuel(cible: Node2D) -> void:
-	if not is_instance_valid(cible):
+func _update_visual_effect(target: Node2D) -> void:
+	if not is_instance_valid(target):
 		return
-	var existant := cible.get_node_or_null(NOM_NOEUD_EFFET_BUFF)
-	if is_instance_valid(existant):
-		existant.queue_free()
-	var scene_fx := _scene_effet_pour_cible(cible)
+	var existing := target.get_node_or_null(BUFF_EFFECT_NODE_NAME)
+	if is_instance_valid(existing):
+		existing.queue_free()
+	var scene_fx := _effect_scene_for_target(target)
 	if scene_fx == null:
 		return
-	var duree := _duree_effet_visuel_sur_cible(cible)
-	if duree <= 0.0:
+	var duration := _visual_effect_duration_on_target(target)
+	if duration <= 0.0:
 		return
 	var fx = scene_fx.instantiate()
-	fx.name = NOM_NOEUD_EFFET_BUFF
-	cible.add_child(fx)
-	if fx.has_method("demarrer"):
-		fx.demarrer(duree)
+	fx.name = BUFF_EFFECT_NODE_NAME
+	target.add_child(fx)
+	if fx.has_method("start"):
+		fx.start(duration)
 
-func _attacher_effet_soin_sur(cible: Node2D) -> void:
-	if not is_instance_valid(cible):
+func _attach_heal_effect_on(target: Node2D) -> void:
+	if not is_instance_valid(target):
 		return
-	if cible.get("invulnerabilite_actif") and cible.invulnerabilite_actif:
-		_mettre_a_jour_effet_visuel(cible)
+	if target.get("invulnerability_active") and target.invulnerability_active:
+		_update_visual_effect(target)
 		return
-	_attacher_effet_sur_cible(cible, SCENE_HEALER_EFFECT, _duree_effet_soin())
+	_attach_effect_on_target(target, SCENE_HEALER_EFFECT, _heal_effect_duration())
 
-func _attacher_effet_sur_cible(cible: Node2D, scene_fx: PackedScene, duree: float) -> void:
-	if not is_instance_valid(cible) or scene_fx == null or duree <= 0.0:
+func _attach_effect_on_target(target: Node2D, scene_fx: PackedScene, duration: float) -> void:
+	if not is_instance_valid(target) or scene_fx == null or duration <= 0.0:
 		return
-	var existant := cible.get_node_or_null(NOM_NOEUD_EFFET_BUFF)
-	if is_instance_valid(existant):
-		existant.queue_free()
+	var existing := target.get_node_or_null(BUFF_EFFECT_NODE_NAME)
+	if is_instance_valid(existing):
+		existing.queue_free()
 	var fx = scene_fx.instantiate()
-	fx.name = NOM_NOEUD_EFFET_BUFF
-	cible.add_child(fx)
-	if fx.has_method("demarrer"):
-		fx.demarrer(duree)
+	fx.name = BUFF_EFFECT_NODE_NAME
+	target.add_child(fx)
+	if fx.has_method("start"):
+		fx.start(duration)
 
-func _niveau_mortar() -> int:
-	return _niveau_unite()
+func _mortar_level() -> int:
+	return _unit_level()
 
-func _cooldown_mortar_niveau() -> float:
-	var niveau := _niveau_mortar()
-	if niveau >= 3:
-		return MORTAR_ATTACK_COOLDOWN_NIVEAU_3
-	if niveau == 2:
-		return MORTAR_ATTACK_COOLDOWN_NIVEAU_2
-	return MORTAR_ATTACK_COOLDOWN_NIVEAU_1
+func _mortar_level_cooldown() -> float:
+	var level := _mortar_level()
+	if level >= 3:
+		return MORTAR_ATTACK_COOLDOWN_LEVEL_3
+	if level == 2:
+		return MORTAR_ATTACK_COOLDOWN_LEVEL_2
+	return MORTAR_ATTACK_COOLDOWN_LEVEL_1
 
-func _tirer_mortar_distance(cible: Node2D):
-	PlayerCombatControllerRef.tirer_mortar_distance(self, cible)
+func _fire_mortar_at_range(target: Node2D) -> void:
+	PlayerCombatControllerRef.fire_mortar_at_range(self, target)
 
-func _prochaine_explosion_mortar() -> Dictionary:
-	return PlayerCombatControllerRef.prochaine_explosion_mortar(self)
+func _next_mortar_explosion() -> Dictionary:
+	return PlayerCombatControllerRef.next_mortar_explosion(self)
 
-func _spawn_mortar_explosion_vfx(scene: PackedScene, position_world: Vector2):
+func _spawn_mortar_explosion_vfx(scene: PackedScene, position_world: Vector2) -> void:
 	PlayerCombatControllerRef.spawn_mortar_explosion_vfx(self, scene, position_world)
 
-func _appliquer_degats_zone(centre: Vector2, rayon: float, degats: int):
-	PlayerCombatControllerRef.appliquer_degats_zone(self, centre, rayon, degats)
+func _apply_area_damage(center: Vector2, radius: float, damage: int) -> void:
+	PlayerCombatControllerRef.apply_area_damage(self, center, radius, damage)
 
-func _appliquer_soin_cible(cible: Node2D):
-	PlayerCombatControllerRef.appliquer_soin_cible(self, cible)
+func _apply_heal_to_target(target: Node2D) -> void:
+	PlayerCombatControllerRef.apply_heal_to_target(self, target)
 
-func update_animation():
+func update_animation() -> void:
 	PlayerAnimationControllerRef.update_animation(self)
 
-func take_damage(montant : int, auteur = null, auteur_team : int = -1):
-	if is_dying or invulnerabilite_actif:
+func take_damage(amount: int, attacker = null, attacker_team: int = -1) -> void:
+	if is_dying or invulnerability_active:
 		return
 	if (
 		MapSession.is_online_match
@@ -525,30 +526,30 @@ func take_damage(montant : int, auteur = null, auteur_team : int = -1):
 	):
 		return
 
-	var degats_finaux = montant
-	
-	if is_instance_valid(auteur) and "stats" in auteur and auteur.stats != null:
-		if auteur.stats.unit_type == 5:
-			degats_finaux = degats_finaux * 3 if (stats and stats.unit_type == 2) else int(float(degats_finaux) * 0.5)
-	if anti_armor_sort_actif:
-		degats_finaux = int(round(float(degats_finaux) * multiplicateur_degats_subis))
-				
-	current_hp -= degats_finaux
-	
+	var final_damage = amount
+
+	if is_instance_valid(attacker) and "stats" in attacker and attacker.stats != null:
+		if attacker.stats.unit_type == 5:
+			final_damage = final_damage * 3 if (stats and stats.unit_type == 2) else int(float(final_damage) * 0.5)
+	if anti_armor_spell_active:
+		final_damage = int(round(float(final_damage) * incoming_damage_multiplier))
+
+	current_hp -= final_damage
+
 	if has_node("ProgressBar"):
 		$ProgressBar.value = current_hp
-		
-	if current_hp <= 0:
-		var eq = auteur_team
-		if eq == -1 and is_instance_valid(auteur) and auteur.get("team") != null:
-			eq = auteur.team
-		die(auteur, eq)
 
-func die(tueur : Node2D = null, tueur_team : int = -1):
+	if current_hp <= 0:
+		var eq = attacker_team
+		if eq == -1 and is_instance_valid(attacker) and attacker.get("team") != null:
+			eq = attacker.team
+		die(attacker, eq)
+
+func die(killer: Node2D = null, killer_team: int = -1) -> void:
 	if is_dying:
 		return
-	# Le propriétaire est autoritaire sur la mort de SON unité : il la signale
-	# TOUJOURS (même morte par dégâts réseau) pour retirer les proxies partout.
+	# Owner is authoritative on their unit's death: always report it
+	# (even when killed by network damage) so proxies are removed everywhere.
 	if (
 		MapSession.is_online_match
 		and OnlineGameSync.is_online_active()
@@ -557,23 +558,23 @@ func die(tueur : Node2D = null, tueur_team : int = -1):
 	):
 		OnlineGameSync.report_unit_death(net_sync_id)
 
-	if _est_water_transporter():
+	if _is_water_transporter():
 		if water_transport_boarded.size() > 0:
 			_water_transport_release_boarded_at_origin()
 		elif water_transport_phase == WaterTransportPhase.UNITS_MARKED:
 			_water_transport_clear_marked()
 
 	is_dying = true
-	if _est_mortar():
-		_jouer_animation_sur_sprites("attack_" + dernier_regard, "idle_" + dernier_regard)
+	if _is_mortar():
+		_play_animation_on_sprites("attack_" + last_facing_direction, "idle_" + last_facing_direction)
 		_spawn_mortar_explosion_vfx(SCENE_MORTAR_EXPLOSION_BASE, global_position)
-		_appliquer_degats_zone(global_position, 120.0, int(round(float(unit_damage) * 1.15)))
+		_apply_area_damage(global_position, 120.0, int(round(float(unit_damage) * 1.15)))
 		await get_tree().create_timer(0.22).timeout
-	killed_by.emit(tueur, tueur_team)
+	killed_by.emit(killer, killer_team)
 	velocity = Vector2.ZERO
-	_arreter_combat()
+	_stop_combat()
 
-	# Stoppe tout blocage physique/agent dès le début de l'anim de mort.
+	# Stop physics/agent blocking as soon as the death anim starts.
 	collision_layer = 0
 	collision_mask = 0
 	if is_instance_valid(agent_navigation):
@@ -588,30 +589,30 @@ func die(tueur : Node2D = null, tueur_team : int = -1):
 	if has_node("ZoneDetection/CollisionShape2D"):
 		$ZoneDetection/CollisionShape2D.set_deferred("disabled", true)
 
-	var anim_mort_jouee := _jouer_animation_mort()
-	if anim_mort_jouee:
+	var death_anim_played := _play_death_animation()
+	if death_anim_played:
 		await $AnimatedSprite2D.animation_finished
 	queue_free()
 
-func _jouer_animation_mort() -> bool:
+func _play_death_animation() -> bool:
 	return PlayerAnimationControllerRef.play_death_animation(self)
 
-func _jouer_animation_attaque(cible: Node2D):
-	PlayerAnimationControllerRef.play_attack_animation(self, cible)
+func _play_attack_animation(target: Node2D) -> void:
+	PlayerAnimationControllerRef.play_attack_animation(self, target)
 
-func _direction_depuis_cible(pos_cible: Vector2) -> String:
-	return PlayerAnimationControllerRef.direction_from_target(self, pos_cible)
+func _direction_from_target(target_position: Vector2) -> String:
+	return PlayerAnimationControllerRef.direction_from_target(self, target_position)
 
-func _sprites_animes_unite() -> Array[AnimatedSprite2D]:
+func _animated_sprites() -> Array[AnimatedSprite2D]:
 	return PlayerAnimationControllerRef.animated_sprites(self)
 
-func _jouer_animation_sur_sprites(anim: String, fallback: String = ""):
+func _play_animation_on_sprites(anim: String, fallback: String = "") -> void:
 	PlayerAnimationControllerRef.play_on_sprites(self, anim, fallback)
 
-func _configurer_animations_mort():
+func _configure_death_animations() -> void:
 	PlayerAnimationControllerRef.configure_death_animations(self)
 
-func _est_water_transporter() -> bool:
+func _is_water_transporter() -> bool:
 	return PlayerTransportControllerRef.is_water_transporter(self)
 
 
@@ -620,7 +621,7 @@ func get_water_transport_cooldown_remaining() -> float:
 
 
 func get_spell_cooldown_remaining() -> float:
-	return maxf(0.0, cooldown_actuel_sort)
+	return maxf(0.0, current_spell_cooldown)
 
 
 func get_water_transport_phase() -> int:
@@ -628,7 +629,7 @@ func get_water_transport_phase() -> int:
 
 
 func get_anti_armor_spell_radius() -> float:
-	return _rayon_sort_anti_armor()
+	return _anti_armor_spell_radius()
 
 
 func can_use_water_transport() -> bool:
@@ -647,7 +648,7 @@ func _water_transport_capacity() -> int:
 	return PlayerTransportControllerRef.capacity(self)
 
 
-func _est_unite_terrestre_transportable(unit: Node) -> bool:
+func _is_land_unit_transportable(unit: Node) -> bool:
 	return PlayerTransportControllerRef.is_land_unit_transportable(self, unit)
 
 
@@ -687,11 +688,11 @@ func _water_transport_show_unit(unit: Node2D, spawn_pos: Vector2) -> void:
 	PlayerTransportControllerRef.show_unit(self, unit, spawn_pos)
 
 
-func _arreter_combat_unite(unit: Node) -> void:
+func _stop_unit_combat(unit: Node) -> void:
 	PlayerTransportControllerRef.stop_unit_combat(unit)
 
 
-func _retirer_effet_transport(unit: Node2D) -> void:
+func _remove_transport_fx(unit: Node2D) -> void:
 	PlayerTransportControllerRef.remove_transport_fx(self, unit)
 
 
@@ -737,93 +738,93 @@ func _cast_spell_mortar_ult() -> bool:
 	return PlayerSpellControllerRef.cast_spell_mortar_ult(self)
 
 
-func _rayon_sort_anti_armor() -> float:
-	return PlayerSpellControllerRef.rayon_sort_anti_armor(self)
+func _anti_armor_spell_radius() -> float:
+	return PlayerSpellControllerRef.anti_armor_spell_radius(self)
 
 
-func _duree_sort_anti_armor() -> float:
-	return PlayerSpellControllerRef.duree_sort_anti_armor(self)
+func _anti_armor_spell_duration() -> float:
+	return PlayerSpellControllerRef.anti_armor_spell_duration(self)
 
 
 func _cast_spell_anti_armor() -> bool:
 	return PlayerSpellControllerRef.cast_spell_anti_armor(self)
 
 
-func _cibles_ennemies_sort_anti_armor() -> Array[Node2D]:
-	return PlayerSpellControllerRef.cibles_ennemies_sort_anti_armor(self)
+func _anti_armor_spell_enemy_targets() -> Array[Node2D]:
+	return PlayerSpellControllerRef.anti_armor_spell_enemy_targets(self)
 
 
-func _cible_plus_de_pv_sort_anti_armor(cibles: Array[Node2D]) -> Node2D:
-	return PlayerSpellControllerRef.cible_plus_de_pv_sort_anti_armor(cibles)
+func _highest_hp_anti_armor_target(targets: Array[Node2D]) -> Node2D:
+	return PlayerSpellControllerRef.highest_hp_anti_armor_target(targets)
 
 
-func _tirer_projectile_sort_anti_armor(cible: Node2D) -> void:
-	PlayerSpellControllerRef.tirer_projectile_sort_anti_armor(self, cible)
+func _fire_anti_armor_spell_projectile(target: Node2D) -> void:
+	PlayerSpellControllerRef.fire_anti_armor_spell_projectile(self, target)
 
-func _cibles_ennemies_plus_proches_mortar(nb_max: int) -> Array:
-	return PlayerSpellControllerRef.cibles_ennemies_plus_proches_mortar(self, nb_max)
+func _closest_enemy_targets_mortar(max_count: int) -> Array:
+	return PlayerSpellControllerRef.closest_enemy_targets_mortar(self, max_count)
 
-func recevoir_invulnerabilite_sort(duree: float) -> void:
-	PlayerSpellControllerRef.recevoir_invulnerabilite_sort(self, duree)
+func receive_invulnerability_spell(duration: float) -> void:
+	PlayerSpellControllerRef.receive_invulnerability_spell(self, duration)
 
-func receive_boost(duree: float):
-	PlayerSpellControllerRef.receive_boost(self, duree)
-
-
-func receive_anti_armor_spell(duree: float, multiplicateur: float = MULTIPLICATEUR_DEGATS_ANTI_ARMOR_SORT) -> void:
-	PlayerSpellControllerRef.receive_anti_armor_spell(self, duree, multiplicateur)
-
-func _attack_rate_actuelle() -> float:
-	return PlayerSpellControllerRef.attack_rate_actuelle(self)
-
-func _couleur_unite() -> Color:
-	return PlayerSpellControllerRef.couleur_unite(self)
-
-func _appliquer_couleur_unite():
-	PlayerSpellControllerRef.appliquer_couleur_unite(self)
-
-func configure_guardian_mode(position_ancre: Vector2, rayon_defense: float = 260.0, rayon_poursuite: float = 320.0):
-	PlayerMovementControllerRef.configure_guardian_mode(self, position_ancre, rayon_defense, rayon_poursuite)
+func receive_boost(duration: float) -> void:
+	PlayerSpellControllerRef.receive_boost(self, duration)
 
 
-func _est_scene_gardien() -> bool:
-	return PlayerMovementControllerRef.est_scene_gardien(self)
+func receive_anti_armor_spell(duration: float, multiplier: float = ANTI_ARMOR_SPELL_DAMAGE_MULTIPLIER) -> void:
+	PlayerSpellControllerRef.receive_anti_armor_spell(self, duration, multiplier)
+
+func _current_attack_rate() -> float:
+	return PlayerSpellControllerRef.current_attack_rate(self)
+
+func _unit_color() -> Color:
+	return PlayerSpellControllerRef.unit_color(self)
+
+func _apply_unit_color() -> void:
+	PlayerSpellControllerRef.apply_unit_color(self)
+
+func configure_guardian_mode(anchor_position: Vector2, defense_radius: float = 260.0, chase_radius: float = 320.0) -> void:
+	PlayerMovementControllerRef.configure_guardian_mode(self, anchor_position, defense_radius, chase_radius)
 
 
-func _configurer_mouvement_et_collisions() -> void:
-	PlayerMovementControllerRef.configurer_mouvement_et_collisions(self)
+func _is_guardian_scene() -> bool:
+	return PlayerMovementControllerRef.is_guardian_scene(self)
 
 
-func _appliquer_calques_collision_equipe() -> void:
-	PlayerMovementControllerRef.appliquer_calques_collision_equipe(self)
+func _configure_movement_and_collisions() -> void:
+	PlayerMovementControllerRef.configure_movement_and_collisions(self)
 
 
-func _configurer_zone_detection() -> void:
-	PlayerMovementControllerRef.configurer_zone_detection(self)
+func _apply_team_collision_layers() -> void:
+	PlayerMovementControllerRef.apply_team_collision_layers(self)
 
 
-func _configurer_forme_collision() -> void:
-	PlayerMovementControllerRef.configurer_forme_collision(self)
+func _configure_detection_zone() -> void:
+	PlayerMovementControllerRef.configure_detection_zone(self)
 
 
-func _configurer_evitement_navigation() -> void:
-	PlayerMovementControllerRef.configurer_evitement_navigation(self)
+func _configure_collision_shape() -> void:
+	PlayerMovementControllerRef.configure_collision_shape(self)
 
 
-func _appliquer_deplacement_vers(prochain_point: Vector2) -> void:
-	PlayerMovementControllerRef.appliquer_deplacement_vers(self, prochain_point)
+func _configure_navigation_avoidance() -> void:
+	PlayerMovementControllerRef.configure_navigation_avoidance(self)
 
 
-func _calculer_vitesse_desiree(prochain_point: Vector2) -> Vector2:
-	return PlayerMovementControllerRef.calculer_vitesse_desiree(self, prochain_point)
+func _apply_movement_toward(next_point: Vector2) -> void:
+	PlayerMovementControllerRef.apply_movement_toward(self, next_point)
 
 
-func _deal_combat_damage(cible: Node, degats: int) -> void:
-	PlayerNetworkControllerRef.deal_combat_damage(self, cible, degats)
+func _compute_desired_velocity(next_point: Vector2) -> Vector2:
+	return PlayerMovementControllerRef.compute_desired_velocity(self, next_point)
 
 
-func take_damage_network_remote(montant: int, auteur_team: int) -> void:
-	PlayerNetworkControllerRef.take_damage_network_remote(self, montant, auteur_team)
+func _deal_combat_damage(target: Node, damage: int) -> void:
+	PlayerNetworkControllerRef.deal_combat_damage(self, target, damage)
+
+
+func take_damage_network_remote(amount: int, attacker_team: int) -> void:
+	PlayerNetworkControllerRef.take_damage_network_remote(self, amount, attacker_team)
 
 
 func apply_network_order(move_to: Vector2, target: Node) -> void:
@@ -865,5 +866,5 @@ func _physics_process_network_proxy(delta: float) -> void:
 	PlayerNetworkControllerRef.physics_process_network_proxy(self, delta)
 
 
-func _calculer_repulsion_allies() -> Vector2:
-	return PlayerMovementControllerRef.calculer_repulsion_allies(self)
+func _compute_ally_repulsion() -> Vector2:
+	return PlayerMovementControllerRef.compute_ally_repulsion(self)

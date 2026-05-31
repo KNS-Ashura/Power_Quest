@@ -34,7 +34,7 @@ var _guardian_spawn_timer: float = 0.0
 const GUARDIAN_DELAY_ONLINE := 1.0
 
 signal production_updated(queue_size, progress)
-signal camp_upgradedd(new_level)
+signal camp_upgraded(new_level)
 signal site_captured(new_team)
 
 
@@ -516,7 +516,7 @@ func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
 	elif is_instance_valid(killer) and killer.get("team") != null and killer.team != team:
 		new_team = int(killer.team)
 	_capture_by_team(new_team)
-	# Multijoueur : propage la capture (et le respawn du gardien) sur tous les écrans.
+	# Online: propagate capture (and guardian respawn) to all clients.
 	if MapSession.is_online_match and OnlineGameSync.is_online_active():
 		OnlineGameSync.report_camp_capture(str(get_path()), new_team)
 
@@ -535,6 +535,8 @@ func _capture_by_team(new_team: int) -> void:
 
 func _notify_capture() -> void:
 	_play_site_vfx(SCENE_VFX_CAPTURE)
+	if MapSession.is_local_team(int(team)):
+		Sound.play_capture()
 	site_captured.emit(team)
 	RegionManager.notify_site_changed(self)
 
@@ -595,8 +597,8 @@ func _finish_production() -> void:
 	_play_spawn_vfx(spawn_position)
 	if unit.has_method("_apply_stats_to_unit"):
 		unit._apply_stats_to_unit()
-	if unit.has_method("_configurer_calques_navigation"):
-		unit._configurer_calques_navigation()
+	if unit.has_method("_configure_navigation_layers"):
+		unit._configure_navigation_layers()
 	_notify_network_spawn(unit, unit_id, spawn_position)
 	_advance_queue_after_failure()
 
@@ -609,7 +611,7 @@ func _notify_network_spawn(unit: Node, unit_id: int, spawn_position: Vector2) ->
 	OnlineGameSync.notify_unit_spawned(self, unit, unit_id, spawn_position)
 
 
-func spawn_unite_reseau(
+func spawn_unit_network(
 	unit_id: int, spawn_position: Vector2, spawn_team: int, sync_id: int = -1
 ) -> Node:
 	if not unit_catalog.has(unit_id):
@@ -639,14 +641,14 @@ func spawn_unite_reseau(
 	_play_spawn_vfx(spawn_position)
 	if unit.has_method("_apply_stats_to_unit"):
 		unit._apply_stats_to_unit()
-	if unit.has_method("_configurer_calques_navigation"):
-		unit._configurer_calques_navigation()
+	if unit.has_method("_configure_navigation_layers"):
+		unit._configure_navigation_layers()
 	if sync_id >= 0:
 		unit.net_sync_id = sync_id
 		unit.net_remote_proxy = true
 		OnlineGameSync.register_unit(sync_id, unit)
-	if unit.has_method("_appliquer_couleur_unite"):
-		unit._appliquer_couleur_unite()
+	if unit.has_method("_apply_unit_color"):
+		unit._apply_unit_color()
 	return unit
 
 
@@ -689,7 +691,9 @@ func upgrade_camp(use_economy: bool = true, owner_required: int = Owner.PLAYER) 
 	_refresh_unit_catalog()
 	_apply_level_visuals()
 	_play_site_vfx(SCENE_VFX_UPGRADE)
-	camp_upgradedd.emit(camp_level)
+	if MapSession.is_local_team(int(team)):
+		Sound.play_upgrade()
+	camp_upgraded.emit(camp_level)
 
 	if production_queue.size() > 0:
 		current_unit_total_time = _build_time_for(unit_catalog[production_queue[0]])
@@ -811,6 +815,6 @@ func receive_reinforcements(count: int) -> void:
 		_play_spawn_vfx(spawn_position)
 		if unit.has_method("_apply_stats_to_unit"):
 			unit._apply_stats_to_unit()
-		if unit.has_method("_configurer_calques_navigation"):
-			unit._configurer_calques_navigation()
+		if unit.has_method("_configure_navigation_layers"):
+			unit._configure_navigation_layers()
 		_notify_network_spawn(unit, 0, spawn_position)

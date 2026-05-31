@@ -1,5 +1,5 @@
 extends RefCounted
-class_name BestiaireCatalogue
+class_name BestiaryCatalogue
 
 const CampCatalogue = preload("res://scripts/camp/camp_catalogue.gd")
 
@@ -21,7 +21,7 @@ const MAPS: Array[Dictionary] = [
 	},
 ]
 
-## Ordre affiché dans le bestiaire (10 boutons).
+## Display order in the bestiary (10 buttons).
 const UNITS: Array[Dictionary] = [
 	{"type": UnitStats.UnitType.INFANTRY, "name_key": "UNIT_INFANTRY", "desc_key": "UNIT_DESC_INFANTRY"},
 	{"type": UnitStats.UnitType.ARCHER, "name_key": "UNIT_RANGE", "desc_key": "UNIT_DESC_RANGE"},

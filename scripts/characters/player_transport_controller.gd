@@ -50,7 +50,7 @@ static func cancel_mark(owner: Node) -> void:
 
 
 static func capacity(owner: Node) -> int:
-	return owner.WATER_TRANSPORT_CAP_BY_LEVEL.get(owner._niveau_unite(), 5)
+	return owner.WATER_TRANSPORT_CAP_BY_LEVEL.get(owner._unit_level(), 5)
 
 
 static func is_land_unit_transportable(owner: Node, unit: Node) -> bool:
@@ -93,17 +93,17 @@ static func mark_allies(owner: Node) -> bool:
 
 static func allies_in_radius(owner: Node) -> Array[Node2D]:
 	var result: Array[Node2D] = []
-	var requete := PhysicsShapeQueryParameters2D.new()
-	var cercle := CircleShape2D.new()
-	cercle.radius = owner.WATER_TRANSPORT_MARK_RADIUS
-	requete.shape = cercle
-	requete.transform = Transform2D(0, owner.global_position)
-	requete.collide_with_areas = false
-	requete.collide_with_bodies = true
-	var groupe := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
-	for res in owner.get_world_2d().direct_space_state.intersect_shape(requete):
+	var query := PhysicsShapeQueryParameters2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = owner.WATER_TRANSPORT_MARK_RADIUS
+	query.shape = circle
+	query.transform = Transform2D(0, owner.global_position)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var group_name := "soldiers" if MapSession.is_local_team(int(owner.team)) else "enemies"
+	for res in owner.get_world_2d().direct_space_state.intersect_shape(query):
 		var obj = res.collider as Node2D
-		if obj == null or not obj.is_in_group(groupe):
+		if obj == null or not obj.is_in_group(group_name):
 			continue
 		if is_land_unit_transportable(owner, obj):
 			result.append(obj)
@@ -122,7 +122,7 @@ static func board_marked(owner: Node) -> bool:
 		owner.water_transport_origin[unit] = unit.global_position
 		owner.water_transport_boarded.append(unit)
 		remove_transport_fx(owner, unit)
-		owner._attacher_effet_sur_cible(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, BOARD_FX_FLASH)
+		owner._attach_effect_on_target(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, BOARD_FX_FLASH)
 		hide_unit_after_delay(owner, unit, BOARD_FX_FLASH)
 	owner.water_transport_marked.clear()
 	if owner.water_transport_boarded.is_empty():
@@ -214,18 +214,18 @@ static func show_unit(owner: Node, unit: Node2D, spawn_pos: Vector2) -> void:
 	if unit.has_node("ZoneDetection"):
 		var zone: Area2D = unit.get_node("ZoneDetection")
 		zone.monitoring = true
-	if unit.has_method("_configurer_calques_navigation"):
-		unit._configurer_calques_navigation()
-	if unit.has_method("_configurer_mouvement_et_collisions"):
-		unit._configurer_mouvement_et_collisions()
+	if unit.has_method("_configure_navigation_layers"):
+		unit._configure_navigation_layers()
+	if unit.has_method("_configure_movement_and_collisions"):
+		unit._configure_movement_and_collisions()
 	unit.remove_meta("water_transport_hidden")
 	if unit.has_meta("water_transport_carrier"):
 		unit.remove_meta("water_transport_carrier")
 
 
 static func stop_unit_combat(unit: Node) -> void:
-	if unit.has_method("_arreter_combat"):
-		unit._arreter_combat()
+	if unit.has_method("_stop_combat"):
+		unit._stop_combat()
 	elif unit.get("attack_target_node") != null:
 		unit.attack_target_node = null
 
@@ -233,7 +233,7 @@ static func stop_unit_combat(unit: Node) -> void:
 static func remove_transport_fx(owner: Node, unit: Node2D) -> void:
 	if not is_instance_valid(unit):
 		return
-	var fx = unit.get_node_or_null(owner.NOM_NOEUD_EFFET_BUFF)
+	var fx = unit.get_node_or_null(owner.BUFF_EFFECT_NODE_NAME)
 	if is_instance_valid(fx):
 		fx.queue_free()
 

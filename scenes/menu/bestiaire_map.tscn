@@ -539,5 +539,5 @@ text = "UI_BACK"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]
-[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheDroite" to="." method="_on_fleche_droite_pressed"]
+[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheGauche" to="." method="_on_arrow_left_pressed"]
+[connection signal="pressed" from="PageGauche/BandeauEtFleches/FlecheDroite" to="." method="_on_arrow_right_pressed"]

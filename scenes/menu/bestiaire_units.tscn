@@ -185,4 +185,4 @@ offset_bottom = 19.0
 scale = Vector2(4.441443, 2.4955864)
 texture_normal = ExtResource("5_wokrb")
 
-[connection signal="pressed" from="retour/FlecheGauche" to="." method="_on_fleche_gauche_pressed"]
+[connection signal="pressed" from="retour/FlecheGauche" to="." method="_on_arrow_left_pressed"]

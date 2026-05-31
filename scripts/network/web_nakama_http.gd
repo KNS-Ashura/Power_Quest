@@ -1,16 +1,16 @@
 class_name WebNakamaHttp
 extends RefCounted
 
-## HTTP Nakama via fetch() navigateur (export Web uniquement).
+## Nakama HTTP via browser fetch() (Web export only).
 ##
-## Le pont window.PQ est INJECTÉ AU RUNTIME par GDScript (ensure_bridge), donc :
-##   - aucun fichier JS à copier,
-##   - aucune édition de index.html,
-##   - aucune dépendance à export_presets.cfg (head_include).
-## Il survit donc automatiquement à chaque export Godot.
+## The window.PQ bridge is INJECTED AT RUNTIME by GDScript (ensure_bridge), so:
+##   - no JS file to copy,
+##   - no index.html edits,
+##   - no export_presets.cfg dependency (head_include).
+## It therefore survives each Godot Web export automatically.
 
-# JS compact sur UNE ligne : JavaScriptBridge.eval est plus fiable ainsi
-# (les chaînes multi-lignes / tabulations peuvent échouer silencieusement).
+# Compact one-line JS: JavaScriptBridge.eval is more reliable this way
+# (multi-line / tab strings can fail silently).
 const _BRIDGE_JS := "window.PQ=window.PQ||{};window.PQ._r=window.PQ._r||{};window.PQ.send=function(id,url,method,h,b){var hd={};try{hd=JSON.parse(h||'{}');}catch(e){hd={};}var o={method:method||'POST',headers:hd,cache:'no-store',credentials:'omit'};if(method!=='GET'&&b){o.body=b;}fetch(url,o).then(function(r){return r.text().then(function(t){window.PQ._r[id]=JSON.stringify({ok:r.ok,status:r.status,text:t});});}).catch(function(e){window.PQ._r[id]=JSON.stringify({ok:false,status:0,text:'',error:String(e)});});};window.PQ.poll=function(id){if(Object.prototype.hasOwnProperty.call(window.PQ._r,id)){var v=window.PQ._r[id];delete window.PQ._r[id];return v;}return '';};window.PQ.lsGet=function(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}};window.PQ.lsSet=function(k,v){try{localStorage.setItem(k,v);}catch(e){}};window.PQ.lsDel=function(k){try{localStorage.removeItem(k);}catch(e){}};"
 
 
@@ -21,7 +21,7 @@ static func is_available() -> bool:
 static func bridge_ready() -> bool:
 	if not is_available():
 		return false
-	# On renvoie une CHAÎNE ('yes'/'no') : robuste face aux conversions bool/float de eval.
+	# Return a STRING ('yes'/'no'): robust against bool/float eval conversions.
 	var ok: Variant = JavaScriptBridge.eval(
 		"((window.PQ&&typeof window.PQ.send==='function'&&typeof window.PQ.poll==='function')?'yes':'no')",
 		true
@@ -29,7 +29,7 @@ static func bridge_ready() -> bool:
 	return str(ok).strip_edges() == "yes"
 
 
-## Injecte le pont si absent. À appeler avant toute requête (idempotent).
+## Inject the bridge if missing. Call before any request (idempotent).
 static func ensure_bridge() -> bool:
 	if not is_available():
 		return false
@@ -39,7 +39,7 @@ static func ensure_bridge() -> bool:
 	return bridge_ready()
 
 
-## Démarre une requête asynchrone. Le résultat se récupère via poll(id).
+## Start an async request. Read the result with poll(id).
 static func send(
 	id: String, url: String, method: int, headers: PackedStringArray, body: String
 ) -> bool:
@@ -74,7 +74,7 @@ static func send(
 	return true
 
 
-## Retourne {} si la requête est encore en cours, sinon {ok, status, text}.
+## Returns {} while the request is pending, otherwise {ok, status, text}.
 static func poll(id: String) -> Dictionary:
 	if not is_available():
 		return {}

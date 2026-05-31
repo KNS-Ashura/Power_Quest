@@ -111,7 +111,7 @@ func _process(_delta: float) -> void:
 		_show_match_result(true)
 
 
-## Raccourcis secrets (solo / test local) : * = tout capturer, $ = tout perdre.
+## Secret shortcuts (solo / local test): * = capture all, $ = lose all.
 func _unhandled_input(event: InputEvent) -> void:
 	if match_over or ServerMode.is_dedicated_server or MapSession.is_online_match:
 		return
@@ -155,7 +155,7 @@ func _debug_cheat_capture_all_hostile_camps() -> void:
 		if camp.has_method("_capture_by_team"):
 			camp._capture_by_team(local_team)
 			count += 1
-	print("[GameManager] Cheat * : ", count, " camp(s) hostile(s) capture(s).")
+	print("[GameManager] Cheat *: ", count, " hostile camp(s) captured.")
 
 
 func _debug_cheat_lose_all_local_camps() -> void:
@@ -167,7 +167,7 @@ func _debug_cheat_lose_all_local_camps() -> void:
 		if camp.has_method("_capture_by_team"):
 			camp._capture_by_team(enemy_team)
 			count += 1
-	print("[GameManager] Cheat $ : ", count, " camp(s) local(aux) perdus.")
+	print("[GameManager] Cheat $: ", count, " local camp(s) lost.")
 
 
 func _on_global_timer_timeout() -> void:
@@ -210,7 +210,7 @@ func format_match_duration(total_sec: int) -> String:
 	return str(m) + "m " + str(s).pad_zeros(2) + "s"
 
 
-## Panneau victoire/défaite par-dessus la partie (le jeu reste visible en arrière-plan).
+## Win/loss overlay above the match (game stays visible in the background).
 func _show_match_result(win: bool) -> void:
 	if ServerMode.is_dedicated_server:
 		return
@@ -230,7 +230,7 @@ func _show_match_result(win: bool) -> void:
 	var panel_path := VICTORY_SCENE if win else DEFEAT_SCENE
 	var packed: PackedScene = load(panel_path) as PackedScene
 	if packed == null:
-		push_error("[GameManager] Scène de fin introuvable : " + panel_path)
+		push_error("[GameManager] End screen scene not found: " + panel_path)
 		return
 
 	layer.add_child(packed.instantiate())
@@ -243,12 +243,14 @@ func clear_result_overlay() -> void:
 	_result_overlay = null
 
 
-## Remet à zéro l'état de partie (retour menu ou nouvelle partie).
+## Reset match state (return to menu or new game).
 func reset_session() -> void:
 	match_over = false
 	local_eliminated = false
 	_result_reported = false
 	_result_overlay = null
+	if Music.has_method("stop"):
+		Music.stop()
 	Economy.reset_for_match()
 	if AIManager.has_method("init_match"):
 		AIManager.init_match()

@@ -1,6 +1,6 @@
 extends Node2D
 
-const BestiaireCatalogue = preload("res://scripts/menu/bestiaire_catalogue.gd")
+const BestiaryCatalogue = preload("res://scripts/menu/bestiaire_catalogue.gd")
 
 @onready var _map_image: TextureRect = %CarteImage
 @onready var _map_name: Label = %NomDeLaMap
@@ -59,12 +59,12 @@ func _refresh_unit_labels() -> void:
 		var lbl := _unit_labels[i]
 		if lbl == null:
 			continue
-		var entry: Dictionary = BestiaireCatalogue.unit_entry(i)
+		var entry: Dictionary = BestiaryCatalogue.unit_entry(i)
 		lbl.text = tr(str(entry.get("name_key", "")))
 
 
 func update_map_display() -> void:
-	var maps: Array = BestiaireCatalogue.MAPS
+	var maps: Array = BestiaryCatalogue.MAPS
 	if maps.is_empty():
 		return
 	var data: Dictionary = maps[_map_index]
@@ -78,16 +78,16 @@ func update_map_display() -> void:
 			_map_image.texture = (img as SpriteFrames).get_frame_texture("default", 0)
 
 
-func _on_fleche_droite_pressed() -> void:
-	var count: int = BestiaireCatalogue.MAPS.size()
+func _on_arrow_right_pressed() -> void:
+	var count: int = BestiaryCatalogue.MAPS.size()
 	if count <= 0:
 		return
 	_map_index = (_map_index + 1) % count
 	update_map_display()
 
 
-func _on_fleche_gauche_pressed() -> void:
-	var count: int = BestiaireCatalogue.MAPS.size()
+func _on_arrow_left_pressed() -> void:
+	var count: int = BestiaryCatalogue.MAPS.size()
 	if count <= 0:
 		return
 	_map_index = (_map_index - 1 + count) % count
@@ -96,11 +96,11 @@ func _on_fleche_gauche_pressed() -> void:
 
 func _on_unit_button_pressed(unit_index: int) -> void:
 	var book := get_tree().current_scene
-	if book != null and book.has_method("open_bestiaire_unit"):
-		await book.open_bestiaire_unit(unit_index)
+	if book != null and book.has_method("open_bestiary_unit"):
+		await book.open_bestiary_unit(unit_index)
 
 
 func _on_back_to_menu() -> void:
 	var book := get_tree().current_scene
-	if book != null and book.has_method("_on_menu_principal_pressed"):
-		book._on_menu_principal_pressed()
+	if book != null and book.has_method("_on_main_menu_pressed"):
+		book._on_main_menu_pressed()

@@ -101,8 +101,8 @@ func _on_btn_register_pressed() -> void:
 func _on_auth_ready() -> void:
 	if not NetworkSession.is_account_logged_in():
 		return
-	# Ignorer la reconnexion auto au lancement (ou refresh) : on ne redirige
-	# vers le profil que si l'utilisateur vient de se connecter/inscrire ici.
+	# Ignore auto-reconnect on launch/refresh — only redirect to profile after
+	# the user signs in or registers from this panel.
 	if not _auth_pending:
 		return
 	_auth_pending = false

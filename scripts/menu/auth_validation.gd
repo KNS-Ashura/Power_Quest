@@ -38,7 +38,7 @@ static func is_valid_password(password: String) -> String:
 	return ""
 
 
-## Valeurs envoyées à Nakama via JSON (pas de concat SQL côté client).
+## Values sent to Nakama via JSON (no client-side SQL concatenation).
 static func sanitize_email(email: String) -> String:
 	return email.strip_edges().to_lower().substr(0, MAX_EMAIL_LEN)
 

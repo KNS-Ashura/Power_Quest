@@ -1,11 +1,10 @@
 extends Node
 
-## Préférences utilisateur (langue, volumes…).
-## - Persistées localement dans user://settings.cfg (conservé en IndexedDB sur le Web,
-##   donc la bonne langue est rappliquée après un refresh).
-## - Liées au compte via le stockage Nakama : à la connexion on récupère les
-##   préférences du compte et on applique la langue ; un changement de langue
-##   est resynchronisé sur le compte si connecté.
+## User preferences (language, volumes, etc.).
+## - Persisted locally in user://settings.cfg (kept in IndexedDB on Web,
+##   so the correct language is restored after a refresh).
+## - Linked to the account via Nakama storage: on login we fetch account
+##   preferences and apply language; a language change is synced back when logged in.
 
 signal language_changed(locale: String)
 
@@ -39,12 +38,12 @@ func apply_locale_now() -> void:
 		UITranslator.call_deferred("refresh_tree")
 
 
-## Change la langue : applique, persiste localement et resynchronise le compte.
+## Change language: apply, persist locally, and sync to account when logged in.
 func set_language(locale: String, sync_account: bool = true) -> void:
 	if not SUPPORTED_LOCALES.has(locale):
 		return
 	if locale == _locale:
-		# Toujours réappliquer (au cas où une autre source aurait changé la locale).
+		# Always re-apply (another source may have changed the locale).
 		_apply_locale()
 		return
 	_locale = locale
@@ -76,7 +75,7 @@ func _load_local() -> void:
 
 func _save_local() -> void:
 	var cfg := ConfigFile.new()
-	# Conserve d'éventuelles autres valeurs déjà présentes.
+	# Keep any other values already stored.
 	cfg.load(SETTINGS_PATH)
 	cfg.set_value(SECTION, "language", _locale)
 	cfg.save(SETTINGS_PATH)
@@ -94,7 +93,7 @@ func _on_session_closed() -> void:
 func _on_account_prefs_loaded(prefs: Dictionary) -> void:
 	var lang := str(prefs.get("language", "")).strip_edges()
 	if SUPPORTED_LOCALES.has(lang):
-		# Le compte fait foi : applique la langue du compte.
+		# Account wins: apply account language.
 		if lang != _locale:
 			_locale = lang
 			_apply_locale()
@@ -102,6 +101,6 @@ func _on_account_prefs_loaded(prefs: Dictionary) -> void:
 			language_changed.emit(_locale)
 		_account_synced = true
 	elif not _account_synced and NetworkSession.is_account_logged_in():
-		# Le compte n'a pas encore de préférence : on y écrit la langue locale courante.
+		# Account has no preference yet: write current local language.
 		_account_synced = true
 		NetworkSession.save_account_preferences(_to_dict())
