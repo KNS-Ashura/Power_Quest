@@ -10,6 +10,38 @@ const TRANSPORT_PHASE_IDLE := 0
 const TRANSPORT_PHASE_MARKED := 1
 const TRANSPORT_PHASE_CARRYING := 2
 
+const RAID_PHASE_BUILDING := 0
+const RAID_PHASE_GATHERING := 1
+const RAID_PHASE_TRANSPORT := 2
+const RAID_PHASE_ATTACKING := 3
+
+const UNIT_INFANTRY := 0
+const UNIT_RANGE := 1
+const UNIT_HEAVY := 2
+const UNIT_SUPPORT := 3
+const UNIT_HEAL := 4
+const UNIT_ANTI_ARMOR := 5
+const UNIT_MORTAR := 6
+const PORT_UNIT_TRANSPORT := 0
+
+const RAID_ASSIGN_RADIUS := 420.0
+const RAID_GATHER_RADIUS := 200.0
+
+const _TransportCtrl = preload("res://scripts/characters/player_transport_controller.gd")
+
+const ARMY_COMPOSITIONS: Array[Dictionary] = [
+	{UNIT_INFANTRY: 4, UNIT_HEAL: 1},
+	{UNIT_INFANTRY: 5, UNIT_SUPPORT: 1},
+	{UNIT_HEAVY: 1, UNIT_RANGE: 3},
+	{UNIT_INFANTRY: 6},
+	{UNIT_RANGE: 4, UNIT_ANTI_ARMOR: 1},
+	{UNIT_INFANTRY: 3, UNIT_RANGE: 2, UNIT_HEAL: 1},
+	{UNIT_HEAVY: 1, UNIT_ANTI_ARMOR: 1, UNIT_INFANTRY: 3},
+	{UNIT_MORTAR: 1, UNIT_INFANTRY: 4},
+	{UNIT_INFANTRY: 8},
+	{UNIT_RANGE: 5, UNIT_SUPPORT: 1},
+]
+
 const STARTING_GOLD := 200
 
 const LAND_WEIGHTS_SIMPLE := {
@@ -54,42 +86,48 @@ const PORT_WEIGHTS_HARD := {
 }
 
 const PROFILE_SIMPLE := {
-	"think_interval": 4.0,
-	"reserve_gold": 140,
-	"upgrade_reserve_gold": 180,
-	"upgrade_chance": 0.25,
+	"think_interval": 1.0,
+	"reserve_gold": 0,
+	"upgrade_reserve_gold": 250,
+	"upgrade_chance": 0.08,
 	"max_upgrades_per_think": 1,
-	"queue_limit": 1,
-	"use_ports": true,
-	"allow_transport": false,
-	"neutral_priority": 0.8,
-	"player_priority": 1.0,
-	"disembark_distance": 120.0,
-}
-const PROFILE_NORMAL := {
-	"think_interval": 2.5,
-	"reserve_gold": 90,
-	"upgrade_reserve_gold": 120,
-	"upgrade_chance": 0.5,
-	"max_upgrades_per_think": 1,
-	"queue_limit": 1,
+	"queue_limit": 12,
+	"max_raids": 2,
+	"units_per_think": 4,
 	"use_ports": true,
 	"allow_transport": true,
 	"neutral_priority": 1.0,
-	"player_priority": 1.4,
-	"disembark_distance": 140.0,
+	"player_priority": 1.3,
+	"disembark_distance": 130.0,
+}
+const PROFILE_NORMAL := {
+	"think_interval": 0.65,
+	"reserve_gold": 0,
+	"upgrade_reserve_gold": 180,
+	"upgrade_chance": 0.12,
+	"max_upgrades_per_think": 1,
+	"queue_limit": 16,
+	"max_raids": 4,
+	"units_per_think": 6,
+	"use_ports": true,
+	"allow_transport": true,
+	"neutral_priority": 1.0,
+	"player_priority": 1.7,
+	"disembark_distance": 150.0,
 }
 const PROFILE_HARD := {
-	"think_interval": 1.7,
-	"reserve_gold": 40,
-	"upgrade_reserve_gold": 70,
-	"upgrade_chance": 0.8,
-	"max_upgrades_per_think": 2,
-	"queue_limit": 2,
+	"think_interval": 0.45,
+	"reserve_gold": 0,
+	"upgrade_reserve_gold": 120,
+	"upgrade_chance": 0.18,
+	"max_upgrades_per_think": 1,
+	"queue_limit": 20,
+	"max_raids": 6,
+	"units_per_think": 8,
 	"use_ports": true,
 	"allow_transport": true,
 	"neutral_priority": 1.1,
-	"player_priority": 1.8,
+	"player_priority": 2.2,
 	"disembark_distance": 170.0,
 }
 
@@ -98,6 +136,8 @@ var ai_gold: int = STARTING_GOLD
 var think_timer: Timer
 var _profile: Dictionary = PROFILE_NORMAL
 var _transporter_targets: Dictionary = {}
+var _active_raids: Array[Dictionary] = []
+var _next_raid_id: int = 1
 var _cached_navigation_regions: Array[NavigationRegion2D] = []
 var _cached_ground_nav_map: RID = RID()
 var _cached_water_nav_map: RID = RID()
@@ -120,6 +160,8 @@ func init_match() -> void:
 	ai_gold = STARTING_GOLD
 	_set_difficulty(MapSession.get_ai_difficulty())
 	_transporter_targets.clear()
+	_active_raids.clear()
+	_next_raid_id = 1
 	if is_instance_valid(think_timer):
 		if not think_timer.is_stopped():
 			think_timer.stop()
@@ -162,37 +204,19 @@ func _get_owned_camps() -> Array:
 
 
 func _handle_production(owned_camps: Array) -> void:
-	for camp in owned_camps:
-		if not is_instance_valid(camp):
-			continue
-		var queue: Array = camp.get("production_queue")
-		if queue.size() >= int(_profile.get("queue_limit", 1)):
-			continue
-		var is_port_site: bool = camp.has_method("is_port") and camp.is_port()
-		if is_port_site and not bool(_profile.get("use_ports", true)):
-			continue
+	var land_camps := _filter_land_camps(owned_camps)
+	var owned_ports := _filter_ports(owned_camps)
+	_try_start_new_raids(land_camps, owned_ports)
+	_handle_raid_production(land_camps)
+	_handle_port_production(owned_ports)
+	_spend_excess_gold_on_camps(land_camps)
 
-		var catalog_variant: Variant = camp.get("unit_catalog")
-		if not (catalog_variant is Dictionary):
-			continue
-		var catalog: Dictionary = catalog_variant
-		if catalog.is_empty():
-			continue
 
-		var chosen_unit: int = _pick_unit_id_for_camp(camp, catalog, is_port_site)
-		if chosen_unit == -1:
-			continue
-		if not catalog.has(chosen_unit):
-			continue
-
-		var data: UnitStats = catalog[chosen_unit]
-		if ai_gold < data.price:
-			continue
-		ai_gold -= data.price
-		camp.production_queue.append(chosen_unit)
-		if camp.production_queue.size() == 1:
-			camp.current_unit_total_time = camp.unit_build_time(chosen_unit) if camp.has_method("unit_build_time") else data.build_time
-			camp.remaining_time = camp.current_unit_total_time
+func _handle_military() -> void:
+	_assign_spawned_units_to_raids()
+	_cleanup_raids()
+	_update_active_raids()
+	_command_loose_troops()
 
 
 func _handle_upgrades(owned_camps: Array) -> void:
@@ -244,29 +268,6 @@ func _handle_upgrades(owned_camps: Array) -> void:
 		if camp.upgrade_camp(false, TEAM_AI):
 			ai_gold -= cost
 			upgraded_count += 1
-
-
-func _handle_military() -> void:
-	var troops: Array[Node2D] = _get_enemy_troops()
-	if troops.is_empty():
-		return
-
-	var transporters: Array[Node2D] = []
-	var naval: Array[Node2D] = []
-	var land: Array[Node2D] = []
-	for troop in troops:
-		var unit_type: int = _unit_type_of(troop)
-		if unit_type == UnitStats.UnitType.WATER_TRANSPORT:
-			transporters.append(troop)
-		elif unit_type == UnitStats.UnitType.WATER_TANK or unit_type == UnitStats.UnitType.WATER_RANGE:
-			naval.append(troop)
-		else:
-			land.append(troop)
-
-	_command_troop_group(land, false, NAV_LAYER_GROUND)
-	_command_troop_group(naval, true, NAV_LAYER_WATER)
-	if bool(_profile.get("allow_transport", false)):
-		_handle_transporters(transporters)
 
 
 func _set_difficulty(difficulty: int) -> void:
@@ -407,13 +408,7 @@ func _command_troop_group(troops: Array[Node2D], prefer_ports: bool, required_la
 
 
 func _military_batch_size() -> int:
-	match current_difficulty:
-		MapSession.AIDifficulty.SIMPLE:
-			return 8
-		MapSession.AIDifficulty.HARD:
-			return 20
-		_:
-			return 12
+	return 99999
 
 
 func _pick_target_camp_for(from_pos: Vector2, prefer_ports: bool, required_layer: int = 0) -> Node2D:
@@ -612,3 +607,485 @@ func _is_reachable_on_layer(from_pos: Vector2, to_pos: Vector2, layer_mask: int)
 	var reachable: bool = path[path.size() - 1].distance_to(to_pos) <= 120.0
 	_reachability_cache[key] = reachable
 	return reachable
+
+
+func _filter_land_camps(camps: Array) -> Array:
+	var result: Array = []
+	for camp in camps:
+		if not is_instance_valid(camp):
+			continue
+		if camp.has_method("is_port") and camp.is_port():
+			continue
+		result.append(camp)
+	return result
+
+
+func _filter_ports(camps: Array) -> Array:
+	var result: Array = []
+	for camp in camps:
+		if not is_instance_valid(camp):
+			continue
+		if camp.has_method("is_port") and camp.is_port():
+			result.append(camp)
+	return result
+
+
+func _flatten_composition(composition: Dictionary) -> Array[int]:
+	var plan: Array[int] = []
+	for raw_id in composition.keys():
+		var unit_id: int = int(raw_id)
+		var count: int = int(composition[unit_id])
+		for _i in range(maxi(0, count)):
+			plan.append(unit_id)
+	return plan
+
+
+func _composition_total_cost(camp: Node, plan: Array) -> int:
+	var catalog: Dictionary = camp.get("unit_catalog")
+	if not (catalog is Dictionary):
+		return 999999
+	var total: int = 0
+	for raw_id in plan:
+		var unit_id: int = int(raw_id)
+		if not catalog.has(unit_id):
+			return 999999
+		var stats: UnitStats = catalog[unit_id]
+		if stats == null:
+			return 999999
+		total += stats.price
+	return total
+
+
+func _camp_has_active_raid(camp: Node) -> bool:
+	for raid in _active_raids:
+		if raid.get("source_camp") == camp:
+			return true
+	return false
+
+
+func _active_raid_count() -> int:
+	return _active_raids.size()
+
+
+func _region_for_site(site: Node) -> int:
+	if site == null or not is_instance_valid(site):
+		return -1
+	for region_id in range(1, 32):
+		if not RegionManager.has_region(region_id):
+			continue
+		for region_site in RegionManager.get_sites_for_region(region_id):
+			if region_site == site:
+				return region_id
+	return -1
+
+
+func _hostile_sites_in_region(region_id: int) -> Array:
+	var result: Array = []
+	if region_id < 0:
+		return result
+	for site in RegionManager.get_sites_for_region(region_id):
+		if not is_instance_valid(site):
+			continue
+		var owner: int = int(site.get("team"))
+		if owner == TEAM_NEUTRAL or owner == TEAM_PLAYER:
+			result.append(site)
+	return result
+
+
+func _hostile_sites_outside_region(region_id: int) -> Array:
+	var result: Array = []
+	for node in get_tree().get_nodes_in_group("camps"):
+		if not is_instance_valid(node):
+			continue
+		var owner: int = int(node.get("team"))
+		if owner != TEAM_NEUTRAL and owner != TEAM_PLAYER:
+			continue
+		if _region_for_site(node) != region_id:
+			result.append(node)
+	return result
+
+
+func _pick_raid_target(source_camp: Node, owned_ports: Array) -> Dictionary:
+	var source_region: int = _region_for_site(source_camp)
+	var same_region_targets: Array = _hostile_sites_in_region(source_region)
+	if not same_region_targets.is_empty():
+		return {
+			"target": same_region_targets.pick_random() as Node2D,
+			"use_transport": false,
+			"embark_port": null,
+		}
+
+	if owned_ports.is_empty() or not bool(_profile.get("allow_transport", true)):
+		return {}
+
+	var other_targets: Array = _hostile_sites_outside_region(source_region)
+	if other_targets.is_empty():
+		return {}
+
+	var embark_port: Node = _closest_site_to(source_camp, owned_ports)
+	return {
+		"target": other_targets.pick_random() as Node2D,
+		"use_transport": true,
+		"embark_port": embark_port,
+	}
+
+
+func _closest_site_to(from_site: Node, sites: Array) -> Node:
+	var best: Node = null
+	var best_d2: float = INF
+	if not is_instance_valid(from_site):
+		return null
+	var from_pos: Vector2 = (from_site as Node2D).global_position
+	for site in sites:
+		if not (site is Node2D) or not is_instance_valid(site):
+			continue
+		var d2: float = from_pos.distance_squared_to((site as Node2D).global_position)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = site
+	return best
+
+
+func _try_start_new_raids(land_camps: Array, owned_ports: Array) -> void:
+	var max_raids: int = int(_profile.get("max_raids", 1))
+	while _active_raid_count() < max_raids:
+		var available_camps: Array = []
+		for camp in land_camps:
+			if is_instance_valid(camp) and not _camp_has_active_raid(camp):
+				available_camps.append(camp)
+		if available_camps.is_empty():
+			break
+
+		var source_camp: Node = available_camps.pick_random()
+		var composition: Dictionary = ARMY_COMPOSITIONS.pick_random()
+		var plan: Array[int] = _flatten_composition(composition)
+		if plan.is_empty():
+			break
+
+		var first_unit_cost: int = _composition_total_cost(source_camp, [plan[0]])
+		if ai_gold < first_unit_cost:
+			break
+
+		var target_info: Dictionary = _pick_raid_target(source_camp, owned_ports)
+		if target_info.is_empty() or target_info.get("target") == null:
+			break
+
+		var target: Node2D = target_info["target"]
+		var raid := {
+			"id": _next_raid_id,
+			"source_camp": source_camp,
+			"target": target,
+			"plan_remaining": plan.duplicate(),
+			"plan_total": plan.size(),
+			"units": [],
+			"phase": RAID_PHASE_BUILDING,
+			"use_transport": bool(target_info.get("use_transport", false)),
+			"embark_port": target_info.get("embark_port"),
+			"transporter": null,
+		}
+		_next_raid_id += 1
+		_active_raids.append(raid)
+
+
+func _queue_unit_on_camp(camp: Node, unit_id: int) -> bool:
+	if not is_instance_valid(camp):
+		return false
+	var catalog_variant: Variant = camp.get("unit_catalog")
+	if not (catalog_variant is Dictionary):
+		return false
+	var catalog: Dictionary = catalog_variant
+	if not catalog.has(unit_id):
+		return false
+	var queue: Array = camp.get("production_queue")
+	if queue.size() >= int(_profile.get("queue_limit", 8)):
+		return false
+	var data: UnitStats = catalog[unit_id]
+	if ai_gold < data.price:
+		return false
+	ai_gold -= data.price
+	camp.production_queue.append(unit_id)
+	if camp.production_queue.size() == 1:
+		camp.current_unit_total_time = camp.unit_build_time(unit_id) if camp.has_method("unit_build_time") else data.build_time
+		camp.remaining_time = camp.current_unit_total_time
+	return true
+
+
+func _handle_raid_production(land_camps: Array) -> void:
+	var units_per_think: int = int(_profile.get("units_per_think", 4))
+	for raid in _active_raids:
+		if int(raid.get("phase", RAID_PHASE_BUILDING)) != RAID_PHASE_BUILDING:
+			continue
+		var source_camp: Node = raid.get("source_camp")
+		if not is_instance_valid(source_camp):
+			continue
+		var plan_remaining: Array = raid.get("plan_remaining", [])
+		var queued: int = 0
+		while queued < units_per_think and not plan_remaining.is_empty():
+			var queue: Array = source_camp.get("production_queue")
+			if queue.size() >= int(_profile.get("queue_limit", 8)):
+				break
+			var next_unit_id: int = int(plan_remaining[0])
+			if _queue_unit_on_camp(source_camp, next_unit_id):
+				plan_remaining.pop_front()
+				queued += 1
+			else:
+				break
+
+
+func _handle_port_production(owned_ports: Array) -> void:
+	if owned_ports.is_empty() or not bool(_profile.get("use_ports", true)):
+		return
+
+	var needs_transport: bool = false
+	for raid in _active_raids:
+		if not bool(raid.get("use_transport", false)):
+			continue
+		if int(raid.get("phase", RAID_PHASE_BUILDING)) > RAID_PHASE_BUILDING:
+			var transporter: Variant = raid.get("transporter")
+			if transporter == null or not is_instance_valid(transporter):
+				needs_transport = true
+				break
+
+	if not needs_transport and current_difficulty != MapSession.AIDifficulty.HARD:
+		return
+
+	for port in owned_ports:
+		if not is_instance_valid(port):
+			continue
+		var queue: Array = port.get("production_queue")
+		if queue.size() >= int(_profile.get("queue_limit", 8)):
+			continue
+		if needs_transport:
+			if _queue_unit_on_camp(port, PORT_UNIT_TRANSPORT):
+				return
+		elif current_difficulty == MapSession.AIDifficulty.HARD:
+			var catalog: Dictionary = port.get("unit_catalog")
+			if catalog.has(1) and _queue_unit_on_camp(port, 1):
+				return
+
+
+func _spend_excess_gold_on_camps(land_camps: Array) -> void:
+	if ai_gold < 200:
+		return
+	var units_per_think: int = int(_profile.get("units_per_think", 4))
+	for camp in land_camps:
+		if not is_instance_valid(camp) or _camp_has_active_raid(camp):
+			continue
+		var catalog: Dictionary = camp.get("unit_catalog")
+		if not (catalog is Dictionary) or catalog.is_empty():
+			continue
+		var queued: int = 0
+		while queued < units_per_think and ai_gold >= 200:
+			var queue: Array = camp.get("production_queue")
+			if queue.size() >= int(_profile.get("queue_limit", 8)):
+				break
+			var unit_id: int = _pick_unit_id_for_camp(camp, catalog, false)
+			if unit_id == -1:
+				break
+			if _queue_unit_on_camp(camp, unit_id):
+				queued += 1
+			else:
+				break
+
+
+func _assign_spawned_units_to_raids() -> void:
+	for troop in _get_enemy_troops():
+		if not is_instance_valid(troop):
+			continue
+		if _unit_type_of(troop) == UnitStats.UnitType.WATER_TRANSPORT:
+			continue
+		if troop.has_meta("ai_raid_id"):
+			continue
+		for raid in _active_raids:
+			var source_camp: Node = raid.get("source_camp")
+			if not is_instance_valid(source_camp):
+				continue
+			if troop.global_position.distance_to(source_camp.global_position) > RAID_ASSIGN_RADIUS:
+				continue
+			var units: Array = raid.get("units", [])
+			if units.size() >= int(raid.get("plan_total", 0)):
+				continue
+			units.append(troop)
+			raid["units"] = units
+			troop.set_meta("ai_raid_id", int(raid.get("id", 0)))
+			break
+
+
+func _raid_units_ready(raid: Dictionary) -> bool:
+	var plan_remaining: Array = raid.get("plan_remaining", [])
+	if not plan_remaining.is_empty():
+		return false
+	var source_camp: Node = raid.get("source_camp")
+	if is_instance_valid(source_camp):
+		var queue: Array = source_camp.get("production_queue")
+		if not queue.is_empty():
+			return false
+	return int((raid.get("units", []) as Array).size()) >= int(raid.get("plan_total", 0))
+
+
+func _advance_raid_phase_if_ready(raid: Dictionary) -> void:
+	if not _raid_units_ready(raid):
+		return
+	if bool(raid.get("use_transport", false)):
+		raid["phase"] = RAID_PHASE_GATHERING
+	else:
+		raid["phase"] = RAID_PHASE_ATTACKING
+
+
+func _find_idle_transporter() -> Node2D:
+	for troop in _get_enemy_troops():
+		if not is_instance_valid(troop):
+			continue
+		if troop.has_meta("ai_raid_id"):
+			continue
+		if _unit_type_of(troop) != UnitStats.UnitType.WATER_TRANSPORT:
+			continue
+		if troop.has_method("get_water_transport_phase") \
+				and int(troop.get_water_transport_phase()) == TRANSPORT_PHASE_IDLE \
+				and troop.has_method("can_use_water_transport") \
+				and troop.can_use_water_transport():
+			return troop
+	return null
+
+
+func _update_active_raids() -> void:
+	for raid in _active_raids:
+		_advance_raid_phase_if_ready(raid)
+		var phase: int = int(raid.get("phase", RAID_PHASE_BUILDING))
+		match phase:
+			RAID_PHASE_GATHERING:
+				_execute_raid_gathering(raid)
+			RAID_PHASE_TRANSPORT:
+				_execute_raid_transport(raid)
+			RAID_PHASE_ATTACKING:
+				_execute_raid_attack(raid)
+
+
+func _execute_raid_gathering(raid: Dictionary) -> void:
+	var embark_port: Node = raid.get("embark_port")
+	var target: Node2D = raid.get("target")
+	if not is_instance_valid(embark_port) or not is_instance_valid(target):
+		raid["phase"] = RAID_PHASE_ATTACKING
+		return
+
+	var transporter: Node2D = raid.get("transporter")
+	if transporter == null or not is_instance_valid(transporter):
+		transporter = _find_idle_transporter()
+		raid["transporter"] = transporter
+
+	var rally_point: Vector2 = (embark_port as Node2D).global_position
+	for unit in raid.get("units", []):
+		if is_instance_valid(unit) and unit.has_method("move_to"):
+			if unit.global_position.distance_to(rally_point) > RAID_GATHER_RADIUS:
+				unit.move_to(rally_point)
+
+	if transporter == null or not is_instance_valid(transporter):
+		return
+
+	if transporter.has_method("move_to"):
+		transporter.move_to(rally_point)
+
+	var all_near_port: bool = true
+	for unit in raid.get("units", []):
+		if not is_instance_valid(unit):
+			continue
+		if unit.global_position.distance_to(rally_point) > RAID_GATHER_RADIUS:
+			all_near_port = false
+			break
+
+	if not all_near_port:
+		return
+	if transporter.global_position.distance_to(rally_point) > RAID_GATHER_RADIUS + 40.0:
+		return
+	if transporter.has_method("water_transport_step"):
+		transporter.water_transport_step()
+	if transporter.has_method("get_water_transport_phase") \
+			and int(transporter.get_water_transport_phase()) == TRANSPORT_PHASE_CARRYING:
+		raid["phase"] = RAID_PHASE_TRANSPORT
+
+
+func _execute_raid_transport(raid: Dictionary) -> void:
+	var transporter: Node2D = raid.get("transporter")
+	var target: Node2D = raid.get("target")
+	if not is_instance_valid(transporter) or not is_instance_valid(target):
+		raid["phase"] = RAID_PHASE_ATTACKING
+		return
+
+	var disembark_point: Vector2 = _TransportCtrl.nearest_ground_point(transporter, target.global_position)
+	if disembark_point == Vector2.INF:
+		disembark_point = target.global_position
+
+	if transporter.has_method("move_to"):
+		transporter.move_to(disembark_point)
+
+	if transporter.has_method("get_water_transport_phase") \
+			and int(transporter.get_water_transport_phase()) == TRANSPORT_PHASE_CARRYING \
+			and transporter.global_position.distance_to(disembark_point) <= float(_profile.get("disembark_distance", 150.0)):
+		if transporter.has_method("water_transport_step"):
+			transporter.water_transport_step()
+		raid["phase"] = RAID_PHASE_ATTACKING
+
+
+func _execute_raid_attack(raid: Dictionary) -> void:
+	var target: Node2D = raid.get("target")
+	if not is_instance_valid(target):
+		return
+	for unit in raid.get("units", []):
+		if is_instance_valid(unit):
+			_issue_attack_order(unit, target)
+	if raid.has("transporter"):
+		var transporter: Variant = raid.get("transporter")
+		if transporter is Node2D and is_instance_valid(transporter):
+			if transporter.has_method("get_water_transport_phase") \
+					and int(transporter.get_water_transport_phase()) == TRANSPORT_PHASE_IDLE:
+				_issue_attack_order(transporter, target)
+
+
+func _cleanup_raids() -> void:
+	var survivors: Array[Dictionary] = []
+	for raid in _active_raids:
+		var target: Node2D = raid.get("target")
+		if is_instance_valid(target) and int(target.get("team")) == TEAM_AI:
+			for unit in raid.get("units", []):
+				if is_instance_valid(unit):
+					unit.remove_meta("ai_raid_id")
+			continue
+
+		var live_units: int = 0
+		for unit in raid.get("units", []):
+			if is_instance_valid(unit):
+				live_units += 1
+
+		if live_units == 0 and _raid_units_ready(raid):
+			for unit in raid.get("units", []):
+				if is_instance_valid(unit):
+					unit.remove_meta("ai_raid_id")
+			continue
+
+		if int(raid.get("phase", RAID_PHASE_BUILDING)) == RAID_PHASE_ATTACKING and live_units == 0:
+			continue
+
+		survivors.append(raid)
+	_active_raids = survivors
+
+
+func _command_loose_troops() -> void:
+	var loose_land: Array[Node2D] = []
+	var loose_naval: Array[Node2D] = []
+	var loose_transporters: Array[Node2D] = []
+	for troop in _get_enemy_troops():
+		if not is_instance_valid(troop) or troop.has_meta("ai_raid_id"):
+			continue
+		var unit_type: int = _unit_type_of(troop)
+		if unit_type == UnitStats.UnitType.WATER_TRANSPORT:
+			loose_transporters.append(troop)
+		elif unit_type == UnitStats.UnitType.WATER_TANK or unit_type == UnitStats.UnitType.WATER_RANGE:
+			loose_naval.append(troop)
+		else:
+			loose_land.append(troop)
+	if not loose_land.is_empty():
+		_command_troop_group(loose_land, false, NAV_LAYER_GROUND)
+	if not loose_naval.is_empty():
+		_command_troop_group(loose_naval, true, NAV_LAYER_WATER)
+	if bool(_profile.get("allow_transport", false)) and not loose_transporters.is_empty():
+		_handle_transporters(loose_transporters)

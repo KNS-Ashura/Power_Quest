@@ -3,7 +3,7 @@ extends VBoxContainer
 const URL_MANUAL = "https://google.com"
 const URL_GITHUB = "https://github.com/KNS-Ashura/Power_Quest.git"
 const PATH_LICENSES = "https://craftpix.net/file-licenses/"
-const PATH_TECH_DOC = "res://assets/menu/book-ui/Lettre_demission.pdf"
+const PATH_TECH_DOC = "res://PROJECT_CONTEXT.md"
 
 
 func _ready() -> void:
