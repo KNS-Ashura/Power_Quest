@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://cvhhd0sow7j6s"]
+
+[node name="VictoryPanel" type="Node2D" unique_id=1410418713]
+
+[node name="Fond" type="TextureRect" parent="." unique_id=1405391104]
+offset_right = 40.0
+offset_bottom = 40.0

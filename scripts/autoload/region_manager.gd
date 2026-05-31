@@ -107,9 +107,18 @@ func _recalculate_all() -> void:
 		_control[region_id] = current
 		if current >= 0 and current != 2:
 			region_captured.emit(region_id, current, region_name(region_id))
-			print("Region %s controlled by team %s (+%s gold/s per site)" % [
-				region_name(region_id), current, _RegionDefs.BONUS_INCOME_PER_SITE
-			])
+			print(
+				"Region %s entierement capturee — %s possede la region (+%s or/s par site)."
+				% [_region_owner_label(current), region_name(region_id), _RegionDefs.BONUS_INCOME_PER_SITE]
+			)
+
+
+func _region_owner_label(team: int) -> String:
+	if MapSession.is_local_team(team):
+		return "Le Joueur"
+	if not MapSession.is_online_match and team == 1:
+		return "L'IA"
+	return MapSession.get_team_display_name(team)
 
 
 func _controlling_team(region_id: int) -> int:

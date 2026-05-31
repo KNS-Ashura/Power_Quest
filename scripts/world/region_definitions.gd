@@ -14,6 +14,20 @@ const AUTO_REGION_NAMES := {
 
 ## map_index -> region_id -> { "sites": [camp node names in the map scene], "name": "..." }
 const REGIONS := {
+	1: {
+		1: {
+			"sites": ["camp12", "port3", "port4", "camp8"],
+			"name": "Region 1"
+		},
+		2: {
+			"sites": ["camp7", "camp6", "camp5", "camp4", "camp9", "camp", "port7", "port2"],
+			"name": "Region 2"
+		},
+		3: {
+			"sites": ["camp13", "camp11", "camp3", "camp2", "camp10", "port", "port6", "port5"],
+			"name": "Region 3"
+		},
+	},
 	2: {
 		1: {
 			"sites": ["camp3", "camp4", "camp5", "camp6", "camp10", "port", "port4"],
