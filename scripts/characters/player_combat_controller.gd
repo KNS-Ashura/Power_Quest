@@ -3,26 +3,27 @@ class_name PlayerCombatController
 
 
 static func on_attack_timer_timeout(owner: Node) -> void:
-	if not owner._is_valid_combat_target(owner.attack_target_node):
+	var target: Node = owner.attack_target_node
+	if not is_instance_valid(target) or not owner._is_valid_combat_target(target):
 		owner._stop_combat()
 		return
-	if not (owner.attack_target_node in owner.zone_detection.get_overlapping_bodies()):
+	if not (target in owner.zone_detection.get_overlapping_bodies()):
 		owner._stop_combat()
 		return
 	if owner._is_healer():
-		owner._play_attack_animation(owner.attack_target_node)
-		owner._schedule_projectile_shot(owner.attack_target_node, owner.PROJECTILE_ATTACK_ANIM_DELAY_HEAL, true)
+		owner._play_attack_animation(target)
+		owner._schedule_projectile_shot(target, owner.PROJECTILE_ATTACK_ANIM_DELAY_HEAL, true)
 		return
 	if owner._is_mortar():
-		fire_mortar_base_attack(owner, owner.attack_target_node)
+		fire_mortar_base_attack(owner, target)
 		return
 	if owner._is_range() or owner._is_water_range_unit() or (owner.stats != null and owner.stats.is_ranged):
-		owner._play_attack_animation(owner.attack_target_node)
-		owner._schedule_projectile_shot(owner.attack_target_node, owner.PROJECTILE_ATTACK_ANIM_DELAY_RANGE, false)
+		owner._play_attack_animation(target)
+		owner._schedule_projectile_shot(target, owner.PROJECTILE_ATTACK_ANIM_DELAY_RANGE, false)
 		return
-	if owner.attack_target_node.has_method("take_damage"):
-		owner._play_attack_animation(owner.attack_target_node)
-		owner._deal_combat_damage(owner.attack_target_node, owner.unit_damage)
+	if target.has_method("take_damage"):
+		owner._play_attack_animation(target)
+		owner._deal_combat_damage(target, owner.unit_damage)
 		animate_melee_attack(owner)
 
 
@@ -37,7 +38,7 @@ static func animate_melee_attack(owner: Node) -> void:
 static func search_target_automatically(owner: Node) -> void:
 	if owner._is_healer():
 		var allies: Array = owner.zone_detection.get_overlapping_bodies().filter(func(c):
-			return c != owner and owner._is_valid_combat_target(c)
+			return is_instance_valid(c) and c != owner and owner._is_valid_combat_target(c)
 		)
 		if owner.is_camp_guardian:
 			allies = allies.filter(func(c): return c.global_position.distance_to(owner.guard_position) <= owner.guard_defense_radius)
@@ -53,7 +54,7 @@ static func search_target_automatically(owner: Node) -> void:
 		return
 
 	var targets: Array = owner.zone_detection.get_overlapping_bodies().filter(func(c):
-		return c != owner and owner._is_valid_combat_target(c)
+		return is_instance_valid(c) and c != owner and owner._is_valid_combat_target(c)
 	)
 	if owner.is_camp_guardian:
 		targets = targets.filter(func(c): return c.global_position.distance_to(owner.guard_position) <= owner.guard_defense_radius)
@@ -122,7 +123,7 @@ static func schedule_projectile_shot(owner: Node, target: Node2D, delay_seconds:
 static func trigger_projectile_shot(owner: Node, ticket: int, target: Node2D, heal_projectile: bool) -> void:
 	if ticket != owner._pending_projectile_ticket:
 		return
-	if not owner._is_valid_combat_target(target):
+	if not is_instance_valid(target) or not owner._is_valid_combat_target(target):
 		return
 	if not (target in owner.zone_detection.get_overlapping_bodies()):
 		return
@@ -164,7 +165,7 @@ static func passive_shot_enemies_in_range(owner: Node) -> Array:
 			continue
 		if not obj.has_method("take_damage") or obj.is_in_group("camps"):
 			continue
-		if obj.get("team") == null or obj.team == owner.team:
+		if not NodeTeamUtils.is_enemy_of(obj, int(owner.team)):
 			continue
 		if obj.global_position.distance_to(owner.guard_position) > owner.guard_chase_radius:
 			continue
@@ -283,7 +284,7 @@ static func apply_area_damage(owner: Node, center: Vector2, radius: float, damag
 			continue
 		if not obj.has_method("take_damage"):
 			continue
-		if obj.get("team") == null or obj.team == owner.team:
+		if not NodeTeamUtils.is_enemy_of(obj, int(owner.team)):
 			continue
 		if obj.is_in_group("camps"):
 			continue

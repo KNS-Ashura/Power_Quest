@@ -64,7 +64,7 @@ static func is_land_unit_transportable(owner: Node, unit: Node) -> bool:
 		return false
 	if not unit.get("stats") or unit.stats == null:
 		return false
-	if unit.get("team") != owner.team:
+	if NodeTeamUtils.team_id(unit) != int(owner.team):
 		return false
 	var ut: UnitStats.UnitType = unit.stats.unit_type
 	return ut == UnitStats.UnitType.INFANTRY \

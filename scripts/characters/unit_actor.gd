@@ -217,13 +217,14 @@ func _is_valid_combat_target(target: Node) -> bool:
 	if _is_healer():
 		if not ("current_hp" in target and "hp_max" in target):
 			return false
-		if target.get("team") == null or target.team != team:
+		var ally_team: int = NodeTeamUtils.team_id(target)
+		if ally_team < 0 or ally_team != team:
 			return false
 		return target.current_hp < target.hp_max
 	if target.has_method("take_damage"):
 		if target.is_in_group("camps"):
 			return false
-		if target.get("team") != null and target.team == team:
+		if NodeTeamUtils.is_same_team(target, self):
 			return false
 		return true
 	return false
@@ -541,8 +542,8 @@ func take_damage(amount: int, attacker = null, attacker_team: int = -1) -> void:
 
 	if current_hp <= 0:
 		var eq = attacker_team
-		if eq == -1 and is_instance_valid(attacker) and attacker.get("team") != null:
-			eq = attacker.team
+		if eq == -1:
+			eq = NodeTeamUtils.team_id(attacker)
 		die(attacker, eq)
 
 func die(killer: Node2D = null, killer_team: int = -1) -> void:

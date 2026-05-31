@@ -48,7 +48,7 @@ func _impact() -> void:
 	already_hit = true
 
 	if is_instance_valid(target) and is_instance_valid(shooter):
-		if target.get("team") != null and shooter.get("team") != null and target.team == shooter.team:
+		if NodeTeamUtils.is_same_team(target, shooter):
 			if "current_hp" in target and "hp_max" in target and target.current_hp < target.hp_max:
 				target.current_hp = min(target.hp_max, target.current_hp + heal_amount)
 				if target.has_node("ProgressBar"):
@@ -58,7 +58,7 @@ func _impact() -> void:
 				if (
 					MapSession.is_online_match
 					and OnlineGameSync.is_online_active()
-					and MapSession.is_local_team(int(shooter.team))
+					and MapSession.is_local_team(NodeTeamUtils.team_id(shooter))
 				):
 					var target_sync: int = int(target.get("net_sync_id")) if target.get("net_sync_id") != null else -1
 					var caster_sync: int = int(shooter.get("net_sync_id")) if shooter.get("net_sync_id") != null else -1

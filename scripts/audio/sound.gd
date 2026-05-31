@@ -17,16 +17,29 @@ const DEFAULT_VOLUME_DB := 0.0
 @onready var capture: AudioStreamPlayer = $capture
 
 
+var _sfx_volume_linear: float = 1.0
+
+
 func _ready() -> void:
 	_apply_volume_to_all()
+	call_deferred("_sync_user_volume")
 
 
-func set_master_volume_linear(linear_0_to_1: float) -> void:
-	var clamped := clampf(linear_0_to_1, 0.0, 1.0)
-	var db := -80.0 if clamped <= 0.0001 else linear_to_db(clamped)
+func _sync_user_volume() -> void:
+	if UserPrefs.has_method("get_sfx_linear"):
+		set_sfx_volume_linear(UserPrefs.get_sfx_linear())
+
+
+func set_sfx_volume_linear(linear_0_to_1: float) -> void:
+	_sfx_volume_linear = clampf(linear_0_to_1, 0.0, 1.0)
+	var db := -80.0 if _sfx_volume_linear <= 0.0001 else linear_to_db(_sfx_volume_linear)
 	for child in get_children():
 		if child is AudioStreamPlayer:
 			(child as AudioStreamPlayer).volume_db = db
+
+
+func set_master_volume_linear(linear_0_to_1: float) -> void:
+	set_sfx_volume_linear(linear_0_to_1)
 
 
 func _apply_volume_to_all() -> void:

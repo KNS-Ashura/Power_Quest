@@ -57,7 +57,8 @@ func _mortar_explosion() -> void:
 
 	for res in space.intersect_shape(query):
 		var obj = res.collider
-		if obj and obj.has_method("take_damage") and not obj.is_in_group("camps"):
-			if obj.get("team") != null and obj.get("team") != shooter_team:
-				var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / explosion_radius, 0.0, 1.0))
-				ProjectileDamageUtilsRef.apply_synced_damage(obj, int(float(damage) * ratio), shooter, shooter_team)
+		if not is_instance_valid(obj) or not obj.has_method("take_damage") or obj.is_in_group("camps"):
+			continue
+		if NodeTeamUtils.is_enemy_of(obj, shooter_team):
+			var ratio = max(0.2, 1.0 - clamp(global_position.distance_to(obj.global_position) / explosion_radius, 0.0, 1.0))
+			ProjectileDamageUtilsRef.apply_synced_damage(obj, int(float(damage) * ratio), shooter, shooter_team)

@@ -513,21 +513,38 @@ func _on_guardian_killed(killer: Node2D, killer_team: int = -1) -> void:
 	var new_team: int = Owner.NEUTRAL
 	if killer_team != -1 and killer_team != team:
 		new_team = killer_team
-	elif is_instance_valid(killer) and killer.get("team") != null and killer.team != team:
-		new_team = int(killer.team)
+	elif is_instance_valid(killer):
+		var killer_team_id: int = NodeTeamUtils.team_id(killer)
+		if killer_team_id >= 0 and killer_team_id != team:
+			new_team = killer_team_id
 	_capture_by_team(new_team)
 	# Online: propagate capture (and guardian respawn) to all clients.
 	if MapSession.is_online_match and OnlineGameSync.is_online_active():
 		OnlineGameSync.report_camp_capture(str(get_path()), new_team)
 
 
+func _release_guardian() -> void:
+	if not is_instance_valid(guardian):
+		guardian = null
+		return
+	if guardian.has_method("_stop_combat"):
+		guardian._stop_combat()
+	if "is_dying" in guardian:
+		guardian.is_dying = true
+	if guardian.has_node("ZoneDetection"):
+		var zone := guardian.get_node("ZoneDetection") as Area2D
+		if is_instance_valid(zone):
+			zone.monitoring = false
+			zone.monitorable = false
+	guardian.queue_free()
+	guardian = null
+
+
 func _capture_by_team(new_team: int) -> void:
 	team = new_team as Owner
 	current_hp = hp_max
 	production_queue.clear()
-	if is_instance_valid(guardian):
-		guardian.queue_free()
-		guardian = null
+	_release_guardian()
 	_update_groups_and_visuals()
 	_notify_capture()
 	_schedule_guardian_spawn()
@@ -700,9 +717,7 @@ func upgrade_camp(use_economy: bool = true, owner_required: int = Owner.PLAYER) 
 		remaining_time = min(remaining_time, current_unit_total_time)
 		production_updated.emit(production_queue.size(), 1.0 - (remaining_time / current_unit_total_time))
 
-	if is_instance_valid(guardian):
-		guardian.queue_free()
-		guardian = null
+	_release_guardian()
 
 	return true
 
@@ -722,13 +737,13 @@ func _capture(attacker: Node2D, attacker_team: int = -1) -> void:
 	production_queue.clear()
 	if attacker_team != -1:
 		team = attacker_team as Owner
-	elif is_instance_valid(attacker) and attacker.get("team") != null:
-		team = int(attacker.team) as Owner
+	elif is_instance_valid(attacker):
+		var attacker_team_id: int = NodeTeamUtils.team_id(attacker)
+		if attacker_team_id >= 0:
+			team = attacker_team_id as Owner
 	else:
 		team = Owner.NEUTRAL
-	if is_instance_valid(guardian):
-		guardian.queue_free()
-		guardian = null
+	_release_guardian()
 	_update_groups_and_visuals()
 	_notify_capture()
 	_schedule_guardian_spawn()

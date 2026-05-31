@@ -16,12 +16,18 @@ const DEFAULT_VOLUME_DB := -6.0
 @onready var _player: AudioStreamPlayer = $MusicPlayer
 
 var _current_track_id: int = -1
+var _volume_linear: float = 1.0
 
 
 func _ready() -> void:
 	if _player != null:
 		_player.bus = &"Master"
-		_player.volume_db = DEFAULT_VOLUME_DB
+	call_deferred("_sync_user_volume")
+
+
+func _sync_user_volume() -> void:
+	if UserPrefs.has_method("get_music_linear"):
+		set_volume_linear(UserPrefs.get_music_linear())
 
 
 func play_menu() -> void:
@@ -44,10 +50,10 @@ func stop() -> void:
 
 
 func set_volume_linear(linear_0_to_1: float) -> void:
+	_volume_linear = clampf(linear_0_to_1, 0.0, 1.0)
 	if _player == null:
 		return
-	var clamped := clampf(linear_0_to_1, 0.0, 1.0)
-	_player.volume_db = -80.0 if clamped <= 0.0001 else linear_to_db(clamped) + DEFAULT_VOLUME_DB
+	_player.volume_db = -80.0 if _volume_linear <= 0.0001 else linear_to_db(_volume_linear) + DEFAULT_VOLUME_DB
 
 
 func _play_track(path: String, track_id: int) -> void:

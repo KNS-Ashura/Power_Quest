@@ -7,19 +7,24 @@ extends Node
 ##   preferences and apply language; a language change is synced back when logged in.
 
 signal language_changed(locale: String)
+signal audio_volumes_changed(music_linear: float, sfx_linear: float)
 
 const SETTINGS_PATH := "user://settings.cfg"
 const SECTION := "general"
 const DEFAULT_LOCALE := "en"
 const SUPPORTED_LOCALES := ["en", "fr", "de"]
+const DEFAULT_VOLUME_PERCENT := 100
 
 var _locale: String = DEFAULT_LOCALE
+var _music_volume_percent: int = DEFAULT_VOLUME_PERCENT
+var _sfx_volume_percent: int = DEFAULT_VOLUME_PERCENT
 var _account_synced: bool = false
 
 
 func _ready() -> void:
 	_load_local()
 	_apply_locale()
+	call_deferred("apply_audio_volumes")
 	if not NetworkSession.auth_ready.is_connected(_on_auth_ready):
 		NetworkSession.auth_ready.connect(_on_auth_ready)
 	if not NetworkSession.session_closed.is_connected(_on_session_closed):
@@ -54,6 +59,53 @@ func set_language(locale: String, sync_account: bool = true) -> void:
 		NetworkSession.save_account_preferences(_to_dict())
 
 
+func get_music_volume_percent() -> int:
+	return _music_volume_percent
+
+
+func get_sfx_volume_percent() -> int:
+	return _sfx_volume_percent
+
+
+func get_music_linear() -> float:
+	return float(_music_volume_percent) / 100.0
+
+
+func get_sfx_linear() -> float:
+	return float(_sfx_volume_percent) / 100.0
+
+
+func set_music_volume_percent(percent: int) -> void:
+	var value := clampi(percent, 0, 100)
+	if value == _music_volume_percent:
+		apply_audio_volumes()
+		return
+	_music_volume_percent = value
+	_save_local()
+	apply_audio_volumes()
+	audio_volumes_changed.emit(get_music_linear(), get_sfx_linear())
+
+
+func set_sfx_volume_percent(percent: int) -> void:
+	var value := clampi(percent, 0, 100)
+	if value == _sfx_volume_percent:
+		apply_audio_volumes()
+		return
+	_sfx_volume_percent = value
+	_save_local()
+	apply_audio_volumes()
+	audio_volumes_changed.emit(get_music_linear(), get_sfx_linear())
+
+
+func apply_audio_volumes() -> void:
+	var music_linear := get_music_linear()
+	var sfx_linear := get_sfx_linear()
+	if Music.has_method("set_volume_linear"):
+		Music.set_volume_linear(music_linear)
+	if Sound.has_method("set_sfx_volume_linear"):
+		Sound.set_sfx_volume_linear(sfx_linear)
+
+
 func _apply_locale() -> void:
 	TranslationBootstrap.ensure_loaded()
 	_locale = TranslationBootstrap.normalize_locale(_locale)
@@ -71,6 +123,8 @@ func _load_local() -> void:
 	var lang := str(cfg.get_value(SECTION, "language", DEFAULT_LOCALE))
 	if SUPPORTED_LOCALES.has(lang):
 		_locale = lang
+	_music_volume_percent = clampi(int(cfg.get_value(SECTION, "music_volume", DEFAULT_VOLUME_PERCENT)), 0, 100)
+	_sfx_volume_percent = clampi(int(cfg.get_value(SECTION, "sfx_volume", DEFAULT_VOLUME_PERCENT)), 0, 100)
 
 
 func _save_local() -> void:
@@ -78,6 +132,8 @@ func _save_local() -> void:
 	# Keep any other values already stored.
 	cfg.load(SETTINGS_PATH)
 	cfg.set_value(SECTION, "language", _locale)
+	cfg.set_value(SECTION, "music_volume", _music_volume_percent)
+	cfg.set_value(SECTION, "sfx_volume", _sfx_volume_percent)
 	cfg.save(SETTINGS_PATH)
 
 

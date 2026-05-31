@@ -44,11 +44,13 @@ func update_ai_display() -> void:
 
 
 func _on_arrow_right_pressed() -> void:
+	Sound.play_menu1()
 	current_ai_index = (current_ai_index + 1) % AI_LEVEL_KEYS.size()
 	update_ai_display()
 
 
 func _on_arrow_left_pressed() -> void:
+	Sound.play_menu1()
 	current_ai_index = (current_ai_index - 1 + AI_LEVEL_KEYS.size()) % AI_LEVEL_KEYS.size()
 	update_ai_display()
 
@@ -66,11 +68,13 @@ func update_map_display() -> void:
 
 
 func _on_map_arrow_right_pressed() -> void:
+	Sound.play_menu1()
 	current_map_index = (current_map_index + 1) % map_list.size()
 	update_map_display()
 
 
 func _on_map_arrow_left_pressed() -> void:
+	Sound.play_menu1()
 	current_map_index = (current_map_index - 1 + map_list.size()) % map_list.size()
 	update_map_display()
 
@@ -82,6 +86,7 @@ func _notification(what: int) -> void:
 
 
 func _on_launch_game_pressed() -> void:
+	Sound.play_menu2()
 	var map_index: int = int(map_list[current_map_index].get("map_index", 1))
 	MapSession.active_ai_difficulty = current_ai_index
 	MapSession.active_map_index = map_index

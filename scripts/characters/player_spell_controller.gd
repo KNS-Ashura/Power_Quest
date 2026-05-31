@@ -142,11 +142,11 @@ static func anti_armor_spell_enemy_targets(owner: Node) -> Array[Node2D]:
 	var result: Array[Node2D] = []
 	for res in owner.get_world_2d().direct_space_state.intersect_shape(query):
 		var obj := res.collider as Node2D
-		if obj == null or obj == owner:
+		if not is_instance_valid(obj) or obj == owner:
 			continue
 		if obj.is_in_group("camps"):
 			continue
-		if obj.get("team") == null or obj.team == owner.team:
+		if not NodeTeamUtils.is_enemy_of(obj, int(owner.team)):
 			continue
 		if not obj.has_method("take_damage"):
 			continue
@@ -188,7 +188,11 @@ static func fire_anti_armor_spell_projectile(owner: Node, target: Node2D) -> voi
 
 static func closest_enemy_targets_mortar(owner: Node, max_count: int) -> Array:
 	var targets: Array = owner.zone_detection.get_overlapping_bodies().filter(func(c):
-		return c != owner and c.has_method("take_damage") and not c.is_in_group("camps") and c.get("team") != null and c.get("team") != owner.team
+		return is_instance_valid(c) \
+			and c != owner \
+			and c.has_method("take_damage") \
+			and not c.is_in_group("camps") \
+			and NodeTeamUtils.is_enemy_of(c, int(owner.team))
 	)
 	if targets.is_empty():
 		return []

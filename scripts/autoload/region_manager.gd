@@ -125,10 +125,10 @@ func _controlling_team(region_id: int) -> int:
 	var sites: Array = _sites_by_region.get(region_id, [])
 	if sites.is_empty():
 		return -1
-	var ref_team: int = sites[0].team
-	if ref_team == 2:
+	var ref_team: int = NodeTeamUtils.team_id(sites[0])
+	if ref_team < 0 or ref_team == 2:
 		return -1
 	for s in sites:
-		if not is_instance_valid(s) or s.team != ref_team:
+		if NodeTeamUtils.team_id(s) != ref_team:
 			return -1
 	return ref_team
