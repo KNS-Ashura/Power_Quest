@@ -21,11 +21,14 @@ BTN_GITHUB;GITHUB REPO;DÉPÔT GITHUB;GITHUB-REPO
 BTN_TECH_DOC;TECH DOCUMENTATION;DOCUMENTATION TECHNIQUE;TECHNISCHE DOKUMENTATION
 MENU_PROFILE;PROFILE;PROFIL;PROFIL
 UI_STATISTICS;STATISTICS;STATISTIQUES;STATISTIKEN
-UI_WINRATE;Winrate :;Taux de victoire :;Siegquote :
+UI_WINS;Victories :;Victoires :;Siege :
+UI_WINRATE;Win rate :;Taux de victoire :;Siegquote :
+UI_PLAY_TIME;Play time :;Temps de jeu :;Spielzeit :
 UI_AVERAGE_APM;Average APM :;APM Moyen :;Durchschnitts-APM :
 UI_MATCHES;Matches :;Matchs :;Spiele :
 BTN_LAST_GAMES;LAST 10 GAMES;10 DERNIERS MATCHS;LETZTE 10 SPIELE
 BTN_LEADERBOARD;LEADERBOARD;CLASSEMENT;RANGLISTE
+LEADERBOARD_EMPTY;No ranked players yet.;Aucun joueur classé pour l'instant.;Noch keine Spieler im Ranking.
 RANK_GRAND_MASTER;GRAND MASTER;GRAND MAÎTRE;GROSSMEISTER
 BTN_LOGOUT;Log out;Déconnexion;Abmelden
 UI_WELCOME_TITLE;Welcome Conqueror !;Bienvenue Conquérant !;Willkommen Eroberer !
@@ -108,6 +111,7 @@ AUTH_BTN_REGISTER;SIGN UP;S'INSCRIRE;REGISTRIEREN
 AUTH_FILL_LOGIN;Fill in email and password.;Remplis l'email et le mot de passe.;Bitte E-Mail und Passwort eingeben.
 AUTH_INVALID_EMAIL;Invalid email address (e.g. name@domain.com).;Adresse email invalide (ex: nom@domaine.com).;Ungültige E-Mail-Adresse (z.B. name@domain.com).
 AUTH_LOGGING_IN;Logging in...;Connexion en cours...;Anmeldung läuft...
+AUTH_TIMEOUT;Login timed out. Check your connection and try again.;Délai de connexion dépassé. Vérifie ta connexion et réessaie.;Anmeldung abgelaufen. Verbindung prüfen und erneut versuchen.
 AUTH_FILL_REGISTER;Fill in username, email and password.;Remplis pseudo, email et mot de passe.;Bitte Benutzername E-Mail und Passwort eingeben.
 AUTH_USERNAME_RULES_LONG;Invalid username: 3-20 chars, letters/digits/_ only.;Pseudo invalide : 3-20 caractères, lettres/chiffres/_ uniquement.;Ungültiger Benutzername: 3-20 Zeichen nur Buchstaben/Ziffern/_.
 AUTH_CREATING;Creating account...;Création du compte...;Konto wird erstellt...
@@ -127,6 +131,7 @@ AUTH_EMAIL_FORMAT;Invalid email format.;Format d'email invalide.;Ungültiges E-M
 AUTH_PASSWORD_INVALID;Invalid password.;Mot de passe invalide.;Ungültiges Passwort.
 AUTH_USERNAME_INVALID_TAKEN;Invalid username or already taken.;Pseudo invalide ou déjà pris.;Ungültiger oder bereits vergebener Benutzername.
 AUTH_DATA_INVALID;Invalid data. Check email username and password.;Données invalides. Vérifie email, pseudo et mot de passe.;Ungültige Daten. Prüfe E-Mail Benutzername und Passwort.
+NET_QUEUE_TIMEOUT;Queue connection timed out. Try again.;Délai dépassé pour rejoindre la file. Réessaie.;Zeitüberschreitung beim Beitritt zur Warteschlange. Erneut versuchen.
 NET_SERVER_UNREACHABLE;Cannot reach the server. Check your connection.;Impossible de joindre le serveur. Vérifie ta connexion.;Server nicht erreichbar. Prüfe deine Verbindung.
 NET_MAP_NOT_STARTED;The map did not start. Open a 2nd tab (Multiplayer) or check the game server.;La map n'a pas démarré. Ouvre un 2e onglet (Multijoueur) ou vérifie le serveur de jeu.;Die Karte startete nicht. Öffne einen 2. Tab (Mehrspieler) oder prüfe den Spielserver.
 PROFILE_CONNECTED;Connected;Connecté;Verbunden

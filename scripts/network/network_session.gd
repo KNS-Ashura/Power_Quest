@@ -7,6 +7,7 @@ signal auth_ready
 signal auth_failed(message: String)
 signal session_closed
 signal profile_updated(profile: Dictionary)
+signal leaderboard_updated(entries: Array)
 signal queue_updated(players: int, max_players: int, seconds_left: int)
 signal match_ready(match_id: String, game_ws_url: String)
 signal match_failed(message: String)
@@ -43,6 +44,9 @@ var _pending_auth_username: String = ""
 var _session_username_override: String = ""
 var _leave_queue_pending: bool = false
 var _awaiting_join_ack: bool = false
+var _join_ack_started_ms: int = 0
+var _auth_http_pending: bool = false
+var _auth_http_started_ms: int = 0
 var _rpc_warn_last: Dictionary = {}
 var _use_browser_http: bool = false
 var _web_bridge_warned: bool = false
@@ -51,6 +55,8 @@ var _web_request_started_ms: int = 0
 var _web_http_retry_scheduled: bool = false
 var _auto_reconnect_running: bool = false
 const WEB_HTTP_TIMEOUT_MS := 15000
+const JOIN_ACK_TIMEOUT_MS := 20000
+const AUTH_HTTP_TIMEOUT_MS := 25000
 const WEB_CREDS_STORAGE_KEY := "pq_account_credentials"
 const WEB_SESSION_STORAGE_KEY := "pq_session_state"
 
@@ -219,6 +225,7 @@ func register_account(email: String, password: String, username: String) -> void
 	_pending_auth_password = p
 	_pending_auth_username = u
 	_session_username_override = u
+	_begin_auth_http_request()
 	# Nakama: username in query AND body (depends on version / proxy).
 	var url := "%s/v2/account/authenticate/email?create=true&username=%s" % [
 		NetworkConfig.nakama_base_url(),
@@ -249,6 +256,7 @@ func login_account(email: String, password: String) -> void:
 	_pending_auth_email = e
 	_pending_auth_password = p
 	_apply_saved_username_hints(e)
+	_begin_auth_http_request()
 	_enqueue_http({
 		"kind": "auth_account",
 		"url": "%s/v2/account/authenticate/email?create=false" % NetworkConfig.nakama_base_url(),
@@ -271,6 +279,7 @@ func logout_account() -> void:
 	_session_username_override = ""
 	profile_cache.clear()
 	leaderboard_cache.clear()
+	leaderboard_updated.emit(leaderboard_cache)
 	_delete_saved_credentials()
 	_delete_persisted_session()
 	if _match_peer != null:
@@ -393,7 +402,20 @@ func _sync_username_on_server(username: String) -> void:
 	_rpc("set_username", JSON.stringify({"username": cleaned}))
 
 
+func _begin_auth_http_request() -> void:
+	_auth_http_pending = true
+	_auth_http_started_ms = Time.get_ticks_msec()
+	if OS.has_feature("web"):
+		_ensure_web_http_ready()
+
+
+func _clear_auth_http_pending() -> void:
+	_auth_http_pending = false
+	_auth_http_started_ms = 0
+
+
 func _complete_auth_success() -> void:
+	_clear_auth_http_pending()
 	if profile_cache.is_empty():
 		profile_cache = {}
 	var display_name := get_display_username()
@@ -401,10 +423,16 @@ func _complete_auth_success() -> void:
 		profile_cache["username"] = display_name
 		profile_updated.emit(profile_cache.duplicate(true))
 	_save_persisted_session()
+	auth_ready.emit()
+	call_deferred("_fetch_post_auth_data")
+
+
+func _fetch_post_auth_data() -> void:
+	if not is_account_logged_in():
+		return
 	request_account_info()
 	request_player_profile()
 	request_leaderboard()
-	auth_ready.emit()
 
 
 func request_leaderboard(limit: int = 20) -> void:
@@ -740,6 +768,11 @@ func _authenticate_with_saved_credentials() -> void:
 		auth_ready.disconnect(on_ready)
 	if auth_failed.is_connected(on_failed):
 		auth_failed.disconnect(on_failed)
+	if not finished:
+		if is_account_logged_in():
+			auth_ready.emit()
+		elif _credentials_are_usable(_read_saved_credentials()):
+			auth_failed.emit(tr("AUTH_TIMEOUT"))
 
 
 func join_ranked_queue() -> void:
@@ -747,6 +780,7 @@ func join_ranked_queue() -> void:
 		match_failed.emit(tr("AUTH_ACCOUNT_REQUIRED"))
 		return
 	_awaiting_join_ack = true
+	_join_ack_started_ms = Time.get_ticks_msec()
 	_in_queue = false
 	_match_handoff_started = false
 	_rpc("join_queue")
@@ -755,6 +789,7 @@ func join_ranked_queue() -> void:
 func leave_ranked_queue() -> void:
 	_in_queue = false
 	_awaiting_join_ack = false
+	_join_ack_started_ms = 0
 	_match_handoff_started = false
 	_ws_connecting = false
 	if not is_authenticated or session_token == "":
@@ -776,6 +811,17 @@ func _rpc(id: String, inner_json: String = "") -> void:
 
 
 func _enqueue_http(job: Dictionary) -> void:
+	var kind := str(job.get("kind", ""))
+	if kind == "auth_account":
+		_http_queue.push_front(job)
+		_pump_http_queue()
+		return
+	if kind == "rpc":
+		var rpc_id := str(job.get("rpc_id", ""))
+		if rpc_id in ["join_queue", "queue_status", "leave_queue"]:
+			_http_queue.push_front(job)
+			_pump_http_queue()
+			return
 	_http_queue.append(job)
 	_pump_http_queue()
 
@@ -1041,18 +1087,20 @@ func _on_http_completed(result: int, response_code: int, _headers: PackedStringA
 	var parsed: Variant = _parse_json_safe(text)
 
 	# Auth: token may be present even when JSON.parse fails (Web export / WASM).
-	if http_kind == "auth_account" and _http_is_success(response_code):
+	if http_kind == "auth_account":
 		var was_registration := bool(_http.get_meta("is_registration", false)) if _http.has_meta("is_registration") else false
 		if _http.has_meta("is_registration"):
 			_http.remove_meta("is_registration")
-		var fields: Dictionary
-		if typeof(parsed) == TYPE_DICTIONARY:
-			fields = parsed as Dictionary
-		else:
-			fields = _extract_auth_fields_from_text(text)
-		if _apply_auth_session_from_fields(fields, was_registration):
-			_pump_http_queue()
-			return
+		if _http_is_success(response_code):
+			var fields: Dictionary
+			if typeof(parsed) == TYPE_DICTIONARY:
+				fields = parsed as Dictionary
+			else:
+				fields = _extract_auth_fields_from_text(text)
+			if _apply_auth_session_from_fields(fields, was_registration):
+				_pump_http_queue()
+				return
+		_clear_auth_http_pending()
 		_handle_error(_friendly_auth_error(response_code, parsed, text))
 		_pump_http_queue()
 		return
@@ -1313,6 +1361,214 @@ func _extract_queue_fields_from_text(text: String) -> Dictionary:
 	return out
 
 
+func _extract_json_float_field(text: String, field: String) -> float:
+	var re := RegEx.new()
+	if re.compile('"' + field + '"\\s*:\\s*([0-9]+\\.?[0-9]*)') != OK:
+		return -1.0
+	var m := re.search(text.replace('\\"', '"'))
+	if m == null:
+		return -1.0
+	return float(m.get_string(1))
+
+
+func _extract_recent_from_text(text: String) -> Array:
+	var out: Array = []
+	var t := text.replace('\\"', '"')
+	var re := RegEx.new()
+	if re.compile('"recent"\\s*:\\s*\\[([^\\]]*)\\]') != OK:
+		return out
+	var m := re.search(t)
+	if m == null:
+		return out
+	for part in m.get_string(1).split(","):
+		var token := part.strip_edges().replace("\"", "")
+		if token == "W" or token == "L":
+			out.append(token)
+	return out
+
+
+func _extract_profile_from_text(text: String) -> Dictionary:
+	if text.is_empty():
+		return {}
+	var parsed: Variant = _parse_json_safe(text)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		var d: Dictionary = parsed as Dictionary
+		if d.has("payload"):
+			var inner: Variant = _decode_nakama_rpc_payload(d)
+			if typeof(inner) == TYPE_DICTIONARY:
+				return inner as Dictionary
+		if d.has("games") or d.has("wins") or d.has("recent"):
+			return d
+	var inner_text := _extract_payload_string_literal(text)
+	if inner_text != "":
+		var inner_parsed: Variant = _parse_json_safe(inner_text)
+		if typeof(inner_parsed) == TYPE_DICTIONARY:
+			return inner_parsed as Dictionary
+	var t := text.replace('\\"', '"')
+	var out := {}
+	for key in ["games", "wins", "losses", "total_seconds", "level"]:
+		var iv := _extract_json_int_field(t, key)
+		if iv >= 0:
+			out[key] = iv
+	var wr := _extract_json_float_field(t, "winrate")
+	if wr >= 0.0:
+		out["winrate"] = wr
+	var recent := _extract_recent_from_text(text)
+	if not recent.is_empty():
+		out["recent"] = recent
+	var user_re := RegEx.new()
+	if user_re.compile('"username"\\s*:\\s*"([^"]+)"') == OK:
+		var um := user_re.search(t)
+		if um:
+			out["username"] = um.get_string(1)
+	return out
+
+
+func _extract_leaderboard_from_text(text: String) -> Dictionary:
+	if text.is_empty():
+		return {"entries": []}
+	var parsed: Variant = _parse_json_safe(text)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		var d: Dictionary = parsed as Dictionary
+		var inner: Variant = _decode_nakama_rpc_payload(d)
+		if typeof(inner) == TYPE_DICTIONARY:
+			d = inner as Dictionary
+		if d.has("entries"):
+			var entries := _normalize_entries(d.get("entries", []))
+			if not entries.is_empty():
+				return {"entries": entries}
+	var inner_text := _extract_payload_string_literal(text)
+	if inner_text != "":
+		var inner_parsed: Variant = _parse_json_safe(inner_text)
+		if typeof(inner_parsed) == TYPE_DICTIONARY:
+			var entries := _normalize_entries((inner_parsed as Dictionary).get("entries", []))
+			if not entries.is_empty():
+				return {"entries": entries}
+	var loose := _extract_leaderboard_entries_loose(text)
+	if not loose.is_empty():
+		return {"entries": loose}
+	return {"entries": []}
+
+
+func _extract_leaderboard_entries_loose(text: String) -> Array:
+	var t := text.replace('\\"', '"').replace("\\\\", "\\")
+	var entries: Array = []
+	var block_re := RegEx.new()
+	if block_re.compile('\\{[^{}]*"wins"\\s*:\\s*\\d+[^{}]*\\}') != OK:
+		return entries
+	var pos := 0
+	var wins_re := RegEx.new()
+	var user_re := RegEx.new()
+	var uid_re := RegEx.new()
+	if wins_re.compile('"wins"\\s*:\\s*(\\d+)') != OK:
+		return entries
+	user_re.compile('"username"\\s*:\\s*"([^"]*)"')
+	uid_re.compile('"user_id"\\s*:\\s*"([^"]+)"')
+	while true:
+		var bm := block_re.search(t, pos)
+		if bm == null:
+			break
+		var block := bm.get_string(0)
+		pos = bm.get_end()
+		var wins := 0
+		var wm := wins_re.search(block)
+		if wm:
+			wins = int(wm.get_string(1))
+		var display_name := ""
+		var um := user_re.search(block)
+		if um:
+			display_name = um.get_string(1).strip_edges()
+		var uid := ""
+		var uid_m := uid_re.search(block)
+		if uid_m:
+			uid = uid_m.get_string(1).strip_edges()
+		if display_name == "" or display_name == uid:
+			if uid.length() >= 6:
+				display_name = "Joueur %s" % uid.substr(0, 6)
+			else:
+				display_name = "Joueur"
+		var row := {"username": display_name, "wins": wins}
+		if uid != "":
+			row["user_id"] = uid
+		entries.append(row)
+	return entries
+
+
+func _normalize_profile_cache() -> void:
+	profile_cache["games"] = int(profile_cache.get("games", 0))
+	profile_cache["wins"] = int(profile_cache.get("wins", 0))
+	profile_cache["losses"] = int(profile_cache.get("losses", 0))
+	profile_cache["total_seconds"] = int(profile_cache.get("total_seconds", 0))
+	profile_cache["winrate"] = float(profile_cache.get("winrate", 0.0))
+	profile_cache["level"] = int(profile_cache.get("level", 0))
+	var games := int(profile_cache["games"])
+	var wins := int(profile_cache["wins"])
+	if wins <= 0 and games > 0 and float(profile_cache["winrate"]) > 0.0:
+		profile_cache["wins"] = int(round(float(games) * float(profile_cache["winrate"]) / 100.0))
+	var recent_val: Variant = profile_cache.get("recent", [])
+	if typeof(recent_val) == TYPE_DICTIONARY:
+		profile_cache["recent"] = (recent_val as Dictionary).get("items", [])
+	elif typeof(recent_val) != TYPE_ARRAY:
+		profile_cache["recent"] = []
+	games = int(profile_cache.get("games", 0))
+	wins = int(profile_cache.get("wins", 0))
+	if games > 0 and wins >= 0 and float(profile_cache.get("winrate", 0.0)) <= 0.0:
+		profile_cache["winrate"] = float(wins) / float(games) * 100.0
+
+
+func _merge_profile_stats_from_server(data: Dictionary) -> void:
+	if data.is_empty():
+		return
+	if profile_cache.is_empty():
+		profile_cache = {}
+	for key in ["games", "wins", "losses", "total_seconds", "level"]:
+		if data.has(key):
+			profile_cache[key] = int(data[key])
+	if data.has("winrate"):
+		profile_cache["winrate"] = float(data["winrate"])
+	if data.has("recent"):
+		var recent_val: Variant = data["recent"]
+		if typeof(recent_val) == TYPE_ARRAY:
+			profile_cache["recent"] = recent_val
+	_normalize_profile_cache()
+
+
+func get_leaderboard_display_name(entry: Dictionary) -> String:
+	return _leaderboard_display_name(entry)
+
+
+func _leaderboard_display_name(entry: Dictionary) -> String:
+	var name := str(entry.get("username", "")).strip_edges()
+	if _is_human_username(name):
+		return name
+	name = str(entry.get("display_name", "")).strip_edges()
+	if _is_human_username(name):
+		return name
+	var uid := str(entry.get("user_id", "")).strip_edges()
+	if uid.length() >= 6:
+		return "Joueur %s" % uid.substr(0, 6)
+	return "Joueur"
+
+
+func _normalize_leaderboard_entries(entries: Array) -> Array:
+	var out: Array = []
+	for item in entries:
+		if typeof(item) != TYPE_DICTIONARY:
+			continue
+		var e: Dictionary = (item as Dictionary).duplicate(true)
+		if int(e.get("wins", -1)) < 0:
+			var wr_score := float(e.get("winrate", 0.0))
+			if wr_score > 100.0:
+				e["wins"] = int(e.get("subscore", 0))
+			else:
+				e["wins"] = int(e.get("score", e.get("subscore", 0)))
+		out.append(e)
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("wins", 0)) > int(b.get("wins", 0))
+	)
+	return out
+
+
 func _extract_json_int_field(text: String, field: String) -> int:
 	var re := RegEx.new()
 	if re.compile('"' + field + '"\\s*:\\s*(\\d+)') != OK:
@@ -1359,11 +1615,19 @@ func _handle_rpc_response(rpc_id: String, code: int, payload: Dictionary, raw_te
 		return
 
 	if payload.is_empty():
-		if rpc_id == "join_queue" or rpc_id == "queue_status":
+		if rpc_id == "get_player_profile":
+			payload = _extract_profile_from_text(raw_text)
+		elif rpc_id == "get_leaderboard":
+			payload = _extract_leaderboard_from_text(raw_text)
+		elif rpc_id == "join_queue" or rpc_id == "queue_status":
 			if _looks_like_queue_rpc_text(raw_text):
 				payload = _extract_queue_fields_from_text(raw_text)
 			else:
 				payload = {"status": "waiting", "players": 1, "max_players": 8, "seconds_left": 60}
+		elif rpc_id == "submit_match_result":
+			request_player_profile()
+			request_leaderboard()
+			return
 		elif _is_benign_rpc(rpc_id):
 			return
 		else:
@@ -1388,14 +1652,29 @@ func _handle_rpc_response(rpc_id: String, code: int, payload: Dictionary, raw_te
 	if rpc_id == "join_queue" or rpc_id == "queue_status":
 		if rpc_id == "join_queue":
 			_awaiting_join_ack = false
+			_join_ack_started_ms = 0
 			if not payload.is_empty():
 				_in_queue = true
 		_apply_queue_payload(payload)
 	elif rpc_id == "get_player_profile":
+		if int(payload.get("games", 0)) <= 0 and int(payload.get("wins", 0)) <= 0:
+			var extracted := _extract_profile_from_text(raw_text)
+			if not extracted.is_empty():
+				for key in extracted.keys():
+					payload[key] = extracted[key]
 		_apply_player_profile_payload(payload)
 	elif rpc_id == "get_leaderboard":
+		var lb_entries := _normalize_entries(payload.get("entries", []))
+		if lb_entries.is_empty():
+			var extracted := _extract_leaderboard_from_text(raw_text)
+			if not extracted.is_empty():
+				payload = extracted
+			elif typeof(payload.get("entries", null)) == TYPE_DICTIONARY:
+				payload = {"entries": []}
 		_apply_leaderboard_payload(payload)
 	elif rpc_id == "submit_match_result":
+		if not payload.is_empty() and payload.has("games"):
+			_merge_profile_stats_from_server(payload)
 		request_player_profile()
 		request_leaderboard()
 	elif rpc_id == "set_username":
@@ -1419,14 +1698,12 @@ func _handle_rpc_response(rpc_id: String, code: int, payload: Dictionary, raw_te
 
 
 func _apply_player_profile_payload(payload: Variant) -> void:
-	if typeof(payload) != TYPE_DICTIONARY:
+	if typeof(payload) != TYPE_DICTIONARY or (payload as Dictionary).is_empty():
 		profile_cache = {}
 		profile_updated.emit(profile_cache)
 		return
 	profile_cache = (payload as Dictionary).duplicate(true)
-	var recent_val: Variant = profile_cache.get("recent", [])
-	if typeof(recent_val) == TYPE_DICTIONARY:
-		profile_cache["recent"] = []
+	_normalize_profile_cache()
 	var stats_username := str(profile_cache.get("username", "")).strip_edges()
 	if _is_human_username(stats_username):
 		account_username = stats_username
@@ -1439,7 +1716,10 @@ func _apply_leaderboard_payload(payload: Variant) -> void:
 	if typeof(payload) != TYPE_DICTIONARY:
 		leaderboard_cache = []
 	else:
-		leaderboard_cache = _normalize_entries((payload as Dictionary).get("entries", []))
+		leaderboard_cache = _normalize_leaderboard_entries(
+			_normalize_entries((payload as Dictionary).get("entries", []))
+		)
+	leaderboard_updated.emit(leaderboard_cache)
 	profile_updated.emit(profile_cache)
 
 
@@ -1747,9 +2027,12 @@ func _normalize_entries(value: Variant) -> Array:
 	if typeof(value) == TYPE_ARRAY:
 		return value as Array
 	if typeof(value) == TYPE_DICTIONARY:
+		var dict := value as Dictionary
+		if dict.is_empty():
+			return []
 		var out: Array = []
-		for key in value.keys():
-			var item: Variant = value[key]
+		for key in dict.keys():
+			var item: Variant = dict[key]
 			if typeof(item) == TYPE_DICTIONARY:
 				out.append(item)
 		return out
@@ -1844,8 +2127,16 @@ func _handle_error(msg: String) -> void:
 	_pending_auth_email = ""
 	_pending_auth_password = ""
 	_leave_queue_pending = false
+	if _auth_http_pending:
+		_clear_auth_http_pending()
+	var in_matchmaking := (
+		_in_queue or _awaiting_join_ack or _match_handoff_started or _ws_connecting
+	)
+	if _awaiting_join_ack:
+		_awaiting_join_ack = false
+		_join_ack_started_ms = 0
 	_pump_http_queue()
-	if _in_queue:
+	if in_matchmaking:
 		match_failed.emit(msg)
 	elif is_authenticated:
 		# Do not log the user out for a secondary HTTP error (e.g. leave_queue).
@@ -1858,6 +2149,15 @@ func _process(_delta: float) -> void:
 	# Web export: poll in-flight fetch() response (async).
 	if _web_pending_id != "":
 		_poll_web_request()
+	if _auth_http_pending and _auth_http_started_ms > 0:
+		if Time.get_ticks_msec() - _auth_http_started_ms > AUTH_HTTP_TIMEOUT_MS:
+			_clear_auth_http_pending()
+			auth_failed.emit(tr("AUTH_TIMEOUT"))
+	if _awaiting_join_ack and _join_ack_started_ms > 0:
+		if Time.get_ticks_msec() - _join_ack_started_ms > JOIN_ACK_TIMEOUT_MS:
+			_awaiting_join_ack = false
+			_join_ack_started_ms = 0
+			match_failed.emit(tr("NET_QUEUE_TIMEOUT"))
 	if _waiting_map_after_connect:
 		_map_wait_elapsed += _delta
 		if _map_wait_elapsed >= MAP_WAIT_TIMEOUT:

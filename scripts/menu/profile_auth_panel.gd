@@ -5,9 +5,10 @@ extends Node2D
 @onready var _status_label: Label = get_node_or_null("TextureRect/Label")
 @onready var _pseudo_label: Label = get_node_or_null("SectionInfo/Pseudo")
 @onready var _level_label: Label = get_node_or_null("LevelControl/LVLNbr")
-@onready var _winrate_label: Label = get_node_or_null("StatsDroite/NbrWinrate")
-@onready var _matches_label: Label = get_node_or_null("StatsDroite/Fond5/NbrMatchs")
-@onready var _time_label: Label = get_node_or_null("StatsDroite/NbrApm")
+## Valeurs alignées sur les lignes de profil.tscn (gauche = libellé, droite = chiffre).
+@onready var _wins_value: Label = get_node_or_null("StatsDroite/NbrWinrate")
+@onready var _winrate_value: Label = get_node_or_null("StatsDroite/Fond5/NbrMatchs")
+@onready var _playtime_value: Label = get_node_or_null("StatsDroite/NbrApm")
 
 
 func _ready() -> void:
@@ -37,7 +38,7 @@ func _on_logout_pressed() -> void:
 
 
 func _refresh_profile_ui() -> void:
-	var logged := NetworkSession.is_account_logged_in()
+	var logged: bool = NetworkSession.is_account_logged_in()
 	if _logout_button != null:
 		_logout_button.visible = logged
 	if not logged:
@@ -55,14 +56,14 @@ func _on_profile_updated(profile: Dictionary) -> void:
 	if not NetworkSession.is_account_logged_in():
 		return
 	_apply_username_display(profile)
-	if _winrate_label != null:
+	if _wins_value != null:
+		_wins_value.text = str(int(profile.get("wins", 0)))
+	if _winrate_value != null:
 		var wr := float(profile.get("winrate", 0.0))
-		_winrate_label.text = str(snappedf(wr, 0.1)) + "%"
-	if _matches_label != null:
-		_matches_label.text = str(int(profile.get("games", 0)))
-	var total_sec := int(profile.get("total_seconds", 0))
-	if _time_label != null:
-		_time_label.text = _format_time(total_sec)
+		_winrate_value.text = str(snappedf(wr, 0.1)) + "%"
+	if _playtime_value != null:
+		var total_sec := int(profile.get("total_seconds", 0))
+		_playtime_value.text = _format_time(total_sec)
 	if _level_label != null:
 		_level_label.text = str(int(profile.get("level", 0)))
 	if _status_label != null:
@@ -82,12 +83,12 @@ func _clear_profile_display() -> void:
 		_pseudo_label.text = "--"
 	if _level_label != null:
 		_level_label.text = "0"
-	if _winrate_label != null:
-		_winrate_label.text = "--"
-	if _matches_label != null:
-		_matches_label.text = "--"
-	if _time_label != null:
-		_time_label.text = "--"
+	if _wins_value != null:
+		_wins_value.text = "--"
+	if _winrate_value != null:
+		_winrate_value.text = "--"
+	if _playtime_value != null:
+		_playtime_value.text = "--"
 
 
 func _on_session_closed() -> void:

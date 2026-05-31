@@ -3,17 +3,28 @@ extends VBoxContainer
 const ROW_TEMPLATE: PackedScene = preload("res://scenes/menu/leader_board_template.tscn")
 
 func _ready() -> void:
+	NetworkSession.leaderboard_updated.connect(_on_leaderboard_updated)
 	NetworkSession.profile_updated.connect(_on_profile_updated)
 	NetworkSession.session_closed.connect(_rebuild)
 	NetworkSession.auth_ready.connect(_on_auth_ready)
-	_rebuild()
+	call_deferred("_refresh_leaderboard")
 
 
 func _on_auth_ready() -> void:
-	NetworkSession.request_leaderboard()
+	_refresh_leaderboard()
+
+
+func _refresh_leaderboard() -> void:
+	if NetworkSession.is_account_logged_in():
+		NetworkSession.request_leaderboard()
 
 
 func _on_profile_updated(_profile: Dictionary) -> void:
+	if NetworkSession.leaderboard_cache.is_empty():
+		_refresh_leaderboard()
+
+
+func _on_leaderboard_updated(_entries: Array) -> void:
 	_rebuild()
 
 
@@ -21,30 +32,34 @@ func _rebuild() -> void:
 	for child in get_children():
 		child.queue_free()
 
-	var player_data: Array = NetworkSession.leaderboard_cache
+	var player_data: Array = NetworkSession.leaderboard_cache.duplicate()
+	player_data.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("wins", 0)) > int(b.get("wins", 0))
+	)
 	if player_data.is_empty():
+		var placeholder: Node = ROW_TEMPLATE.instantiate()
+		var node_name = placeholder.get_node_or_null("PlayerName")
+		if node_name:
+			node_name.text = tr("LEADERBOARD_EMPTY")
+		add_child(placeholder)
 		return
 
 	for i in range(player_data.size()):
 		var row: Node = ROW_TEMPLATE.instantiate()
 		var node_rank = row.get_node_or_null("Rank")
 		var node_name = row.get_node_or_null("PlayerName")
-		var node_time = row.get_node_or_null("PlayTime")
 		var node_score = row.get_node_or_null("Score")
 		var entry: Dictionary = player_data[i]
 
 		if node_rank:
 			node_rank.text = str(i + 1) + "."
 		if node_name:
-			node_name.text = str(entry.get("username", "player"))
-		if node_time:
-			var total_sec := int(entry.get("total_seconds", 0))
-			var h := total_sec / 3600
-			var m := (total_sec % 3600) / 60
-			node_time.text = "%02dh%02d" % [h, m]
+			node_name.text = NetworkSession.get_leaderboard_display_name(entry)
 		if node_score:
-			var wr := float(entry.get("winrate", 0.0))
-			node_score.text = str(snappedf(wr, 0.1)) + "%"
+			var wins := int(entry.get("wins", 0))
+			if wins <= 0:
+				wins = int(entry.get("subscore", 0))
+			node_score.text = str(wins)
 
 		if node_rank:
 			match i:

@@ -2,7 +2,6 @@
 
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_eb6hr"]
 [ext_resource type="Texture2D" uid="uid://bjekyp3xleuva" path="res://assets/menu/img-sur-mesure/scene_profil/banniere_orange.tres" id="2_qdm6k"]
-[ext_resource type="Texture2D" uid="uid://br36avkd7y4p6" path="res://assets/menu/img-sur-mesure/scene_profil/cadre.tres" id="4_2ord4"]
 [ext_resource type="Texture2D" uid="uid://cb4w3doodgjoa" path="res://assets/menu/img-sur-mesure/scene_profil/photoProfil.tres" id="5_eb6hr"]
 [ext_resource type="Texture2D" uid="uid://cnbdi8k3ltu4g" path="res://assets/menu/img-sur-mesure/scene_profil/bouton.tres" id="8_2gyrl"]
 [ext_resource type="Texture2D" uid="uid://dkqolusyr5tiw" path="res://assets/menu/img-sur-mesure/scene_profil/stats.tres" id="8_2ord4"]
@@ -10,6 +9,13 @@
 [ext_resource type="Script" uid="uid://b0j5p82rtwfq4" path="res://scripts/menu/leaderboard.gd" id="11_5b6v1"]
 [ext_resource type="Script" uid="uid://b2ote4ki4seq0" path="res://scripts/menu/last_10_games.gd" id="11_eb6hr"]
 [ext_resource type="Script" uid="uid://bus7fw1imxp32" path="res://scripts/menu/profile_auth_panel.gd" id="13_auth"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qv3jy"]
+load_path = "res://.godot/imported/Details.png-b21a6a17ccfeb93a85c2fa2e00182078.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iv0gj"]
+atlas = SubResource("CompressedTexture2D_qv3jy")
+region = Rect2(192, 337, 46, 44)
 
 [sub_resource type="GDScript" id="GDScript_2ord4"]
 
@@ -205,8 +211,10 @@ vertical_alignment = 1
 [node name="SectionInfo" type="Control" parent="." unique_id=265063390]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 15.0
+offset_top = 4.0
+offset_right = 55.0
+offset_bottom = 44.0
 
 [node name="TextureRect" type="TextureRect" parent="SectionInfo" unique_id=113650105]
 layout_mode = 0
@@ -215,7 +223,7 @@ offset_top = 339.0
 offset_right = 102.0
 offset_bottom = 383.0
 scale = Vector2(2, 2)
-texture = ExtResource("4_2ord4")
+texture = SubResource("AtlasTexture_iv0gj")
 
 [node name="BandeauOrange" type="TextureRect" parent="SectionInfo" unique_id=945027656]
 layout_direction = 2
@@ -290,7 +298,7 @@ offset_bottom = 26.0
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "UI_WINRATE"
+text = "UI_WINS"
 vertical_alignment = 1
 
 [node name="Fond2" type="TextureRect" parent="StatsGauche" unique_id=544528929]
@@ -309,7 +317,7 @@ offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "UI_AVERAGE_APM"
+text = "UI_WINRATE"
 vertical_alignment = 1
 
 [node name="Fond3" type="TextureRect" parent="StatsGauche" unique_id=649095610]
@@ -328,7 +336,7 @@ offset_bottom = 110.0
 theme_override_colors/font_color = Color(0.3647059, 0.21960784, 0.13333334, 1)
 theme_override_fonts/font = ExtResource("2_eb6hr")
 theme_override_font_sizes/font_size = 24
-text = "UI_MATCHES"
+text = "UI_PLAY_TIME"
 vertical_alignment = 1
 
 [node name="StatsDroite" type="Control" parent="." unique_id=311215263]

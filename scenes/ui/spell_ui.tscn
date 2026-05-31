@@ -39,12 +39,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -15.0
-offset_right = 260.0
-offset_bottom = 15.0
+offset_left = -276.5
+offset_top = -14.0
+offset_right = 287.5
+offset_bottom = 11.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.9759716, 1.0464206)
 theme_override_constants/separation = 10
 
 [node name="BtnHeal" type="Button" parent="Control/Panel/HBoxContainer" unique_id=1859602538]

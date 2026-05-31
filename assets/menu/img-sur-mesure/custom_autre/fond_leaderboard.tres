@@ -1,7 +1,12 @@
 [gd_resource type="AtlasTexture" format=3 uid="uid://bufbdo8lxbdgf"]
 
-[ext_resource type="Texture2D" uid="uid://xm1xo4u508qd" path="res://assets/menu/book-blue/PNG/info_tileset.png" id="1_vx3e5"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5ntgq"]
+load_path = "res://.godot/imported/Details.png-b21a6a17ccfeb93a85c2fa2e00182078.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0e04i"]
+atlas = SubResource("CompressedTexture2D_5ntgq")
+region = Rect2(144.79941, 338.62582, 46.295776, 44.515167)
 
 [resource]
-atlas = ExtResource("1_vx3e5")
-region = Rect2(9.870678, 185, 111.4261, 77.26987)
+atlas = SubResource("AtlasTexture_0e04i")
+region = Rect2(0.049476624, -0.05952072, 46.295784, 44.51517)

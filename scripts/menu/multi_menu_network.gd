@@ -4,35 +4,46 @@ const MIN_PLAYERS_TO_START := 2
 
 signal requires_login
 
-@onready var _join_room: BaseButton = get_node_or_null("PageGauche/JoinRoom")
+@onready var _join_room: TextureButton = get_node_or_null("PageGauche/JoinRoom")
+@onready var _join_label: Label = get_node_or_null("PageGauche/JoinRoom/Label")
+@onready var _status_label: Label = get_node_or_null("PageGauche/StatusPanel/NetworkStatus")
+@onready var _loading_spinner: TextureRect = get_node_or_null("PageGauche/StatusPanel/LoadingSpinner")
 
-var _status_label: Label
 var _connecting_game: bool = false
 var _in_matchmaking: bool = false
+var _spinner_angle: float = 0.0
 
 
 func _ready() -> void:
 	if _join_room == null:
-		_join_room = find_child("JoinRoom", true, false) as BaseButton
-	if _join_room == null:
-		_join_room = find_child("Join", true, false) as BaseButton
+		_join_room = find_child("JoinRoom", true, false) as TextureButton
+	if _join_label == null and _join_room != null:
+		_join_label = _join_room.get_node_or_null("Label") as Label
+	if _status_label == null:
+		_status_label = get_node_or_null("PageGauche/StatusPanel/NetworkStatus") as Label
 
-	_status_label = Label.new()
-	_status_label.name = "NetworkStatus"
-	_status_label.position = Vector2(118, 470)
-	_status_label.custom_minimum_size = Vector2(400, 48)
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 18)
-	add_child(_status_label)
+	_setup_texture_button(_join_room)
+	var back_btn := get_node_or_null("PageGauche/BackToMenu") as TextureButton
+	_setup_texture_button(back_btn)
 
 	_safe_connect_pressed(_join_room, _on_join_room_pressed)
 	_connect_network_signals()
 	visibility_changed.connect(_on_visibility_changed)
 	_reset_idle_ui()
+	set_process(false)
 
 	if _join_room == null:
-		_status_label.modulate = Color(1, 0.45, 0.45)
-		_status_label.text = "JOIN button not found in Multi scene."
+		_set_status_text("JOIN button not found in Multi scene.", true)
+
+
+func _setup_texture_button(btn: TextureButton) -> void:
+	if btn == null:
+		return
+	btn.disabled = false
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	for child in btn.get_children():
+		if child is Control:
+			child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _safe_connect_pressed(btn: BaseButton, callback: Callable) -> void:
@@ -68,6 +79,13 @@ func _on_visibility_changed() -> void:
 		_cancel_matchmaking(false)
 
 
+func _process(delta: float) -> void:
+	if _loading_spinner == null or not _loading_spinner.visible:
+		return
+	_spinner_angle += delta * 240.0
+	_loading_spinner.rotation = deg_to_rad(_spinner_angle)
+
+
 func _on_join_room_pressed() -> void:
 	if _in_matchmaking:
 		_cancel_matchmaking(true)
@@ -76,28 +94,26 @@ func _on_join_room_pressed() -> void:
 
 
 func _start_matchmaking() -> void:
-	# Already logged in: join queue directly (no redirect).
 	if NetworkSession.is_account_logged_in():
 		_enter_matchmaking_ui()
-		_status_label.text = tr("MULTI_CONNECTING_QUEUE")
+		_set_status_text(tr("MULTI_CONNECTING_QUEUE"))
 		NetworkSession.join_ranked_queue()
 		return
 
-	# Saved credentials: try auto reconnect, no immediate redirect.
 	if NetworkSession.has_saved_account_credentials():
 		_enter_matchmaking_ui()
-		_status_label.text = tr("MULTI_CONNECTING_NAKAMA")
+		_set_status_text(tr("MULTI_CONNECTING_NAKAMA"))
 		await NetworkSession.authenticate_and_wait()
 		if not NetworkSession.is_account_logged_in():
 			_cancel_matchmaking(true)
-			_status_label.modulate = Color(1, 0.45, 0.45)
-			_status_label.text = tr("MULTI_LOGIN_REQUIRED")
+			_set_status_text(tr("MULTI_LOGIN_REQUIRED"), true)
 			requires_login.emit()
+			return
+		_set_status_text(tr("MULTI_CONNECTING_QUEUE"))
+		NetworkSession.join_ranked_queue()
 		return
 
-	# Not logged in: redirect to login page.
-	_status_label.modulate = Color(1, 0.45, 0.45)
-	_status_label.text = tr("MULTI_LOGIN_REQUIRED")
+	_set_status_text(tr("MULTI_LOGIN_REQUIRED"), true)
 	requires_login.emit()
 
 
@@ -105,7 +121,7 @@ func _enter_matchmaking_ui() -> void:
 	_in_matchmaking = true
 	_connecting_game = false
 	_set_join_button_mode(true)
-	_status_label.modulate = Color.WHITE
+	_set_loading_visible(true)
 
 
 func _cancel_matchmaking(show_message: bool) -> void:
@@ -116,19 +132,42 @@ func _cancel_matchmaking(show_message: bool) -> void:
 	NetworkSession.leave_ranked_queue()
 	MapSession.reset_online_state()
 	_set_join_button_mode(false)
+	_set_loading_visible(false)
 	if show_message:
 		_reset_idle_ui()
 
 
 func _reset_idle_ui() -> void:
-	_status_label.modulate = Color.WHITE
-	_status_label.text = tr("MULTI_PRESS_JOIN")
+	_set_loading_visible(false)
+	_set_status_text(tr("MULTI_PRESS_JOIN"))
 
 
 func _set_join_button_mode(in_queue: bool) -> void:
-	if _join_room == null:
+	var label_text := tr("MULTI_CANCEL") if in_queue else tr("MULTI_JOIN")
+	if _join_label != null:
+		_join_label.text = label_text
+
+
+func _set_status_text(text: String, is_error: bool = false) -> void:
+	if _status_label == null:
+		push_warning("[MultiMenu] " + text)
 		return
-	_join_room.text = tr("MULTI_CANCEL") if in_queue else tr("MULTI_JOIN")
+	_status_label.text = text
+	if is_error:
+		_status_label.add_theme_color_override("font_color", Color(0.9, 0.35, 0.3))
+	else:
+		_status_label.add_theme_color_override("font_color", Color(0.176471, 0.105882, 0.0784314))
+
+
+func _set_loading_visible(visible: bool) -> void:
+	if _loading_spinner != null:
+		_loading_spinner.visible = visible
+	set_process(visible)
+	if not visible:
+		_spinner_angle = 0.0
+		if _loading_spinner != null:
+			_loading_spinner.rotation = 0.0
+
 
 
 func _on_auth_ready() -> void:
@@ -136,18 +175,16 @@ func _on_auth_ready() -> void:
 		return
 	if not NetworkSession.is_account_logged_in():
 		_cancel_matchmaking(true)
-		_status_label.modulate = Color(1, 0.45, 0.45)
-		_status_label.text = tr("MULTI_SESSION_EXPIRED")
+		_set_status_text(tr("MULTI_SESSION_EXPIRED"), true)
 		requires_login.emit()
 		return
-	_status_label.text = tr("MULTI_WAITING_PLAYERS")
+	_set_status_text(tr("MULTI_WAITING_PLAYERS"))
 	NetworkSession.join_ranked_queue()
 
 
 func _on_auth_failed(message: String) -> void:
 	_cancel_matchmaking(true)
-	_status_label.modulate = Color(1, 0.45, 0.45)
-	_status_label.text = message
+	_set_status_text(message, true)
 
 
 func _on_session_closed() -> void:
@@ -157,12 +194,13 @@ func _on_session_closed() -> void:
 func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> void:
 	if not _in_matchmaking:
 		return
+	_set_loading_visible(true)
 	var prefix := str(players) + " / " + str(max_players) + " — "
 	if players < MIN_PLAYERS_TO_START:
-		_status_label.text = prefix + tr("MULTI_WAITING_MIN").format([MIN_PLAYERS_TO_START])
+		_set_status_text(prefix + tr("MULTI_WAITING_MIN").format([MIN_PLAYERS_TO_START]))
 	elif seconds_left > 0:
 		var timer_hint := tr("MULTI_TIMER_FULL") if players >= max_players else "10s"
-		_status_label.text = (
+		_set_status_text(
 			prefix
 			+ tr("MULTI_LAUNCH_IN").format([seconds_left])
 			+ " ("
@@ -170,46 +208,48 @@ func _on_queue_updated(players: int, max_players: int, seconds_left: int) -> voi
 			+ ")"
 		)
 	else:
-		_status_label.text = prefix + tr("MULTI_CONNECTING_SERVER")
+		_set_status_text(prefix + tr("MULTI_CONNECTING_SERVER"))
 
 
 func _on_match_ready(_match_id: String, game_ws_url: String) -> void:
 	if not _in_matchmaking or _connecting_game:
 		return
 	_connecting_game = true
+	_set_loading_visible(true)
 	var ws := game_ws_url.strip_edges()
 	if ws == "":
 		ws = NetworkSession.resolved_game_ws_url()
-	_status_label.text = tr("MULTI_WS_CONNECTING")
+	_set_status_text(tr("MULTI_WS_CONNECTING"))
 	await NetworkSession.connect_to_game_server(ws)
 	_connecting_game = false
+	if _in_matchmaking:
+		_set_loading_visible(true)
 
 
 func _on_game_connected() -> void:
 	if not _in_matchmaking:
 		return
-	_status_label.text = tr("MULTI_GAME_CONNECTED")
+	_set_status_text(tr("MULTI_GAME_CONNECTED"))
 
 
 func _on_online_match_begin() -> void:
 	var map_idx := MapSession.active_map_index
-	_status_label.text = tr("MULTI_LOADING_MAP").format([map_idx])
+	_set_status_text(tr("MULTI_LOADING_MAP").format([map_idx]))
+	_set_loading_visible(true)
 
 
 func _on_game_connection_failed(message: String) -> void:
 	_cancel_matchmaking(true)
-	_status_label.modulate = Color(1, 0.45, 0.45)
-	_status_label.text = message
+	_set_status_text(message, true)
 
 
 func _on_match_failed(message: String) -> void:
 	_cancel_matchmaking(true)
-	_status_label.modulate = Color(1, 0.45, 0.45)
-	_status_label.text = message
+	_set_status_text(message, true)
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready() and _status_label != null:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
 		_set_join_button_mode(_in_matchmaking)
 		if not _in_matchmaking and not _connecting_game:
 			_reset_idle_ui()

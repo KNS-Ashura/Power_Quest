@@ -26,7 +26,11 @@ func _on_profile_updated(profile: Dictionary) -> void:
 		var value: Variant = item
 		if typeof(item) == TYPE_DICTIONARY:
 			value = item.get("result", item.get("outcome", ""))
-		history.append("V" if str(value).to_upper() == "W" else "D")
+		var token := str(value).strip_edges().to_upper()
+		if token in ["W", "WIN", "V", "VICTORY", "1", "TRUE"]:
+			history.append("V")
+		elif token in ["L", "LOSS", "D", "DEFEAT", "0", "FALSE"]:
+			history.append("D")
 	populate_history()
 
 

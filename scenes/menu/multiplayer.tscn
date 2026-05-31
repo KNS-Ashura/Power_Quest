@@ -3,14 +3,29 @@
 [ext_resource type="Script" path="res://scripts/menu/multi_menu_network.gd" id="1_multi"]
 [ext_resource type="Texture2D" uid="uid://bwllmgn02pf32" path="res://assets/menu/book-ui/PNG/title.png" id="2_jifyb"]
 [ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="3_font"]
-[ext_resource type="Texture2D" uid="uid://bgfouk2777d0y" path="res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres" id="4_preview"]
+[ext_resource type="FontFile" uid="uid://dakebd4j7bckm" path="res://assets/menu/fonts/Jersey10-Regular.ttf" id="4_jersey"]
+[ext_resource type="Texture2D" uid="uid://bgfouk2777d0y" path="res://assets/menu/img-sur-mesure/scene_maps/assets_map1/map_test.tres" id="5_preview"]
+[ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="6_btn_join"]
+[ext_resource type="Texture2D" uid="uid://b53sso5tv5meb" path="res://assets/menu/img-sur-mesure/scene_multi/bandeau.tres" id="7_btn_back"]
+[ext_resource type="Texture2D" uid="uid://boklmh0axquky" path="res://assets/menu/img-sur-mesure/scene_multi/plus.tres" id="9_spinner"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_aibjl"]
 atlas = ExtResource("2_jifyb")
 region = Rect2(4.460823, 151.62698, 230.77612, 46.920822)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_preview"]
-atlas = ExtResource("4_preview")
+atlas = ExtResource("5_preview")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5ntgq"]
+load_path = "res://.godot/imported/Details.png-b21a6a17ccfeb93a85c2fa2e00182078.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0e04i"]
+atlas = SubResource("CompressedTexture2D_5ntgq")
+region = Rect2(144.79941, 338.62582, 46.295776, 44.515167)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6gxp5"]
+atlas = SubResource("AtlasTexture_0e04i")
+region = Rect2(0.049476624, -0.05952072, 46.295784, 44.51517)
 
 [node name="Multi" type="Node2D" unique_id=312905313]
 script = ExtResource("1_multi")
@@ -66,20 +81,94 @@ offset_bottom = 329.0
 texture = SubResource("AtlasTexture_preview")
 stretch_mode = 5
 
-[node name="JoinRoom" type="Button" parent="PageGauche" unique_id=200007]
+[node name="StatusPanel" type="Control" parent="PageGauche" unique_id=200009]
+anchors_preset = 0
+offset_left = 17.0
+offset_top = 136.0
+offset_right = 289.0
+offset_bottom = 256.0
+
+[node name="Background" type="TextureRect" parent="PageGauche/StatusPanel" unique_id=200010]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_right = -141.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.9428825, 1.0660672)
+texture = SubResource("AtlasTexture_6gxp5")
+stretch_mode = 5
+
+[node name="LoadingSpinner" type="TextureRect" parent="PageGauche/StatusPanel" unique_id=200011]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 244.0
-offset_right = 268.0
-offset_bottom = 290.0
+offset_left = 119.0
+offset_top = 87.0
+offset_right = 135.0
+offset_bottom = 103.0
+pivot_offset = Vector2(8, 8)
+texture = ExtResource("9_spinner")
+stretch_mode = 4
+
+[node name="NetworkStatus" type="Label" parent="PageGauche/StatusPanel" unique_id=200012]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 52.0
+offset_top = 23.0
+offset_right = -67.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.176471, 0.105882, 0.0784314, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "MULTI_PRESS_JOIN"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="JoinRoom" type="TextureButton" parent="PageGauche" unique_id=200007]
+layout_mode = 0
+offset_left = 86.0
+offset_top = 277.0
+offset_right = 196.0
+offset_bottom = 297.0
+texture_normal = ExtResource("6_btn_join")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="PageGauche/JoinRoom" unique_id=200013]
+layout_mode = 0
+offset_left = -60.0
+offset_top = -4.0
+offset_right = 168.0
+offset_bottom = 25.0
+theme_override_fonts/font = ExtResource("4_jersey")
+theme_override_font_sizes/font_size = 16
 text = "MULTI_JOIN"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="BackToMenu" type="Button" parent="PageGauche" unique_id=200008]
+[node name="BackToMenu" type="TextureButton" parent="PageGauche" unique_id=200008]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 334.0
-offset_right = 130.0
-offset_bottom = 365.0
-text = "MULTI_BACK"
+offset_left = 18.0
+offset_top = 341.0
+offset_right = 104.0
+offset_bottom = 359.0
+texture_normal = ExtResource("7_btn_back")
+stretch_mode = 0
 
-[connection signal="pressed" from="PageGauche/JoinRoom" to="." method="_on_join_room_pressed"]
+[node name="Label" type="Label" parent="PageGauche/BackToMenu" unique_id=200014]
+layout_mode = 0
+offset_left = -16.0
+offset_top = -2.0
+offset_right = 98.0
+offset_bottom = 18.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 16
+text = "MULTI_BACK"
+horizontal_alignment = 1
+vertical_alignment = 1
