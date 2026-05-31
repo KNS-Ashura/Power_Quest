@@ -13,7 +13,7 @@
 | | |
 |---|---|
 | **Jeu en ligne** | **[https://powerquest.robinmatelot.codes/](https://powerquest.robinmatelot.codes/)** |
-| **Documentation utilisateur** | **[Guide utilisateur](docs/GUIDE_UTILISATEUR.md)** (règles, contrôles, solo, multijoueur) |
+| **Documentation utilisateur** | **[Guide utilisateur](https://2proj-doc-user.vercel.app/)** (règles, contrôles, solo, multijoueur) |
 
 Aucune installation requise : ouvrez le lien, attendez le chargement, puis utilisez le menu « livre » pour lancer une partie solo ou rejoindre le multijoueur.
 
@@ -54,7 +54,7 @@ Merci d'indiquer votre navigateur, le mode de jeu (solo / multijoueur) et une de
 
 | Document | Public | Lien |
 |----------|--------|------|
-| **Guide utilisateur** | Joueurs | [docs/GUIDE_UTILISATEUR.md](docs/GUIDE_UTILISATEUR.md) |
+| **Guide utilisateur** | Joueurs | [https://2proj-doc-user.vercel.app/](https://2proj-doc-user.vercel.app/) |
 
 ---
 
@@ -77,6 +77,6 @@ Projet développé dans le cadre du dépôt [KNS-Ashura/Power_Quest](https://git
 
 <p align="center">
   <a href="https://powerquest.robinmatelot.codes/">Jouer</a> ·
-  <a href="docs/GUIDE_UTILISATEUR.md">Guide utilisateur</a> ·
+  <a href="https://2proj-doc-user.vercel.app/">Guide utilisateur</a> ·
   <a href="mailto:robinmatelot@gmail.com">Support</a>
 </p>
