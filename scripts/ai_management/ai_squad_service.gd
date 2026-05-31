@@ -94,6 +94,8 @@ func tick_naval_squad_slots() -> void:
 func tick_defend_squads() -> void:
 	if mgr._squad_spawn_credits <= 0:
 		return
+	if mgr.transport.should_reserve_credit_for_expedition():
+		return
 	for camp in camps.land_camps(camps.owned_camps()):
 		if mgr._squad_spawn_credits <= 0:
 			break

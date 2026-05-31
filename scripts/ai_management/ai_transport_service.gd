@@ -21,6 +21,12 @@ func _init(
 	templates = template_service
 
 
+func should_reserve_credit_for_expedition() -> bool:
+	if camps.owned_ports().is_empty() or mgr._squad_spawn_credits <= 0:
+		return false
+	return templates.pick_naval_spawn_port() != null
+
+
 func launch_expedition(_slot: Dictionary) -> bool:
 	var spawn_port: Node = templates.pick_naval_spawn_port()
 	if spawn_port == null:

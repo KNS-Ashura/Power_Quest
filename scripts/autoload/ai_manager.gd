@@ -101,13 +101,13 @@ func _on_think() -> void:
 	squads.cleanup_stale_squads()
 	_tick_spawn_credit_timer()
 	squads.tick_squad_slots()
-	squads.tick_defend_squads()
 	squads.tick_naval_squad_slots()
+	squads.tick_defend_squads()
 	transport.tick_transport_missions()
 	upgrades.tick_upgrades(owned)
 	upgrades.tick_guardian_upgrades(owned)
 	troops.bot_spells()
-	troops.bot_attack()
+	troops.bot_attack(float(_profile.get("think_interval", 0.4)))
 
 
 func _set_difficulty(difficulty: int) -> void:

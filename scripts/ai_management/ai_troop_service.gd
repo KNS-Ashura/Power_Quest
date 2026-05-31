@@ -12,7 +12,7 @@ func _init(manager: Node, camp_service: AICampService, targeting_service: AITarg
 	targeting = targeting_service
 
 
-func bot_attack() -> void:
+func bot_attack(dt: float) -> void:
 	for troop in ai_troops():
 		if not is_instance_valid(troop):
 			continue
@@ -26,6 +26,7 @@ func bot_attack() -> void:
 			if home_camp != null \
 					and troop.global_position.distance_to(home_camp.global_position) > AIConstants.DEFEND_HOLD_RADIUS:
 				order_defend(troop, home_camp)
+			tick_troop_idle(troop, dt)
 			continue
 
 		var mode: String = str(troop.get_meta("ai_squad_mode", AIConstants.SQUAD_MODE_ATTACK))
@@ -36,25 +37,16 @@ func bot_attack() -> void:
 			if spawn_camp != null \
 					and troop.global_position.distance_to(spawn_camp.global_position) > AIConstants.DEFEND_HOLD_RADIUS:
 				order_defend(troop, spawn_camp)
+			tick_troop_idle(troop, dt)
 			continue
 
-		var target: Node2D = null
-		var squad_id: int = int(troop.get_meta("ai_squad_id", -1))
-		if squad_id >= 0 and mgr._squads.has(squad_id):
-			var squad: Dictionary = mgr._squads[squad_id]
-			target = targeting.resolve_target(
-				int(squad.get("target_id", -1)),
-				spawn_camp if spawn_camp != null else troop,
-				mode,
-				int(squad.get("region_id", region_id))
-			)
-		if target == null and spawn_camp != null:
-			match mode:
-				AIConstants.SQUAD_MODE_NAVAL:
-					target = targeting.nearest_hostile_to(spawn_camp, region_id, false)
-				_:
-					target = targeting.nearest_hostile_to(spawn_camp, region_id, true)
+		clear_stale_camp_target(troop)
+		tick_troop_idle(troop, dt)
+
+		var target: Node2D = pick_attack_target(troop, mode, spawn_camp, region_id)
 		if target == null:
+			if should_redirect_idle_troop(troop):
+				redirect_idle_troop(troop)
 			continue
 
 		var target_id: int = target.get_instance_id()
@@ -63,6 +55,87 @@ func bot_attack() -> void:
 				order_naval(troop, target)
 			else:
 				order_attack(troop, target)
+			reset_troop_idle(troop)
+
+
+func pick_attack_target(
+	troop: Node2D, mode: String, spawn_camp: Node2D, region_id: int
+) -> Node2D:
+	var origin: Node2D = spawn_camp if spawn_camp != null else troop
+	var squad_id: int = int(troop.get_meta("ai_squad_id", -1))
+	if squad_id >= 0 and mgr._squads.has(squad_id):
+		var squad: Dictionary = mgr._squads[squad_id]
+		var resolved: Node2D = targeting.resolve_target(
+			int(squad.get("target_id", -1)),
+			origin,
+			mode,
+			int(squad.get("region_id", region_id))
+		)
+		if resolved != null:
+			return resolved
+
+	if spawn_camp != null:
+		match mode:
+			AIConstants.SQUAD_MODE_NAVAL:
+				return targeting.nearest_hostile_to(spawn_camp, region_id, false)
+			_:
+				return targeting.nearest_hostile_to(spawn_camp, region_id, true)
+
+	if should_redirect_idle_troop(troop):
+		return pick_cross_region_target(troop, region_id)
+	return null
+
+
+func pick_cross_region_target(troop: Node2D, region_id: int) -> Node2D:
+	var outside: Node2D = targeting.nearest_hostile_to(troop, region_id, false)
+	if outside != null:
+		return outside
+	return targeting.nearest_hostile_global(troop)
+
+
+func should_redirect_idle_troop(troop: Node2D) -> bool:
+	return float(troop.get_meta("ai_idle_seconds", 0.0)) >= AIConstants.IDLE_REDIRECT_SECONDS
+
+
+func redirect_idle_troop(troop: Node2D) -> void:
+	var region_id: int = int(troop.get_meta("ai_spawn_region_id", -1))
+	var target: Node2D = pick_cross_region_target(troop, region_id)
+	if target == null:
+		return
+	troop.set_meta("ai_spawn_region_id", camps.region_for_site(target))
+	order_attack(troop, target)
+	reset_troop_idle(troop)
+
+
+func tick_troop_idle(troop: Node2D, dt: float) -> void:
+	if not troop.has_meta("ai_idle_last_pos"):
+		troop.set_meta("ai_idle_last_pos", troop.global_position)
+		troop.set_meta("ai_idle_seconds", 0.0)
+		return
+
+	var last_pos: Vector2 = troop.get_meta("ai_idle_last_pos")
+	if troop.global_position.distance_squared_to(last_pos) > AIConstants.IDLE_MOVE_THRESHOLD * AIConstants.IDLE_MOVE_THRESHOLD:
+		reset_troop_idle(troop)
+		return
+
+	troop.set_meta("ai_idle_seconds", float(troop.get_meta("ai_idle_seconds", 0.0)) + dt)
+
+
+func reset_troop_idle(troop: Node2D) -> void:
+	troop.set_meta("ai_idle_last_pos", troop.global_position)
+	troop.set_meta("ai_idle_seconds", 0.0)
+
+
+func clear_stale_camp_target(troop: Node2D) -> void:
+	var target_id: int = int(troop.get_meta("ai_camp_target", -1))
+	if target_id < 0:
+		return
+	var target_obj: Variant = instance_from_id(target_id)
+	if not is_instance_valid(target_obj) or not (target_obj is Node2D):
+		troop.set_meta("ai_camp_target", -1)
+		return
+	if not targeting.is_hostile_site(int((target_obj as Node2D).get("team"))):
+		troop.set_meta("ai_camp_target", -1)
 
 
 func bot_spells() -> void:
