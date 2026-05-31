@@ -1,6 +1,9 @@
 extends Node
 
-## Looping background music per map (files under assets/sounds/musique/).
+## Looping background music — menu + one track per map (assets/sounds/musique/).
+
+const MENU_TRACK := "res://assets/sounds/musique/menu.mp3"
+const MENU_TRACK_ID := 0
 
 const TRACKS_BY_MAP: Dictionary = {
 	1: "res://assets/sounds/musique/map1.mp3",
@@ -12,7 +15,7 @@ const DEFAULT_VOLUME_DB := -6.0
 
 @onready var _player: AudioStreamPlayer = $MusicPlayer
 
-var _current_map_index: int = -1
+var _current_track_id: int = -1
 
 
 func _ready() -> void:
@@ -21,31 +24,21 @@ func _ready() -> void:
 		_player.volume_db = DEFAULT_VOLUME_DB
 
 
+func play_menu() -> void:
+	_play_track(MENU_TRACK, MENU_TRACK_ID)
+
+
 func play_for_map(map_index: int = -1) -> void:
 	var idx: int = map_index if map_index > 0 else MapSession.active_map_index
-	if idx == _current_map_index and _player != null and _player.playing:
-		return
-
 	var path: String = str(TRACKS_BY_MAP.get(idx, TRACKS_BY_MAP.get(1, "")))
-	if path.is_empty() or not ResourceLoader.exists(path):
+	if path.is_empty():
 		push_warning("Music: no track for map index %s" % idx)
 		return
-
-	var stream: AudioStream = load(path) as AudioStream
-	if stream == null:
-		push_warning("Music: failed to load %s" % path)
-		return
-
-	_prepare_loop(stream)
-	_current_map_index = idx
-	if _player == null:
-		return
-	_player.stream = stream
-	_player.play()
+	_play_track(path, idx)
 
 
 func stop() -> void:
-	_current_map_index = -1
+	_current_track_id = -1
 	if _player != null:
 		_player.stop()
 
@@ -55,6 +48,26 @@ func set_volume_linear(linear_0_to_1: float) -> void:
 		return
 	var clamped := clampf(linear_0_to_1, 0.0, 1.0)
 	_player.volume_db = -80.0 if clamped <= 0.0001 else linear_to_db(clamped) + DEFAULT_VOLUME_DB
+
+
+func _play_track(path: String, track_id: int) -> void:
+	if track_id == _current_track_id and _player != null and _player.playing:
+		return
+	if path.is_empty() or not ResourceLoader.exists(path):
+		push_warning("Music: track missing: %s" % path)
+		return
+
+	var stream: AudioStream = load(path) as AudioStream
+	if stream == null:
+		push_warning("Music: failed to load %s" % path)
+		return
+
+	_prepare_loop(stream)
+	_current_track_id = track_id
+	if _player == null:
+		return
+	_player.stream = stream
+	_player.play()
 
 
 func _prepare_loop(stream: AudioStream) -> void:

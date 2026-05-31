@@ -63,6 +63,9 @@ func _ready() -> void:
 	_save_initial_bookmark_positions()
 	_connect_signals()
 
+	if Music.has_method("play_menu"):
+		Music.play_menu()
+
 	book_anim.stop()
 	book_anim.frame = 0
 
