@@ -87,31 +87,8 @@ func tick_naval_squad_slots() -> void:
 	for slot in mgr._naval_squad_slots:
 		if mgr._squad_spawn_credits <= 0:
 			break
-		if launch_naval_assault(slot):
+		if launch_transport_expedition(slot):
 			mgr._squad_spawn_credits -= 1
-		elif launch_transport_expedition(slot):
-			mgr._squad_spawn_credits -= 1
-
-
-func launch_naval_assault(slot: Dictionary) -> bool:
-	var spawn_port: Node = templates.pick_naval_assault_port()
-	if spawn_port == null:
-		return false
-	var region_id: int = camps.region_for_site(spawn_port)
-	var target: Node2D = targeting.pick_naval_assault_target(spawn_port as Node2D, region_id)
-	if target == null:
-		return false
-	var naval_template: Array = templates.pick_naval_squad_template()
-	if naval_template.is_empty():
-		return false
-	if AIConstants.DEBUG_NAVAL:
-		print(
-			"[AI-Naval] Assaut aquatique depuis %s -> %s (région %d)"
-			% [spawn_port.name, target.name, region_id]
-		)
-	return launch_squad_at_camp(
-		spawn_port, naval_template, AIConstants.SQUAD_MODE_NAVAL, target, slot, true
-	)
 
 
 func tick_defend_squads() -> void:
@@ -144,7 +121,7 @@ func launch_attack_squad(slot: Dictionary) -> bool:
 	if spawn_camp == null:
 		return false
 	var region_id: int = camps.region_for_site(spawn_camp)
-	var target: Node2D = targeting.nearest_hostile_to(spawn_camp as Node2D, region_id, true, true)
+	var target: Node2D = targeting.nearest_hostile_to(spawn_camp as Node2D, region_id, true)
 	if target == null:
 		return false
 	var squad_template: Array = templates.pick_squad_template(target)

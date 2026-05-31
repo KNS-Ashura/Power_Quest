@@ -24,16 +24,12 @@ func _init(
 func should_reserve_credit_for_expedition() -> bool:
 	if camps.owned_ports().is_empty() or mgr._squad_spawn_credits <= 0:
 		return false
-	if templates.pick_naval_assault_port() != null:
-		return true
 	return templates.pick_naval_spawn_port() != null
 
 
 func launch_expedition(_slot: Dictionary) -> bool:
 	var spawn_port: Node = templates.pick_naval_spawn_port()
 	if spawn_port == null:
-		if AIConstants.DEBUG_NAVAL:
-			print("[AI-Naval] Transport: aucun port disponible")
 		return false
 	if not spawn_port.has_method("spawn_ai_squad_units"):
 		return false
@@ -41,8 +37,6 @@ func launch_expedition(_slot: Dictionary) -> bool:
 	var region_id: int = camps.region_for_site(spawn_port)
 	var target: Node2D = targeting.pick_transport_target(spawn_port as Node2D, region_id)
 	if target == null:
-		if AIConstants.DEBUG_NAVAL:
-			print("[AI-Naval] Transport: pas de cible depuis %s (région %d)" % [spawn_port.name, region_id])
 		return false
 
 	var land_template: Array = templates.duplicate_template(templates.pick_squad_template(target))
@@ -92,11 +86,6 @@ func launch_expedition(_slot: Dictionary) -> bool:
 	transport.set_meta("ai_transport_mission", true)
 	mgr.healers.track_ai_troop(transport)
 	order_transport_approach(transport, target)
-	if AIConstants.DEBUG_NAVAL:
-		print(
-			"[AI-Naval] Transport lancé depuis %s -> %s (région %d, %d unités embarquées)"
-			% [spawn_port.name, target.name, region_id, land_units.size()]
-		)
 	return true
 
 

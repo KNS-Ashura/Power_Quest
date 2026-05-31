@@ -115,10 +115,6 @@ func uses_regions() -> bool:
 	return RegionManager.has_regions_for_current_map()
 
 
-func is_land_reachable(from_site: Node, to_site: Node) -> bool:
-	return RegionManager.is_land_reachable_between(from_site, to_site)
-
-
 func guardian(camp: Node2D) -> Node2D:
 	var g: Variant = camp.get("guardian")
 	if is_instance_valid(g) and g is Node2D:

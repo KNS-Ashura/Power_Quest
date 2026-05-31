@@ -20,24 +20,8 @@ func pick_attack_spawn_camp() -> Node:
 			continue
 		if mgr._camp_to_squad.has(camp.get_instance_id()):
 			continue
-		if targeting.nearest_hostile_to(camp as Node2D, camps.region_for_site(camp), true, true) != null:
+		if targeting.nearest_hostile_to(camp as Node2D, camps.region_for_site(camp), true) != null:
 			viable.append(camp)
-	if viable.is_empty():
-		return null
-	viable.shuffle()
-	return viable[0]
-
-
-func pick_naval_assault_port() -> Node:
-	var viable: Array = []
-	for port in camps.owned_ports():
-		if not is_instance_valid(port) or not (port is Node2D):
-			continue
-		if mgr._camp_to_squad.has(port.get_instance_id()):
-			continue
-		var region_id: int = camps.region_for_site(port)
-		if targeting.pick_naval_assault_target(port as Node2D, region_id) != null:
-			viable.append(port)
 	if viable.is_empty():
 		return null
 	viable.shuffle()
@@ -77,12 +61,6 @@ func pick_land_camp_near_port(port: Node) -> Node:
 			best_d2 = d2
 			best = camp
 	return best
-
-
-func pick_naval_squad_template() -> Array:
-	if AIConstants.NAVAL_SQUADS.is_empty():
-		return []
-	return duplicate_template(AIConstants.NAVAL_SQUADS.pick_random())
 
 
 func pick_squad_template(target: Node2D) -> Array:
