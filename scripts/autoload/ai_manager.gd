@@ -25,8 +25,6 @@ const DEFEND_HOLD_RADIUS := 220.0
 const HARD_GUARDIAN_UPGRADE_MAX := 3
 const UNIT_CHEAP_LAND := UNIT_INFANTRY
 const UNIT_EXPENSIVE_LAND := UNIT_MORTAR
-const UNIT_CHEAP_NAVAL := PORT_UNIT_RANGE
-const UNIT_EXPENSIVE_NAVAL := PORT_UNIT_TANK
 
 ## Facile — compositions simples, tirage aléatoire.
 const SQUADS_SIMPLE: Array[Array] = [
@@ -63,16 +61,13 @@ const DEFEND_SQUADS_HARD: Array[Array] = [
 ]
 
 const NAVAL_SQUADS_SIMPLE: Array[Array] = [
-	[PORT_UNIT_TANK],
-	[PORT_UNIT_RANGE, PORT_UNIT_RANGE],
+	[PORT_UNIT_TANK, PORT_UNIT_RANGE, PORT_UNIT_RANGE],
 ]
 const NAVAL_SQUADS_NORMAL: Array[Array] = [
-	[PORT_UNIT_TANK, PORT_UNIT_TANK],
-	[PORT_UNIT_RANGE, PORT_UNIT_RANGE, PORT_UNIT_TANK],
+	[PORT_UNIT_TANK, PORT_UNIT_RANGE, PORT_UNIT_RANGE, PORT_UNIT_RANGE],
 ]
 const NAVAL_SQUADS_HARD: Array[Array] = [
-	[PORT_UNIT_TANK, PORT_UNIT_TANK, PORT_UNIT_RANGE],
-	[PORT_UNIT_RANGE, PORT_UNIT_RANGE, PORT_UNIT_TANK, PORT_UNIT_TANK],
+	[PORT_UNIT_TANK, PORT_UNIT_RANGE, PORT_UNIT_RANGE, PORT_UNIT_RANGE, PORT_UNIT_RANGE],
 ]
 
 const PROFILE_SIMPLE := {
@@ -110,7 +105,6 @@ var _naval_slot_by_squad: Dictionary = {}
 var _defend_cooldowns: Dictionary = {}
 var _next_squad_id: int = 1
 var _last_template_index: int = -1
-var _last_naval_template_index: int = -1
 var _upgrade_timer: float = 0.0
 var _connected_camps: Dictionary = {}
 var _capture_listeners: Dictionary = {}
@@ -154,7 +148,6 @@ func _reset_squad_state() -> void:
 	_defend_cooldowns.clear()
 	_next_squad_id = 1
 	_last_template_index = -1
-	_last_naval_template_index = -1
 	_squad_slots.clear()
 	_naval_squad_slots.clear()
 	var parallel: int = int(_profile.get("max_parallel_squads", 1))
@@ -552,24 +545,16 @@ func _register_squad_member(squad_id: int, squad: Dictionary, troop: Node2D, cam
 
 
 func _apply_difficulty_squad_bonus(template: Array, naval: bool) -> Array:
+	if naval:
+		return template
 	match current_difficulty:
 		MapSession.AIDifficulty.SIMPLE:
-			if naval:
-				template.append(UNIT_CHEAP_NAVAL)
-			else:
-				template.append(UNIT_CHEAP_LAND)
+			template.append(UNIT_CHEAP_LAND)
 		MapSession.AIDifficulty.HARD:
-			if naval:
-				template.append(UNIT_CHEAP_NAVAL)
-				template.append(UNIT_EXPENSIVE_NAVAL)
-			else:
-				template.append(UNIT_CHEAP_LAND)
-				template.append(UNIT_EXPENSIVE_LAND)
+			template.append(UNIT_CHEAP_LAND)
+			template.append(UNIT_EXPENSIVE_LAND)
 		_:
-			if naval:
-				template.append(UNIT_EXPENSIVE_NAVAL)
-			else:
-				template.append(UNIT_EXPENSIVE_LAND)
+			template.append(UNIT_EXPENSIVE_LAND)
 	return template
 
 
@@ -713,14 +698,7 @@ func _pick_naval_template() -> Array:
 	var pool: Array = _naval_templates_for_difficulty()
 	if pool.is_empty():
 		return []
-	if pool.size() == 1:
-		_last_naval_template_index = 0
-		return _duplicate_template(pool[0])
-	var idx: int = randi() % pool.size()
-	if idx == _last_naval_template_index:
-		idx = (idx + 1) % pool.size()
-	_last_naval_template_index = idx
-	return _duplicate_template(pool[idx])
+	return _duplicate_template(pool[0])
 
 
 func _templates_for_difficulty() -> Array:
