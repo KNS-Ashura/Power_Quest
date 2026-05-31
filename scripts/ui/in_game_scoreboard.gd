@@ -134,8 +134,6 @@ func _gold_for_team(team_id: int) -> Variant:
 		var synced_gold := OnlineGameSync.get_team_gold(team_id)
 		if synced_gold >= 0:
 			return synced_gold
-	if not MapSession.is_online_match and team_id == 1 and AIManager != null:
-		return AIManager.ai_gold
 	return null
 
 

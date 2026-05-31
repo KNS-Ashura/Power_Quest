@@ -10,6 +10,7 @@ signal regions_ready
 
 var _sites_by_region: Dictionary = {}
 var _control: Dictionary = {}
+var _site_to_region: Dictionary = {}
 var _see_fx_by_region: Dictionary = {}
 var minimap_region_filter: int = -1
 
@@ -17,6 +18,7 @@ var minimap_region_filter: int = -1
 func init_match() -> void:
 	_sites_by_region.clear()
 	_control.clear()
+	_site_to_region.clear()
 	minimap_region_filter = -1
 	hide_all_region_see()
 
@@ -26,6 +28,7 @@ func init_match() -> void:
 		if _RegionDefs.uses_auto_regions(map_index):
 			_build_auto_regions_by_position()
 			_recalculate_all()
+			_rebuild_site_region_index()
 		regions_ready.emit()
 		return
 
@@ -49,6 +52,7 @@ func init_match() -> void:
 			_sites_by_region[region_id] = sites
 
 	_recalculate_all()
+	_rebuild_site_region_index()
 	regions_ready.emit()
 
 
@@ -89,6 +93,26 @@ func get_controlling_team(region_id: int) -> int:
 
 func get_sites_for_region(region_id: int) -> Array:
 	return _sites_by_region.get(region_id, []).duplicate()
+
+
+func get_region_id_for_site(site: Node) -> int:
+	if site == null or not is_instance_valid(site):
+		return -1
+	return int(_site_to_region.get(site.get_instance_id(), -1))
+
+
+func are_sites_in_same_region(site_a: Node, site_b: Node) -> bool:
+	if not has_regions_for_current_map():
+		return true
+	var region_a: int = get_region_id_for_site(site_a)
+	var region_b: int = get_region_id_for_site(site_b)
+	if region_a < 0 or region_b < 0:
+		return false
+	return region_a == region_b
+
+
+func is_land_reachable_between(site_a: Node, site_b: Node) -> bool:
+	return are_sites_in_same_region(site_a, site_b)
 
 
 func set_minimap_region_filter(region_id: int) -> void:
@@ -236,6 +260,14 @@ func _build_auto_regions_by_position() -> void:
 		"RegionManager: auto regions for map %d (%d sites, %d/%d/%d)."
 		% [MapSession.active_map_index, count, third, two_thirds - third, count - two_thirds]
 	)
+
+
+func _rebuild_site_region_index() -> void:
+	_site_to_region.clear()
+	for region_id in _sites_by_region:
+		for site in _sites_by_region[region_id]:
+			if is_instance_valid(site):
+				_site_to_region[site.get_instance_id()] = region_id
 
 
 func _recalculate_all() -> void:

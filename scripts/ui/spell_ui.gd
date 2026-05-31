@@ -19,8 +19,9 @@ const ANTI_ARMOR_BORDER_COLOR: Color = Color(1.0, 0.35, 0.75, 1.0)
 const ANTI_ARMOR_FILL_COLOR: Color = Color(1.0, 0.35, 0.75, 0.2)
 const TRANSPORT_BORDER_COLOR: Color = Color(0.2, 0.75, 1.0, 1.0)
 const TRANSPORT_FILL_COLOR: Color = Color(0.2, 0.75, 1.0, 0.22)
-const TRANSPORT_MARKED_MODULATE: Color = Color(0.55, 0.85, 1.0, 1.0)
-const TRANSPORT_CARRYING_MODULATE: Color = Color(0.35, 1.0, 0.65, 1.0)
+const UI_REFRESH_INTERVAL := 0.12
+const SPELL_BTN_TEXT_COLOR := Color.BLACK
+const SPELL_BTN_TEXT_COOLDOWN_COLOR := Color(0.35, 0.35, 0.35, 1.0)
 
 const SPELL_BTN_LABELS := {
 	"heal": "Heal",
@@ -34,14 +35,13 @@ var _selected_support_count: int = 0
 var _selected_mortar_count: int = 0
 var _selected_anti_armor_count: int = 0
 var _selected_transporter_count: int = 0
+var _ui_refresh_accumulator: float = UI_REFRESH_INTERVAL
 
 
 func _ready() -> void:
-	btn_heal.disabled = true
-	btn_boost.disabled = true
-	btn_mortar_spell.disabled = true
-	btn_anti_armor.disabled = true
-	btn_water_transport.disabled = true
+	for btn in _all_spell_buttons():
+		_style_spell_button_text(btn)
+		btn.disabled = true
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -49,7 +49,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cancel_transport_marks()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_ui_refresh_accumulator += delta
+	if _ui_refresh_accumulator < UI_REFRESH_INTERVAL:
+		return
+	_ui_refresh_accumulator = 0.0
 	_refresh_button_state()
 
 
@@ -69,29 +73,38 @@ func _spell_cast_availability(unit_type: int) -> Dictionary:
 	return {"ready": ready_count, "min_cooldown": min_cd}
 
 
+func _all_spell_buttons() -> Array[Button]:
+	return [btn_heal, btn_boost, btn_mortar_spell, btn_anti_armor, btn_water_transport]
+
+
+func _style_spell_button_text(btn: Button) -> void:
+	btn.add_theme_color_override("font_color", SPELL_BTN_TEXT_COLOR)
+	btn.add_theme_color_override("font_hover_color", SPELL_BTN_TEXT_COLOR)
+	btn.add_theme_color_override("font_pressed_color", SPELL_BTN_TEXT_COLOR)
+	btn.add_theme_color_override("font_disabled_color", SPELL_BTN_TEXT_COOLDOWN_COLOR)
+	btn.modulate = Color.WHITE
+
+
 func _apply_spell_button_state(btn: Button, selected_count: int, unit_type: int, label_key: String) -> void:
 	var base_label: String = SPELL_BTN_LABELS.get(label_key, label_key)
+	btn.modulate = Color.WHITE
 	if selected_count <= 0:
 		btn.disabled = true
 		btn.text = base_label
-		btn.modulate = Color.WHITE
 		return
 
 	var availability: Dictionary = _spell_cast_availability(unit_type)
 	if availability.ready > 0:
 		btn.disabled = false
 		btn.text = base_label
-		btn.modulate = Color.WHITE
 		return
 
 	btn.disabled = true
 	var min_cd: float = availability.min_cooldown
 	if min_cd > 0.0:
 		btn.text = "%s %.0fs" % [base_label, ceil(min_cd)]
-		btn.modulate = Color(0.65, 0.65, 0.65, 1.0)
 	else:
 		btn.text = base_label
-		btn.modulate = Color(0.65, 0.65, 0.65, 1.0)
 
 
 func _refresh_button_state() -> void:
@@ -147,9 +160,9 @@ func _refresh_button_state() -> void:
 
 
 func _update_transport_button_visuals() -> void:
+	btn_water_transport.modulate = Color.WHITE
 	if _selected_transporter_count <= 0:
 		btn_water_transport.disabled = true
-		btn_water_transport.modulate = Color.WHITE
 		btn_water_transport.text = "Transport"
 		return
 
@@ -170,16 +183,12 @@ func _update_transport_button_visuals() -> void:
 	btn_water_transport.disabled = _selected_transporter_count <= 0 or (max_cd > 0.0 and not any_marked and not any_carrying)
 	if max_cd > 0.0:
 		btn_water_transport.text = "Transport %.0fs" % ceil(max_cd)
-		btn_water_transport.modulate = Color(0.65, 0.65, 0.65, 1.0)
 	elif any_carrying:
 		btn_water_transport.text = "Disembark"
-		btn_water_transport.modulate = TRANSPORT_CARRYING_MODULATE
 	elif any_marked:
 		btn_water_transport.text = "Embark"
-		btn_water_transport.modulate = TRANSPORT_MARKED_MODULATE
 	else:
 		btn_water_transport.text = "Transport"
-		btn_water_transport.modulate = Color.WHITE
 
 
 func _on_btn_heal_pressed() -> void:

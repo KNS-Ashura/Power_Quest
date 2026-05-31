@@ -277,7 +277,7 @@ func get_unit(sync_id: int) -> Node:
 	if sync_id < 0:
 		return null
 	var u: Variant = _units_by_sync_id.get(sync_id)
-	if u is Node and is_instance_valid(u):
+	if is_instance_valid(u) and u is Node:
 		return u as Node
 	_units_by_sync_id.erase(sync_id)
 	return null

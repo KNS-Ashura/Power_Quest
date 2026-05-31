@@ -7,6 +7,8 @@ var match_over: bool = false
 var local_eliminated: bool = false
 var _match_started_at: int = 0
 var _result_reported: bool = false
+const MATCH_STATE_CHECK_INTERVAL := 0.2
+var _match_state_check_accumulator: float = MATCH_STATE_CHECK_INTERVAL
 
 @onready var global_timer = Timer.new()
 
@@ -87,13 +89,17 @@ func _assign_initial_camps() -> void:
 	RegionManager.init_match()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if match_over:
 		return
 	if MapSession.is_online_match and local_eliminated:
 		return
 	if MapSession.is_online_match and not MapSession.online_camps_ready:
 		return
+	_match_state_check_accumulator += delta
+	if _match_state_check_accumulator < MATCH_STATE_CHECK_INTERVAL:
+		return
+	_match_state_check_accumulator = 0.0
 
 	var all_camps = get_tree().get_nodes_in_group("camps")
 	if all_camps.size() == 0:

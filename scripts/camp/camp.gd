@@ -26,6 +26,8 @@ var unit_catalog: Dictionary = {}
 var production_queue: Array = []
 var remaining_time: float = 0.0
 var current_unit_total_time: float = 1.0
+## Accélère la production quand l'IA enfile des unités (1.0 = vitesse normale).
+var ai_build_speed_multiplier: float = 1.0
 
 @onready var spawn_point = $Marker2D
 var income_timer: Timer
@@ -35,6 +37,7 @@ const GUARDIAN_DELAY_ONLINE := 1.0
 
 signal production_updated(queue_size, progress)
 signal camp_upgraded(new_level)
+signal unit_produced(unit: Node, unit_id: int)
 signal site_captured(new_team)
 
 
@@ -265,7 +268,10 @@ func unit_build_time(unit_id: int) -> float:
 
 
 func _build_time_for(data: UnitStats) -> float:
-	return max(0.1, data.build_time * production_time_multiplier)
+	var time: float = maxf(0.1, float(data.build_time) * production_time_multiplier)
+	if ai_build_speed_multiplier > 1.0:
+		time /= ai_build_speed_multiplier
+	return time
 
 
 func _process(delta: float) -> void:
@@ -575,27 +581,51 @@ func request_production(id: int = 0) -> void:
 			remaining_time = current_unit_total_time
 
 
+func request_ai_production(id: int = 0) -> bool:
+	if MapSession.is_online_match or int(team) != Owner.ENEMY:
+		return false
+	if not unit_catalog.has(id):
+		return false
+	var data: UnitStats = unit_catalog[id]
+	production_queue.append(id)
+	if production_queue.size() == 1:
+		current_unit_total_time = _build_time_for(data)
+		remaining_time = current_unit_total_time
+	return true
+
+
 func _finish_production() -> void:
-	var unit_id = production_queue.pop_front()
-	var stat = unit_catalog[unit_id]
+	var unit_id: int = int(production_queue.pop_front())
+	var unit: Node = _spawn_unit_by_id(unit_id)
+	if unit == null:
+		_advance_queue_after_failure()
+		return
+	unit_produced.emit(unit, unit_id)
+	_notify_network_spawn(unit, unit_id, unit.global_position)
+	_advance_queue_after_failure()
+
+
+func _spawn_unit_by_id(unit_id: int) -> Node:
+	if not unit_catalog.has(unit_id):
+		push_warning("Missing unit id %s in camp catalog." % str(unit_id))
+		return null
+	var stat: UnitStats = unit_catalog[unit_id]
 	var scene := CampCatalogue.scene_for_unit(stat, unit_id, camp_level)
 	if scene == null:
 		push_warning("Missing unit scene for id %s (naval units may be WIP)." % str(unit_id))
-		_advance_queue_after_failure()
-		return
+		return null
 	var unit = scene.instantiate()
 	if not ("stats" in unit):
 		push_warning("Invalid unit scene for id %s: root must have 'stats' property." % str(unit_id))
 		unit.queue_free()
-		_advance_queue_after_failure()
-		return
+		return null
 	unit.stats = stat
 	if stat.unit_type == UnitStats.UnitType.WATER_RANGE \
 			or stat.unit_type == UnitStats.UnitType.WATER_TANK \
 			or stat.unit_type == UnitStats.UnitType.WATER_TRANSPORT:
 		if "force_water_navigation" in unit:
 			unit.force_water_navigation = true
-	var spawn_position = _water_spawn_position() if is_port() else _unit_spawn_position()
+	var spawn_position: Vector2 = _water_spawn_position() if is_port() else _unit_spawn_position()
 	unit.team = team
 
 	if MapSession.is_local_team(team):
@@ -608,7 +638,7 @@ func _finish_production() -> void:
 	var parent_node = get_parent()
 	if not is_instance_valid(parent_node):
 		unit.queue_free()
-		return
+		return null
 	parent_node.add_child(unit)
 	unit.global_position = spawn_position
 	_play_spawn_vfx(spawn_position)
@@ -616,8 +646,21 @@ func _finish_production() -> void:
 		unit._apply_stats_to_unit()
 	if unit.has_method("_configure_navigation_layers"):
 		unit._configure_navigation_layers()
-	_notify_network_spawn(unit, unit_id, spawn_position)
-	_advance_queue_after_failure()
+	return unit
+
+
+func spawn_ai_squad_units(unit_ids: Array) -> Array:
+	if MapSession.is_online_match or int(team) != Owner.ENEMY:
+		return []
+	var spawned: Array = []
+	for raw_id in unit_ids:
+		var unit_id: int = int(raw_id)
+		if not unit_catalog.has(unit_id):
+			continue
+		var unit: Node = _spawn_unit_by_id(unit_id)
+		if unit != null:
+			spawned.append(unit)
+	return spawned
 
 
 func _notify_network_spawn(unit: Node, unit_id: int, spawn_position: Vector2) -> void:
