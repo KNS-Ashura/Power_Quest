@@ -62,7 +62,7 @@ func init_match() -> void:
 	_set_difficulty(MapSession.get_ai_difficulty())
 	squads.reset_squad_state()
 	_upgrade_timer = 0.0
-	_spawn_credit_timer = AIConstants.SQUAD_SPAWN_CREDIT_INTERVAL
+	_spawn_credit_timer = float(_profile.get("spawn_credit_interval", 60.0))
 	_connected_camps.clear()
 	_capture_listeners.clear()
 	_camp_healer_units.clear()
@@ -147,4 +147,4 @@ func _tick_spawn_credit_timer() -> void:
 	if _spawn_credit_timer > 0.0:
 		return
 	squads.grant_spawn_credit()
-	_spawn_credit_timer = AIConstants.SQUAD_SPAWN_CREDIT_INTERVAL
+	_spawn_credit_timer = float(_profile.get("spawn_credit_interval", 60.0))

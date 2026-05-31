@@ -27,7 +27,6 @@ const HARD_GUARDIAN_UPGRADE_MAX := 3
 const TRANSPORT_MIN_TRAVEL_FROM_PORT := 240.0
 const TRANSPORT_DISEMBARK_NEAR_TARGET := 110.0
 const SQUAD_RESPAWN_DEATH_THRESHOLD := 5
-const SQUAD_SPAWN_CREDIT_INTERVAL := 60.0
 
 const SQUADS_SIMPLE: Array[Array] = [
 	[UNIT_INFANTRY, UNIT_INFANTRY, UNIT_INFANTRY, UNIT_INFANTRY],
@@ -66,6 +65,7 @@ const PROFILE_SIMPLE := {
 	"squad_cooldown": 55.0,
 	"build_speed": 0.75,
 	"upgrade_interval": 45.0,
+	"spawn_credit_interval": 60.0,
 }
 const PROFILE_NORMAL := {
 	"think_interval": 0.4,
@@ -73,6 +73,7 @@ const PROFILE_NORMAL := {
 	"squad_cooldown": 40.0,
 	"build_speed": 1.0,
 	"upgrade_interval": 30.0,
+	"spawn_credit_interval": 50.0,
 }
 const PROFILE_HARD := {
 	"think_interval": 0.3,
@@ -80,6 +81,7 @@ const PROFILE_HARD := {
 	"squad_cooldown": 25.0,
 	"build_speed": 1.5,
 	"upgrade_interval": 20.0,
+	"spawn_credit_interval": 40.0,
 }
 
 static func profile_for_difficulty(difficulty: int) -> Dictionary:
