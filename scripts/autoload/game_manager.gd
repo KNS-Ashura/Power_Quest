@@ -1,5 +1,10 @@
 extends Node
 
+const _RegionDefs = preload("res://scripts/world/region_definitions.gd")
+const TEAM_PLAYER := 0
+const TEAM_AI := 1
+const TEAM_NEUTRAL := 2
+
 var cycle_time: float = 30.0
 var cycle_gold_bonus: int = 50
 var reinforcement_count: int = 2
@@ -86,6 +91,7 @@ func _assign_initial_camps() -> void:
 		if not assigned.has(camp):
 			camp._capture_by_team(2)
 
+	_ensure_ai_land_camp_per_region(all_camps)
 	RegionManager.init_match()
 
 
@@ -312,3 +318,104 @@ func reset_session() -> void:
 	Economy.reset_for_match()
 	if AIManager.has_method("init_match"):
 		AIManager.init_match()
+
+
+func _ensure_ai_land_camp_per_region(all_camps: Array) -> void:
+	if MapSession.is_online_match:
+		return
+	var region_defs: Dictionary = _RegionDefs.regions_for_map(MapSession.active_map_index)
+	if region_defs.is_empty():
+		return
+
+	var by_name: Dictionary = {}
+	for camp in all_camps:
+		if is_instance_valid(camp):
+			by_name[camp.name] = camp
+
+	for region_id in region_defs:
+		var config: Dictionary = region_defs[region_id]
+		var land_in_region: Array = []
+		for node_name in config.get("sites", []):
+			var site: Node = _resolve_camp_by_name(by_name, all_camps, String(node_name))
+			if site != null and _is_land_camp_site(site):
+				land_in_region.append(site)
+		if land_in_region.is_empty():
+			continue
+		if _region_has_team_land_camp(land_in_region, TEAM_AI):
+			continue
+		var pick: Node = _pick_land_camp_for_ai(land_in_region)
+		if pick != null:
+			pick._capture_by_team(TEAM_AI)
+
+
+func _region_has_team_land_camp(land_camps: Array, team: int) -> bool:
+	for camp in land_camps:
+		if is_instance_valid(camp) and int(camp.get("team")) == team:
+			return true
+	return false
+
+
+func _pick_land_camp_for_ai(land_camps: Array) -> Node:
+	for camp in land_camps:
+		if is_instance_valid(camp) and int(camp.get("team")) == TEAM_NEUTRAL:
+			return camp
+	for camp in land_camps:
+		if is_instance_valid(camp) and int(camp.get("team")) == TEAM_PLAYER:
+			return camp
+	return null
+
+
+func _is_land_camp_site(camp: Node) -> bool:
+	return is_instance_valid(camp) and (not camp.has_method("is_port") or not camp.is_port())
+
+
+func _resolve_camp_by_name(by_name: Dictionary, all_camps: Array, node_name: String) -> Node:
+	if by_name.has(node_name):
+		return by_name[node_name]
+	for alias in _camp_name_aliases(node_name):
+		if by_name.has(alias):
+			return by_name[alias]
+	var target_number := _camp_number_from_name(node_name)
+	if target_number < 0:
+		return null
+	for camp in all_camps:
+		if not is_instance_valid(camp):
+			continue
+		if _camp_number_from_name(camp.name) == target_number \
+				and _same_camp_kind(node_name, camp.name):
+			return camp
+	return null
+
+
+func _camp_name_aliases(node_name: String) -> Array[String]:
+	var key := node_name.to_lower()
+	if key == "port":
+		return ["port1"]
+	if key == "port1":
+		return ["port"]
+	if key == "camp":
+		return ["camp1"]
+	if key == "camp1":
+		return ["camp"]
+	return []
+
+
+func _camp_number_from_name(node_name: String) -> int:
+	var key := node_name.to_lower()
+	if key == "camp" or key == "port":
+		return 1
+	if key.begins_with("camp"):
+		var suffix := key.substr(4)
+		return int(suffix) if suffix.is_valid_int() else -1
+	if key.begins_with("port"):
+		var suffix := key.substr(4)
+		return int(suffix) if suffix.is_valid_int() else -1
+	return -1
+
+
+func _same_camp_kind(expected_name: String, actual_name: String) -> bool:
+	var expected := expected_name.to_lower()
+	var actual := actual_name.to_lower()
+	var expected_is_port := expected == "port" or expected.begins_with("port")
+	var actual_is_port := actual == "port" or actual.begins_with("port")
+	return expected_is_port == actual_is_port
