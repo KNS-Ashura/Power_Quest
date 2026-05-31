@@ -15,10 +15,15 @@ func is_hostile_site(team: int) -> bool:
 
 
 func has_regional_hostile(origin: Node2D) -> bool:
-	return nearest_hostile_to(origin, camps.region_for_site(origin), true) != null
+	return nearest_hostile_in_region_sites(origin, camps.region_for_site(origin), true, false) != null
 
 
-func nearest_hostile_in_region_sites(origin: Node2D, region_id: int) -> Node2D:
+func nearest_hostile_in_region_sites(
+	origin: Node2D,
+	region_id: int,
+	land_reachable_only: bool = false,
+	require_water_route: bool = false
+) -> Node2D:
 	var best: Node2D = null
 	var best_d2: float = INF
 	for site in RegionManager.get_sites_for_region(region_id):
@@ -27,6 +32,11 @@ func nearest_hostile_in_region_sites(origin: Node2D, region_id: int) -> Node2D:
 		if not is_hostile_site(int(site.get("team"))):
 			continue
 		var site_2d: Node2D = site as Node2D
+		var reachable: bool = camps.is_land_reachable(origin, site_2d)
+		if land_reachable_only and not reachable:
+			continue
+		if require_water_route and reachable:
+			continue
 		var d2: float = origin.global_position.distance_squared_to(site_2d.global_position)
 		if d2 < best_d2:
 			best_d2 = d2
@@ -51,14 +61,35 @@ func nearest_hostile_outside_region_sites(origin: Node2D, region_id: int) -> Nod
 	return best
 
 
-func nearest_hostile_to(origin: Node2D, region_id: int = -1, same_region: bool = true) -> Node2D:
+func nearest_hostile_to(
+	origin: Node2D,
+	region_id: int = -1,
+	same_region: bool = true,
+	land_reachable_only: bool = true
+) -> Node2D:
 	if region_id < 0:
 		region_id = camps.region_for_site(origin)
 	if camps.uses_regions() and region_id >= 0:
 		if same_region:
-			return nearest_hostile_in_region_sites(origin, region_id)
+			return nearest_hostile_in_region_sites(origin, region_id, land_reachable_only, false)
 		return nearest_hostile_outside_region_sites(origin, region_id)
-	return nearest_hostile_global(origin)
+	return nearest_land_reachable_hostile_global(origin)
+
+
+func nearest_land_reachable_hostile_global(origin: Node2D) -> Node2D:
+	var best: Node2D = null
+	var best_d2: float = INF
+	for camp in camps.hostile_camps():
+		if not is_instance_valid(camp) or not (camp is Node2D):
+			continue
+		var camp_2d: Node2D = camp as Node2D
+		if not camps.is_land_reachable(origin, camp_2d):
+			continue
+		var d2: float = origin.global_position.distance_squared_to(camp_2d.global_position)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = camp_2d
+	return best
 
 
 func nearest_hostile_global(origin: Node2D) -> Node2D:
@@ -75,12 +106,21 @@ func nearest_hostile_global(origin: Node2D) -> Node2D:
 	return best
 
 
+func pick_naval_assault_target(origin: Node2D, region_id: int) -> Node2D:
+	var island: Node2D = nearest_hostile_in_region_sites(origin, region_id, false, true)
+	if island != null:
+		return island
+	return nearest_hostile_outside_region_sites(origin, region_id)
+
+
 func pick_transport_target(origin: Node2D, region_id: int) -> Node2D:
-	var outside: Node2D = nearest_hostile_to(origin, region_id, false)
+	var outside: Node2D = nearest_hostile_outside_region_sites(origin, region_id)
 	if outside != null:
 		return outside
-	if nearest_hostile_in_region_sites(origin, region_id) != null:
+
+	if nearest_hostile_in_region_sites(origin, region_id, true, false) != null:
 		return null
+
 	var global_target: Node2D = nearest_hostile_global(origin)
 	if global_target == null:
 		return null
@@ -99,9 +139,9 @@ func resolve_target(target_id: int, origin: Node2D, mode: String, region_id: int
 		return null
 	match mode:
 		AIConstants.SQUAD_MODE_NAVAL:
-			return nearest_hostile_to(origin, region_id, false)
+			return pick_naval_assault_target(origin, region_id)
 		AIConstants.SQUAD_MODE_ATTACK:
-			return nearest_hostile_to(origin, region_id, true)
+			return nearest_hostile_to(origin, region_id, true, true)
 		_:
 			return null
 
@@ -110,11 +150,17 @@ func target_valid_for_mode(origin: Node2D, target: Node2D, mode: String, region_
 	if not is_hostile_site(int(target.get("team"))):
 		return false
 	if not camps.uses_regions() or region_id < 0:
+		if mode == AIConstants.SQUAD_MODE_ATTACK and origin != null:
+			return camps.is_land_reachable(origin, target)
 		return true
 	var target_region: int = RegionManager.get_region_id_for_site(target)
 	match mode:
 		AIConstants.SQUAD_MODE_NAVAL:
-			return target_region != region_id
+			return target_region != region_id or not camps.is_land_reachable(origin, target)
+		AIConstants.SQUAD_MODE_ATTACK:
+			if origin == null:
+				return true
+			return camps.is_land_reachable(origin, target)
 		_:
 			return true
 

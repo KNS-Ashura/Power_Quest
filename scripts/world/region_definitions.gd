@@ -60,6 +60,19 @@ const REGIONS := {
 	},
 }
 
+## Map 2 South : camps/port sur îles séparées du continent.
+## Chaque sous-tableau = un même massif terrestre (marche à pied possible).
+const LANDMASSES := {
+	2: {
+		3: [
+			["camp1", "camp7", "camp9", "port7", "port3"],
+			["camp12"],
+			["camp13"],
+			["port6"],
+		],
+	},
+}
+
 
 static func uses_auto_regions(map_index: int) -> bool:
 	return map_index in AUTO_REGION_MAPS
@@ -73,3 +86,12 @@ static func regions_for_map(map_index: int) -> Dictionary:
 	if REGIONS.has(map_index):
 		return REGIONS[map_index]
 	return {}
+
+
+static func landmass_groups_for_region(map_index: int, region_id: int) -> Array:
+	if not LANDMASSES.has(map_index):
+		return []
+	var per_region: Variant = LANDMASSES[map_index]
+	if per_region is Dictionary and (per_region as Dictionary).has(region_id):
+		return (per_region as Dictionary)[region_id]
+	return []

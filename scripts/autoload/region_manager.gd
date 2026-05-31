@@ -11,6 +11,7 @@ signal regions_ready
 var _sites_by_region: Dictionary = {}
 var _control: Dictionary = {}
 var _site_to_region: Dictionary = {}
+var _site_to_landmass: Dictionary = {}
 var _see_fx_by_region: Dictionary = {}
 var minimap_region_filter: int = -1
 
@@ -29,6 +30,7 @@ func init_match() -> void:
 			_build_auto_regions_by_position()
 			_recalculate_all()
 			_rebuild_site_region_index()
+			_rebuild_landmass_index()
 		regions_ready.emit()
 		return
 
@@ -53,6 +55,7 @@ func init_match() -> void:
 
 	_recalculate_all()
 	_rebuild_site_region_index()
+	_rebuild_landmass_index()
 	regions_ready.emit()
 
 
@@ -112,7 +115,17 @@ func are_sites_in_same_region(site_a: Node, site_b: Node) -> bool:
 
 
 func is_land_reachable_between(site_a: Node, site_b: Node) -> bool:
-	return are_sites_in_same_region(site_a, site_b)
+	if site_a == null or site_b == null or not is_instance_valid(site_a) or not is_instance_valid(site_b):
+		return false
+	if site_a == site_b:
+		return true
+	if not has_regions_for_current_map():
+		return true
+	var id_a: int = site_a.get_instance_id()
+	var id_b: int = site_b.get_instance_id()
+	if not _site_to_landmass.has(id_a) or not _site_to_landmass.has(id_b):
+		return are_sites_in_same_region(site_a, site_b)
+	return _site_to_landmass[id_a] == _site_to_landmass[id_b]
 
 
 func set_minimap_region_filter(region_id: int) -> void:
@@ -268,6 +281,38 @@ func _rebuild_site_region_index() -> void:
 		for site in _sites_by_region[region_id]:
 			if is_instance_valid(site):
 				_site_to_region[site.get_instance_id()] = region_id
+
+
+func _rebuild_landmass_index() -> void:
+	_site_to_landmass.clear()
+	var map_index: int = MapSession.active_map_index
+	for region_id in _sites_by_region:
+		var sites: Array = _sites_by_region[region_id]
+		var groups: Array = _RegionDefs.landmass_groups_for_region(map_index, region_id)
+		if groups.is_empty():
+			for site in sites:
+				if is_instance_valid(site):
+					_site_to_landmass[site.get_instance_id()] = Vector2i(region_id, 0)
+			continue
+
+		var by_name: Dictionary = {}
+		for site in sites:
+			if is_instance_valid(site):
+				by_name[site.name] = site
+
+		var assigned: Dictionary = {}
+		for group_idx in range(groups.size()):
+			for node_name in groups[group_idx]:
+				var site: Node = _resolve_site(by_name, sites, String(node_name))
+				if site != null:
+					_site_to_landmass[site.get_instance_id()] = Vector2i(region_id, group_idx)
+					assigned[site.get_instance_id()] = true
+
+		for site in sites:
+			if not is_instance_valid(site):
+				continue
+			if not assigned.has(site.get_instance_id()):
+				_site_to_landmass[site.get_instance_id()] = Vector2i(region_id, 0)
 
 
 func _recalculate_all() -> void:

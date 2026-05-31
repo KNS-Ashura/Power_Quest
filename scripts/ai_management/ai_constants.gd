@@ -29,6 +29,13 @@ const TRANSPORT_DISEMBARK_NEAR_TARGET := 110.0
 const SQUAD_RESPAWN_DEATH_THRESHOLD := 5
 const IDLE_REDIRECT_SECONDS := 20.0
 const IDLE_MOVE_THRESHOLD := 16.0
+const DEBUG_NAVAL := true
+
+const NAVAL_SQUADS: Array[Array] = [
+	[PORT_UNIT_TANK, PORT_UNIT_RANGE],
+	[PORT_UNIT_TANK, PORT_UNIT_TANK],
+	[PORT_UNIT_RANGE, PORT_UNIT_RANGE],
+]
 
 const SQUADS_SIMPLE: Array[Array] = [
 	[UNIT_INFANTRY, UNIT_INFANTRY, UNIT_INFANTRY, UNIT_INFANTRY],
@@ -84,6 +91,7 @@ const PROFILE_HARD := {
 	"build_speed": 1.5,
 	"upgrade_interval": 20.0,
 	"spawn_credit_interval": 40.0,
+	"hard_upgrade_interval": 45.0,
 }
 
 static func profile_for_difficulty(difficulty: int) -> Dictionary:

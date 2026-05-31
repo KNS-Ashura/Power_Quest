@@ -46,10 +46,15 @@ func bot_attack(dt: float) -> void:
 		var target: Node2D = pick_attack_target(troop, mode, spawn_camp, region_id)
 		if target == null:
 			if should_redirect_idle_troop(troop):
-				redirect_idle_troop(troop)
+				var redirect_target: Node2D = pick_reachable_hostile_for_land_troop(troop, region_id)
+				if redirect_target != null:
+					order_attack(troop, redirect_target)
+					reset_troop_idle(troop)
 			continue
 
 		var target_id: int = target.get_instance_id()
+		if not is_naval_unit(troop) and not camps.is_land_reachable(troop, target):
+			continue
 		if troop_needs_new_order(troop, target_id):
 			if mode == AIConstants.SQUAD_MODE_NAVAL or is_naval_unit(troop):
 				order_naval(troop, target)
@@ -77,20 +82,27 @@ func pick_attack_target(
 	if spawn_camp != null:
 		match mode:
 			AIConstants.SQUAD_MODE_NAVAL:
-				return targeting.nearest_hostile_to(spawn_camp, region_id, false)
+				return targeting.nearest_hostile_to(spawn_camp, region_id, false, false)
 			_:
-				return targeting.nearest_hostile_to(spawn_camp, region_id, true)
+				return targeting.nearest_hostile_to(spawn_camp, region_id, true, true)
 
 	if should_redirect_idle_troop(troop):
-		return pick_cross_region_target(troop, region_id)
+		return pick_reachable_hostile_for_land_troop(troop, region_id)
 	return null
 
 
-func pick_cross_region_target(troop: Node2D, region_id: int) -> Node2D:
-	var outside: Node2D = targeting.nearest_hostile_to(troop, region_id, false)
-	if outside != null:
+func pick_reachable_hostile_for_land_troop(troop: Node2D, region_id: int) -> Node2D:
+	var regional: Node2D = targeting.nearest_hostile_in_region_sites(troop, region_id, true, false)
+	if regional != null:
+		return regional
+	var outside: Node2D = targeting.nearest_hostile_outside_region_sites(troop, region_id)
+	if outside != null and camps.is_land_reachable(troop, outside):
 		return outside
-	return targeting.nearest_hostile_global(troop)
+	return targeting.nearest_land_reachable_hostile_global(troop)
+
+
+func pick_cross_region_target(troop: Node2D, region_id: int) -> Node2D:
+	return pick_reachable_hostile_for_land_troop(troop, region_id)
 
 
 func should_redirect_idle_troop(troop: Node2D) -> bool:
@@ -134,7 +146,11 @@ func clear_stale_camp_target(troop: Node2D) -> void:
 	if not is_instance_valid(target_obj) or not (target_obj is Node2D):
 		troop.set_meta("ai_camp_target", -1)
 		return
-	if not targeting.is_hostile_site(int((target_obj as Node2D).get("team"))):
+	var target: Node2D = target_obj as Node2D
+	if not targeting.is_hostile_site(int(target.get("team"))):
+		troop.set_meta("ai_camp_target", -1)
+		return
+	if not is_naval_unit(troop) and not camps.is_land_reachable(troop, target):
 		troop.set_meta("ai_camp_target", -1)
 
 

@@ -11,13 +11,15 @@ func _init(manager: Node, camp_service: AICampService) -> void:
 
 
 func tick_upgrades(owned: Array) -> void:
-	if mgr.current_difficulty == MapSession.AIDifficulty.HARD:
-		return
 	var dt: float = float(mgr._profile.get("think_interval", 0.4))
 	mgr._upgrade_timer -= dt
 	if mgr._upgrade_timer > 0.0:
 		return
-	mgr._upgrade_timer = float(mgr._profile.get("upgrade_interval", 45.0))
+
+	if mgr.current_difficulty == MapSession.AIDifficulty.HARD:
+		mgr._upgrade_timer = float(mgr._profile.get("hard_upgrade_interval", 45.0))
+	else:
+		mgr._upgrade_timer = float(mgr._profile.get("upgrade_interval", 45.0))
 
 	var candidates: Array = []
 	for camp in owned:
