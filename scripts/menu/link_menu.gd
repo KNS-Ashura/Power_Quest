@@ -1,6 +1,6 @@
 extends VBoxContainer
 
-const URL_MANUAL = "https://google.com"
+const URL_MANUAL = "https://2proj-doc-user.vercel.app"
 const URL_GITHUB = "https://github.com/KNS-Ashura/Power_Quest.git"
 const PATH_LICENSES = "https://craftpix.net/file-licenses/"
 const PATH_TECH_DOC = "res://PROJECT_CONTEXT.md"

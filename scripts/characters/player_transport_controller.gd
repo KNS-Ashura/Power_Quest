@@ -114,16 +114,43 @@ static func board_marked(owner: Node) -> bool:
 	if owner.water_transport_marked.is_empty():
 		clear_marked(owner)
 		return false
+	return _apply_boarding(owner, owner.water_transport_marked, true)
+
+
+static func force_board_units(owner: Node, units: Array) -> bool:
+	if not is_water_transporter(owner):
+		return false
+	if int(owner.water_transport_phase) == PHASE_CARRYING and owner.water_transport_boarded.size() > 0:
+		return false
+	var to_board: Array[Node2D] = []
+	for unit in units:
+		if not is_instance_valid(unit) or not (unit is Node2D):
+			continue
+		if not is_land_unit_transportable(owner, unit):
+			continue
+		to_board.append(unit as Node2D)
+		if to_board.size() >= capacity(owner):
+			break
+	if to_board.is_empty():
+		return false
+	clear_marked(owner)
+	return _apply_boarding(owner, to_board, false)
+
+
+static func _apply_boarding(owner: Node, units: Array, with_board_fx: bool) -> bool:
 	owner.water_transport_boarded.clear()
 	owner.water_transport_origin.clear()
-	for unit in owner.water_transport_marked:
+	for unit in units:
 		if not is_instance_valid(unit):
 			continue
 		owner.water_transport_origin[unit] = unit.global_position
 		owner.water_transport_boarded.append(unit)
 		remove_transport_fx(owner, unit)
-		owner._attach_effect_on_target(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, BOARD_FX_FLASH)
-		hide_unit_after_delay(owner, unit, BOARD_FX_FLASH)
+		if with_board_fx:
+			owner._attach_effect_on_target(unit, owner.SCENE_WATER_TRANSPORT_BOARD_FX, BOARD_FX_FLASH)
+			hide_unit_after_delay(owner, unit, BOARD_FX_FLASH)
+		else:
+			hide_unit(owner, unit)
 	owner.water_transport_marked.clear()
 	if owner.water_transport_boarded.is_empty():
 		owner.water_transport_phase = PHASE_IDLE
@@ -350,6 +377,10 @@ static func closest_on_layers(owner: Node, from: Vector2, layer_mask: int) -> Ve
 	return best
 
 
+static func nearest_water_point_near(owner: Node, world_pos: Vector2) -> Vector2:
+	return closest_on_layers(owner, world_pos, owner.NAV_LAYER_WATER)
+
+
 static func nearest_ground_point(owner: Node, from: Vector2) -> Vector2:
 	var shore := closest_on_layers(owner, from, owner.NAV_LAYER_GROUND)
 	if shore == Vector2.INF:
@@ -368,6 +399,10 @@ static func nearest_ground_point(owner: Node, from: Vector2) -> Vector2:
 	if from.distance_to(land_point) > owner.WATER_TRANSPORT_DISEMBARK_MAX_DIST:
 		return shore
 	return land_point
+
+
+static func can_disembark_at(owner: Node, world_pos: Vector2) -> bool:
+	return nearest_ground_point(owner, world_pos) != Vector2.INF
 
 
 static func collect_nav_regions(node: Node, out: Array) -> void:

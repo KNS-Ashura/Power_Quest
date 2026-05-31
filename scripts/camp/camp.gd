@@ -653,14 +653,53 @@ func spawn_ai_squad_units(unit_ids: Array) -> Array:
 	if MapSession.is_online_match or int(team) != Owner.ENEMY:
 		return []
 	var spawned: Array = []
+	var land_catalog: Dictionary = CampCatalogue.land_unit_catalog(camp_level) if is_port() else {}
 	for raw_id in unit_ids:
 		var unit_id: int = int(raw_id)
-		if not unit_catalog.has(unit_id):
-			continue
-		var unit: Node = _spawn_unit_by_id(unit_id)
+		var unit: Node = null
+		if unit_catalog.has(unit_id):
+			unit = _spawn_unit_by_id(unit_id)
+		elif is_port() and land_catalog.has(unit_id):
+			unit = _spawn_land_unit_by_id(unit_id, land_catalog)
 		if unit != null:
 			spawned.append(unit)
 	return spawned
+
+
+func _spawn_land_unit_by_id(unit_id: int, catalog: Dictionary) -> Node:
+	if not catalog.has(unit_id):
+		return null
+	var stat: UnitStats = catalog[unit_id]
+	var scene := CampCatalogue.scene_for_unit(stat, unit_id, camp_level)
+	if scene == null:
+		return null
+	var unit = scene.instantiate()
+	if not ("stats" in unit):
+		unit.queue_free()
+		return null
+	unit.stats = stat
+	var spawn_position: Vector2 = _land_spawn_around_site(72.0, 140.0, 16)
+	if spawn_position == Vector2.INF:
+		spawn_position = _unit_spawn_position()
+	unit.team = team
+	if MapSession.is_local_team(team):
+		unit.add_to_group("soldiers")
+	else:
+		if unit.is_in_group("soldiers"):
+			unit.remove_from_group("soldiers")
+		unit.add_to_group("enemies")
+	var parent_node = get_parent()
+	if not is_instance_valid(parent_node):
+		unit.queue_free()
+		return null
+	parent_node.add_child(unit)
+	unit.global_position = spawn_position
+	_play_spawn_vfx(spawn_position)
+	if unit.has_method("_apply_stats_to_unit"):
+		unit._apply_stats_to_unit()
+	if unit.has_method("_configure_navigation_layers"):
+		unit._configure_navigation_layers()
+	return unit
 
 
 func _notify_network_spawn(unit: Node, unit_id: int, spawn_position: Vector2) -> void:
