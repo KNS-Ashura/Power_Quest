@@ -47,6 +47,7 @@ Si vous rencontrez **un bug**, un **problème de connexion**, un **souci d'affic
 **Contact : [robinmatelot@gmail.com](mailto:robinmatelot@gmail.com)**
 
 Merci d'indiquer votre navigateur, le mode de jeu (solo / multijoueur) et une description précise du problème. Les retours permettent d'améliorer l'expérience pour tous les joueurs.
+Le multijoueur est hebergé sur un serveur qui est loué donc si vous rencontrez des problèmes envoyez moi un mail.
 
 ---
 
@@ -62,7 +63,7 @@ Merci d'indiquer votre navigateur, le mode de jeu (solo / multijoueur) et une de
 
 | Composant | Technologie |
 |-----------|-------------|
-| Moteur | Godot 4.6 (GL Compatibility) |
+| Moteur | Godot 4.6 (GL Compatibility) (lien de téléchargement: https://godotengine.org/download/windows/ )|
 | Client production | Export Web |
 | Auth & matchmaking | [Nakama](https://heroiclabs.com/nakama/) |
 | Partie en ligne | Serveur Godot headless (WebSocket) |
