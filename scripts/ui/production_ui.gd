@@ -69,18 +69,31 @@ func _set_production_button_text(btn: BaseButton, text: String) -> void:
 		(btn as Button).text = text
 
 
+## Keep grid cell size when a port has fewer units than a camp (GridContainer skips hidden nodes).
+func _set_production_slot_enabled(btn: Control, enabled: bool) -> void:
+	btn.visible = true
+	btn.modulate = Color(1, 1, 1, 1) if enabled else Color(1, 1, 1, 0)
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	if btn is BaseButton:
+		(btn as BaseButton).disabled = not enabled
+
+
 func _apply_production_button_layout() -> void:
+	var unit_buttons: Array[Control] = [
+		btn_inf, btn_arc, btn_heavy, btn_support, btn_heal, btn_anti_armor, btn_mortar
+	]
 	if _port_production_mode:
-		btn_support.hide()
-		btn_heal.hide()
-		btn_anti_armor.hide()
-		btn_mortar.hide()
+		_set_production_slot_enabled(btn_inf, true)
+		_set_production_slot_enabled(btn_arc, true)
+		_set_production_slot_enabled(btn_heavy, true)
+		_set_production_slot_enabled(btn_support, false)
+		_set_production_slot_enabled(btn_heal, false)
+		_set_production_slot_enabled(btn_anti_armor, false)
+		_set_production_slot_enabled(btn_mortar, false)
 		_set_port_button_labels()
 	else:
-		btn_support.show()
-		btn_heal.show()
-		btn_anti_armor.show()
-		btn_mortar.show()
+		for btn in unit_buttons:
+			_set_production_slot_enabled(btn, true)
 		_set_production_button_text(btn_inf, "Infantry (50G)")
 		_set_production_button_text(btn_arc, "Range (80G)")
 		_set_production_button_text(btn_heavy, "Heavy (150G)")
@@ -88,6 +101,13 @@ func _apply_production_button_layout() -> void:
 		_set_production_button_text(btn_heal, "Heal (100G)")
 		_set_production_button_text(btn_anti_armor, "Anti-Armor (90G)")
 		_set_production_button_text(btn_mortar, "Mortar (200G)")
+
+
+func _port_unit_button_label(unit_name: String, price: int) -> String:
+	var label := unit_name.strip_edges()
+	if label.begins_with("Water "):
+		label = label.trim_prefix("Water ")
+	return "%s (%sG)" % [label, str(price)]
 
 
 func _set_port_button_labels() -> void:
@@ -98,13 +118,13 @@ func _set_port_button_labels() -> void:
 		return
 	var ids := [0, 1, 2]
 	var buttons := [btn_inf, btn_arc, btn_heavy]
-	var defaults := ["Water Transport", "Water Tank", "Water Range"]
+	var defaults := ["Transport I", "Tank I", "Range I"]
 	for i in ids.size():
 		var stat: UnitStats = catalog.get(ids[i])
 		if stat:
-			_set_production_button_text(buttons[i], "%s (%sG)" % [stat.name, str(stat.price)])
+			_set_production_button_text(buttons[i], _port_unit_button_label(stat.name, stat.price))
 		else:
-			_set_production_button_text(buttons[i], defaults[i])
+			_set_production_button_text(buttons[i], "%s (%sG)" % [defaults[i], "?"])
 
 
 func _update_queue_display(size, progress) -> void:

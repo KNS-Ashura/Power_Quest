@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://c55u2xamltql6"]
+
+[ext_resource type="Script" uid="uid://bnt8vk1kr4aa0" path="res://scripts/camp/region_site_vfx.gd" id="1_vfx"]
+[ext_resource type="Texture2D" uid="uid://bmy3fu0mc846j" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long1.png" id="2_glbmm"]
+[ext_resource type="Texture2D" uid="uid://rbtmhiw1sxo2" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long2.png" id="3_jmjdd"]
+[ext_resource type="Texture2D" uid="uid://b8bafqbcx4peh" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long3.png" id="4_ub2r6"]
+[ext_resource type="Texture2D" uid="uid://d2oyde60krdva" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long4.png" id="5_twl3y"]
+[ext_resource type="Texture2D" uid="uid://cn7eqpnoim3pc" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long5.png" id="6_qe22d"]
+[ext_resource type="Texture2D" uid="uid://b0f5fs2djbu83" path="res://assets/objects/camps-anim/Cycled_smoke_long/Cycled_smoke_long6.png" id="7_2hopw"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_glbmm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_jmjdd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_ub2r6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_twl3y")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_qe22d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_2hopw")
+}],
+"loop": true,
+"name": &"region",
+"speed": 12.0
+}]
+
+[node name="RegionSeeVfx" type="Node2D" unique_id=1744462652]
+script = ExtResource("1_vfx")
+animation_name = "region"
+loop_forever = true
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1419815497]
+position = Vector2(4, -194)
+scale = Vector2(5.3469872, 2.4243963)
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"region"

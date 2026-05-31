@@ -126,7 +126,7 @@ theme_override_styles/slider = SubResource("StyleBoxFlat_3j6r5")
 min_value = 0.0
 max_value = 100.0
 step = 1.0
-value = 100.0
+value = 50.0
 
 [node name="SFXSlider" type="HSlider" parent="Music" unique_id=1887993601]
 layout_mode = 2
@@ -136,7 +136,7 @@ theme_override_styles/slider = SubResource("StyleBoxFlat_3j6r5")
 min_value = 0.0
 max_value = 100.0
 step = 1.0
-value = 100.0
+value = 50.0
 
 [node name="IconMusic" type="TextureRect" parent="." unique_id=1294744671]
 offset_left = 113.0

@@ -2,7 +2,7 @@ extends Control
 
 const PADDING := 8.0
 const CAMP_RADIUS := 3.5
-const UNIT_RADIUS := 1.8
+const UNIT_RADIUS := 1.2
 const BOUNDS_PADDING := 128.0
 const BOUNDS_LAYER_PRIORITY: Array[String] = ["water", "ground1", "ground2", "road", "chemin"]
 
@@ -232,6 +232,10 @@ func _team_color(team_id: int) -> Color:
 	return Color(0.95, 0.35, 0.35, 1.0)
 
 
+func _should_show_unit_on_minimap(unit: Node) -> bool:
+	return not (unit.get("is_camp_guardian") and unit.is_camp_guardian)
+
+
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.08, 0.08, 0.12, 0.88), true)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.55, 0.45, 0.75, 0.95), false, 2.0)
@@ -248,6 +252,8 @@ func _draw() -> void:
 	for camp in get_tree().get_nodes_in_group("camps"):
 		if not is_instance_valid(camp):
 			continue
+		if not RegionManager.should_show_camp_on_minimap(camp):
+			continue
 		var team: int = int(camp.get("team"))
 		var p := _world_to_minimap(camp.global_position)
 		if not map_rect.has_point(p):
@@ -257,6 +263,8 @@ func _draw() -> void:
 	for unit in get_tree().get_nodes_in_group("soldiers"):
 		if not is_instance_valid(unit):
 			continue
+		if not _should_show_unit_on_minimap(unit):
+			continue
 		var p := _world_to_minimap(unit.global_position)
 		if not map_rect.has_point(p):
 			continue
@@ -264,6 +272,8 @@ func _draw() -> void:
 
 	for unit in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(unit):
+			continue
+		if not _should_show_unit_on_minimap(unit):
 			continue
 		var p := _world_to_minimap(unit.global_position)
 		if not map_rect.has_point(p):

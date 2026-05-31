@@ -16,7 +16,7 @@ const DEFAULT_VOLUME_DB := -6.0
 @onready var _player: AudioStreamPlayer = $MusicPlayer
 
 var _current_track_id: int = -1
-var _volume_linear: float = 1.0
+var _volume_linear: float = 0.5
 
 
 func _ready() -> void:

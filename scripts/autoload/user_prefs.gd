@@ -13,7 +13,7 @@ const SETTINGS_PATH := "user://settings.cfg"
 const SECTION := "general"
 const DEFAULT_LOCALE := "en"
 const SUPPORTED_LOCALES := ["en", "fr", "de"]
-const DEFAULT_VOLUME_PERCENT := 100
+const DEFAULT_VOLUME_PERCENT := 50
 
 var _locale: String = DEFAULT_LOCALE
 var _music_volume_percent: int = DEFAULT_VOLUME_PERCENT

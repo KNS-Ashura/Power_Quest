@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://cp5n38ult811s"]
+
+[ext_resource type="Script" uid="uid://bnt8vk1kr4aa0" path="res://scripts/camp/region_site_vfx.gd" id="1_vfx"]
+[ext_resource type="Texture2D" uid="uid://cscbjel1vqur3" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost1.png" id="2_au2gt"]
+[ext_resource type="Texture2D" uid="uid://bmnhrgf66vm3y" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost2.png" id="3_kokm4"]
+[ext_resource type="Texture2D" uid="uid://c25wwb13dktc4" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost3.png" id="4_5vcfd"]
+[ext_resource type="Texture2D" uid="uid://dergq82sd6lif" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost4.png" id="5_24ghi"]
+[ext_resource type="Texture2D" uid="uid://bts8vwwjrnjkg" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost5.png" id="6_hv6fr"]
+[ext_resource type="Texture2D" uid="uid://dcdcxcrqk8p1g" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost6.png" id="7_iywla"]
+[ext_resource type="Texture2D" uid="uid://c8w83ab325wrf" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost7.png" id="8_h4lwo"]
+[ext_resource type="Texture2D" uid="uid://bch0gkp43jkv" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost8.png" id="9_by600"]
+[ext_resource type="Texture2D" uid="uid://dwxv0y0elawor" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost9.png" id="10_j5hy4"]
+[ext_resource type="Texture2D" uid="uid://cllw1y7k1wov4" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost10.png" id="11_3jqiq"]
+[ext_resource type="Texture2D" uid="uid://55jd2xced4rk" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost11.png" id="12_d3e3f"]
+[ext_resource type="Texture2D" uid="uid://cwlo5qcr3m5i8" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost12.png" id="13_fvfud"]
+[ext_resource type="Texture2D" uid="uid://rv3q6w6qvqov" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost13.png" id="14_7jypa"]
+[ext_resource type="Texture2D" uid="uid://lwyxqftdom5w" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost14.png" id="15_jlnud"]
+[ext_resource type="Texture2D" uid="uid://bsgaikxvdhs73" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost15.png" id="16_bd6vk"]
+[ext_resource type="Texture2D" uid="uid://dfclcqswa74gb" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost16.png" id="17_6ld5k"]
+[ext_resource type="Texture2D" uid="uid://c667vlhuksl0u" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost17.png" id="18_fm7f5"]
+[ext_resource type="Texture2D" uid="uid://crn80x51cs7mj" path="res://assets/objects/camps-anim/Smoke_ghost/Smoke_ghost18.png" id="19_y8vjc"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qi2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_au2gt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_kokm4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_5vcfd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_24ghi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_hv6fr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_iywla")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_h4lwo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_by600")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_j5hy4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_3jqiq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_d3e3f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_fvfud")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_7jypa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_jlnud")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_bd6vk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_6ld5k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_fm7f5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_y8vjc")
+}],
+"loop": true,
+"name": &"region capture",
+"speed": 11.0
+}]
+
+[node name="RegionCaptureVfx" type="Node2D" unique_id=59035434]
+script = ExtResource("1_vfx")
+animation_name = "region capture"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1204721742]
+position = Vector2(-64.31238, -195.56256)
+scale = Vector2(3.1826193, 3.1943355)
+sprite_frames = SubResource("SpriteFrames_s1qi2")
+animation = &"region capture"

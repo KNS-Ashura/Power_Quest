@@ -17,7 +17,7 @@ const DEFAULT_VOLUME_DB := 0.0
 @onready var capture: AudioStreamPlayer = $capture
 
 
-var _sfx_volume_linear: float = 1.0
+var _sfx_volume_linear: float = 0.5
 
 
 func _ready() -> void:

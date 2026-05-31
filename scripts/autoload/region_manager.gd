@@ -1,17 +1,24 @@
 extends Node
 
 const _RegionDefs = preload("res://scripts/world/region_definitions.gd")
+const SCENE_REGION_SEE := preload("res://scenes/camp-port/animation/region-see.tscn")
+const SCENE_REGION_CAPTURE := preload("res://scenes/camp-port/animation/region-capture.tscn")
 
 signal region_captured(region_id: int, team: int, region_name: String)
 signal region_lost(region_id: int, team: int)
+signal regions_ready
 
 var _sites_by_region: Dictionary = {}
 var _control: Dictionary = {}
+var _see_fx_by_region: Dictionary = {}
+var minimap_region_filter: int = -1
 
 
 func init_match() -> void:
 	_sites_by_region.clear()
 	_control.clear()
+	minimap_region_filter = -1
+	hide_all_region_see()
 
 	var map_index: int = MapSession.active_map_index
 	var defs: Dictionary = _RegionDefs.regions_for_map(map_index)
@@ -19,6 +26,7 @@ func init_match() -> void:
 		if _RegionDefs.uses_auto_regions(map_index):
 			_build_auto_regions_by_position()
 			_recalculate_all()
+		regions_ready.emit()
 		return
 
 	var by_name: Dictionary = {}
@@ -38,6 +46,7 @@ func init_match() -> void:
 			_sites_by_region[region_id] = sites
 
 	_recalculate_all()
+	regions_ready.emit()
 
 
 func notify_site_changed(_site: Node = null) -> void:
@@ -61,6 +70,86 @@ func bonus_income_for_site(site: Node) -> int:
 
 func is_region_controlled(region_id: int, team: int) -> bool:
 	return _control.get(region_id, -1) == team
+
+
+func has_regions_for_current_map() -> bool:
+	return not _sites_by_region.is_empty()
+
+
+func has_region(region_id: int) -> bool:
+	return _sites_by_region.has(region_id)
+
+
+func get_controlling_team(region_id: int) -> int:
+	return _control.get(region_id, -1)
+
+
+func get_sites_for_region(region_id: int) -> Array:
+	return _sites_by_region.get(region_id, []).duplicate()
+
+
+func set_minimap_region_filter(region_id: int) -> void:
+	minimap_region_filter = region_id if has_region(region_id) else -1
+
+
+func should_show_camp_on_minimap(camp: Node) -> bool:
+	if minimap_region_filter < 0:
+		return true
+	if not is_instance_valid(camp):
+		return false
+	for site in get_sites_for_region(minimap_region_filter):
+		if site == camp:
+			return true
+	return false
+
+
+func show_region_see(region_id: int) -> void:
+	if not has_region(region_id):
+		return
+	hide_region_see(region_id)
+	var team := get_controlling_team(region_id)
+	var fx_list: Array = []
+	for site in get_sites_for_region(region_id):
+		var fx := _spawn_region_vfx(site, SCENE_REGION_SEE, team)
+		if fx != null:
+			fx_list.append(fx)
+	if not fx_list.is_empty():
+		_see_fx_by_region[region_id] = fx_list
+
+
+func hide_region_see(region_id: int) -> void:
+	if not _see_fx_by_region.has(region_id):
+		return
+	for fx in _see_fx_by_region[region_id]:
+		if is_instance_valid(fx):
+			fx.queue_free()
+	_see_fx_by_region.erase(region_id)
+
+
+func hide_all_region_see() -> void:
+	for region_id in _see_fx_by_region.keys():
+		hide_region_see(region_id)
+
+
+func play_region_capture_vfx(region_id: int, team: int) -> void:
+	for site in get_sites_for_region(region_id):
+		_spawn_region_vfx(site, SCENE_REGION_CAPTURE, team)
+
+
+func _spawn_region_vfx(site: Node, packed: PackedScene, controlling_team: int) -> Node2D:
+	if not is_instance_valid(site) or packed == null:
+		return null
+	var parent_node := site.get_parent()
+	if not is_instance_valid(parent_node):
+		return null
+	var fx: Node2D = packed.instantiate() as Node2D
+	if fx == null:
+		return null
+	parent_node.add_child(fx)
+	fx.global_position = site.global_position
+	if fx.has_method("set_team_tint"):
+		fx.set_team_tint(controlling_team)
+	return fx
 
 
 func region_name(region_id: int) -> String:
@@ -107,10 +196,16 @@ func _recalculate_all() -> void:
 		_control[region_id] = current
 		if current >= 0 and current != 2:
 			region_captured.emit(region_id, current, region_name(region_id))
-			print(
-				"Region fully captured — %s owns %s (+%s gold/s per site)."
-				% [_region_owner_label(current), region_name(region_id), _RegionDefs.BONUS_INCOME_PER_SITE]
-			)
+			play_region_capture_vfx(region_id, current)
+	_refresh_active_see_tints()
+
+
+func _refresh_active_see_tints() -> void:
+	for region_id in _see_fx_by_region:
+		var team := get_controlling_team(region_id)
+		for fx in _see_fx_by_region[region_id]:
+			if is_instance_valid(fx) and fx.has_method("set_team_tint"):
+				fx.set_team_tint(team)
 
 
 func _region_owner_label(team: int) -> String:

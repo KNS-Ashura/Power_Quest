@@ -157,6 +157,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _cheat_key_matches(key, KEY_DOLLAR, 36):
 		_debug_cheat_lose_all_local_camps()
 		get_viewport().set_input_as_handled()
+	elif _cheat_key_matches(key, KEY_EQUAL, 43):
+		_debug_cheat_capture_region(1)
+		get_viewport().set_input_as_handled()
 
 
 func _cheat_key_matches(key: InputEventKey, code: Key, unicode_char: int) -> bool:
@@ -196,6 +199,24 @@ func _debug_cheat_lose_all_local_camps() -> void:
 			camp._capture_by_team(enemy_team)
 			count += 1
 	print("[GameManager] Cheat $: ", count, " local camp(s) lost.")
+
+
+func _debug_cheat_capture_region(region_id: int) -> void:
+	if MapSession.active_map_index != 1:
+		print("[GameManager] Cheat +: map 1 only.")
+		return
+	if not RegionManager.has_region(region_id):
+		print("[GameManager] Cheat +: region %d not found." % region_id)
+		return
+	var local_team := 0 if not MapSession.is_online_match else MapSession.local_team
+	var count := 0
+	for site in RegionManager.get_sites_for_region(region_id):
+		if not is_instance_valid(site):
+			continue
+		if site.has_method("_capture_by_team"):
+			site._capture_by_team(local_team)
+			count += 1
+	print("[GameManager] Cheat +: captured region %d (%d site(s))." % [region_id, count])
 
 
 func _on_global_timer_timeout() -> void:

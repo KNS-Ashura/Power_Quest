@@ -3,6 +3,7 @@ extends Node2D
 const MAP_SLOT_NAME := "MapSlot"
 const MINIMAP_SCENE := preload("res://scenes/ui/minimap.tscn")
 const SCOREBOARD_SCENE := preload("res://scenes/ui/InGameScoreboard.tscn")
+const REGION_UI_SCENE := preload("res://scenes/ui/region_ui.tscn")
 const LEGACY_MAP_ROOT_NAMES: Array[String] = ["Undead-Land", "Cave-Land"]
 
 
@@ -10,6 +11,7 @@ func _ready() -> void:
 	_remove_legacy_embedded_maps()
 	_ensure_minimap_ui()
 	_ensure_scoreboard_ui()
+	_ensure_region_ui()
 	_load_active_map()
 	call_deferred("_init_match_systems")
 
@@ -26,6 +28,12 @@ func _ensure_scoreboard_ui() -> void:
 	add_child(SCOREBOARD_SCENE.instantiate())
 
 
+func _ensure_region_ui() -> void:
+	if get_node_or_null("RegionUI") != null:
+		return
+	add_child(REGION_UI_SCENE.instantiate())
+
+
 func _init_match_systems() -> void:
 	if GameManager.has_method("init_match"):
 		GameManager.init_match()
@@ -34,6 +42,13 @@ func _init_match_systems() -> void:
 	if AIManager.has_method("init_match"):
 		AIManager.init_match()
 	call_deferred("_focus_camera_on_local_camps")
+	call_deferred("_refresh_region_ui")
+
+
+func _refresh_region_ui() -> void:
+	for node in get_tree().get_nodes_in_group("region_ui"):
+		if node.has_method("_refresh_button_states"):
+			node._refresh_button_states()
 
 
 func _focus_camera_on_local_camps() -> void:

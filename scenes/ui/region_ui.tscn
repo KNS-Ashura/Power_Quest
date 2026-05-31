@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://bregionui001"]
+
+[ext_resource type="Script" uid="uid://dh23exsm7lw3o" path="res://scripts/ui/region_ui.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://n7rccbfb85kg" path="res://assets/menu/fonts/m5x7.ttf" id="2_font"]
+[ext_resource type="Texture2D" uid="uid://cbl83knakb0dh" path="res://assets/menu/img-sur-mesure/scene_multi/bouton.tres" id="3_btn"]
+[ext_resource type="Texture2D" uid="uid://b21w032ok686b" path="res://assets/menu/icons/yeu.png" id="4_sikx8"]
+
+[node name="RegionUI" type="CanvasLayer" unique_id=1882160849]
+layer = 12
+script = ExtResource("1_script")
+
+[node name="Root" type="HBoxContainer" parent="." unique_id=1216748320]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -481.0
+offset_top = 97.0
+offset_right = -129.0
+offset_bottom = 141.0
+grow_horizontal = 0
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="BtnRegion1" type="TextureButton" parent="Root" unique_id=73011064]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Root/BtnRegion1" unique_id=628973785]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "Region 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnRegion2" type="TextureButton" parent="Root" unique_id=746052121]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Root/BtnRegion2" unique_id=1227595156]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "Region 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnRegion3" type="TextureButton" parent="Root" unique_id=513238250]
+custom_minimum_size = Vector2(110, 44)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="Root/BtnRegion3" unique_id=872688216]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 107.0
+offset_bottom = 37.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "Region 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="Root" unique_id=979898191]
+position = Vector2(380.9999, 22)
+scale = Vector2(0.027222196, 0.02374314)
+texture = ExtResource("4_sikx8")
+
+[connection signal="pressed" from="Root/BtnRegion1" to="." method="_on_btn_region_1_pressed"]
+[connection signal="pressed" from="Root/BtnRegion2" to="." method="_on_btn_region_2_pressed"]
+[connection signal="pressed" from="Root/BtnRegion3" to="." method="_on_btn_region_3_pressed"]
