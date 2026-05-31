@@ -99,3 +99,7 @@ func get_ai_difficulty() -> int:
 	if active_ai_difficulty < AIDifficulty.SIMPLE or active_ai_difficulty > AIDifficulty.HARD:
 		return AIDifficulty.NORMAL
 	return active_ai_difficulty
+
+
+func get_camera_limit_rect(map_slot: Node) -> Rect2:
+	return MapBounds.camera_limit_rect(active_map_index, map_slot)

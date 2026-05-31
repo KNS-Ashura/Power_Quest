@@ -17,10 +17,10 @@ signal selected_building_changed(building)
 @export var camera_speed: float = 400.0
 @export var zoom_speed: float = 0.1
 @export var auto_camera_limits: bool = true
-@export var camera_limit_padding: float = 96.0
-## Limites manuelles (éditeur) si auto_camera_limits est false ou si la map n'a pas de tilemap.
+@export var camera_limit_padding: float = 0.0
+## Limites manuelles si auto_camera_limits est false.
 @export var use_manual_camera_limits: bool = false
-@export var manual_limit_rect: Rect2 = Rect2(0, 0, 1920, 1080)
+@export var manual_limit_rect: Rect2 = Rect2(-3963, -3093, 8242, 6080)
 
 var target_zoom: float = 1.0
 var zoom_min: float = 0.5
@@ -95,7 +95,10 @@ func _refresh_camera_limits() -> void:
 	if use_manual_camera_limits:
 		_world_bounds = manual_limit_rect
 	elif auto_camera_limits:
-		_world_bounds = _compute_world_bounds()
+		var slot: Node = get_tree().current_scene.get_node_or_null("MapSlot") if get_tree().current_scene else null
+		_world_bounds = MapSession.get_camera_limit_rect(slot)
+		if camera_limit_padding > 0.0:
+			_world_bounds = _world_bounds.grow(camera_limit_padding)
 	else:
 		_camera_limits_ready = false
 		return
@@ -106,53 +109,6 @@ func _refresh_camera_limits() -> void:
 	camera.limit_top = int(_world_bounds.position.y)
 	camera.limit_right = int(_world_bounds.end.x)
 	camera.limit_bottom = int(_world_bounds.end.y)
-
-
-func _compute_world_bounds() -> Rect2:
-	var merged := Rect2()
-	var found := false
-	var slot: Node = get_tree().current_scene.get_node_or_null("MapSlot") if get_tree().current_scene else null
-	if slot != null:
-		for layer in _collect_tilemap_layers(slot):
-			var layer_rect := _tilemap_layer_world_rect(layer)
-			if layer_rect.size == Vector2.ZERO:
-				continue
-			merged = layer_rect if not found else merged.merge(layer_rect)
-			found = true
-	for camp in get_tree().get_nodes_in_group("camps"):
-		if not is_instance_valid(camp):
-			continue
-		var point_rect := Rect2(camp.global_position, Vector2.ZERO).grow(160.0)
-		merged = point_rect if not found else merged.merge(point_rect)
-		found = true
-	if not found:
-		merged = manual_limit_rect
-	return merged.grow(camera_limit_padding)
-
-
-func _collect_tilemap_layers(root: Node) -> Array:
-	var result: Array = []
-	_collect_tilemap_layers_recursive(root, result)
-	return result
-
-
-func _collect_tilemap_layers_recursive(node: Node, result: Array) -> void:
-	if node is TileMapLayer:
-		result.append(node)
-	for child in node.get_children():
-		_collect_tilemap_layers_recursive(child, result)
-
-
-func _tilemap_layer_world_rect(layer: TileMapLayer) -> Rect2:
-	var used: Rect2i = layer.get_used_rect()
-	if used.size == Vector2i.ZERO:
-		return Rect2()
-	var tile_size := Vector2(16, 16)
-	if layer.tile_set != null:
-		tile_size = Vector2(layer.tile_set.tile_size)
-	var local_rect := Rect2(Vector2(used.position) * tile_size, Vector2(used.size) * tile_size)
-	var global_pos: Vector2 = layer.to_global(local_rect.position)
-	return Rect2(global_pos, local_rect.size)
 
 
 func _clamp_camera_to_limits() -> void:
