@@ -37,24 +37,52 @@ func init_match() -> void:
 
 
 func _assign_initial_camps() -> void:
-	var all_camps = get_tree().get_nodes_in_group("camps")
+	var all_camps := get_tree().get_nodes_in_group("camps")
 	if all_camps.size() < 2:
 		return
 
-	all_camps.shuffle()
+	var land: Array = []
+	var ports: Array = []
+	for camp in all_camps:
+		if camp.has_method("is_port") and camp.is_port():
+			ports.append(camp)
+		else:
+			land.append(camp)
 
-	var camps_per_player = max(1, all_camps.size() / 4)
-	var index = 0
+	land.shuffle()
+	ports.shuffle()
 
-	for i in range(camps_per_player):
-		all_camps[index]._capture_by_team(0)
-		index += 1
-		all_camps[index]._capture_by_team(1)
-		index += 1
+	var camps_per_player := maxi(1, all_camps.size() / 4)
+	var player_sites: Array = [[], []]
 
-	while index < all_camps.size():
-		all_camps[index]._capture_by_team(2)
-		index += 1
+	# Au moins un camp terrestre par campagne (joueur + IA) quand la carte en propose.
+	if not land.is_empty():
+		player_sites[0].append(land.pop_front())
+	if not land.is_empty():
+		player_sites[1].append(land.pop_front())
+
+	var pool: Array = []
+	pool.append_array(land)
+	pool.append_array(ports)
+	pool.shuffle()
+
+	for team_idx in range(2):
+		while player_sites[team_idx].size() < camps_per_player and not pool.is_empty():
+			player_sites[team_idx].append(pool.pop_front())
+
+	for camp in player_sites[0]:
+		camp._capture_by_team(0)
+	for camp in player_sites[1]:
+		camp._capture_by_team(1)
+
+	var assigned: Dictionary = {}
+	for camp in player_sites[0]:
+		assigned[camp] = true
+	for camp in player_sites[1]:
+		assigned[camp] = true
+	for camp in all_camps:
+		if not assigned.has(camp):
+			camp._capture_by_team(2)
 
 	RegionManager.init_match()
 
@@ -179,9 +207,12 @@ func _on_global_timer_timeout() -> void:
 	Economy.add_gold(cycle_gold_bonus)
 
 	for camp in get_tree().get_nodes_in_group("camps"):
-		if MapSession.is_local_team(int(camp.get("team"))):
-			camp.receive_reinforcements(reinforcement_count)
-			break
+		if not MapSession.is_local_team(int(camp.get("team"))):
+			continue
+		if camp.has_method("is_port") and camp.is_port():
+			continue
+		camp.receive_reinforcements(reinforcement_count)
+		break
 
 
 func _report_match_result(win: bool) -> void:
