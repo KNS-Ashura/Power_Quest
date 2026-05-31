@@ -36,33 +36,33 @@ offset_bottom = 40.0
 
 [node name="TitleLogin" type="Label" parent="LoginContainer" unique_id=1649879613]
 layout_mode = 0
-offset_left = 149.0
-offset_top = 361.0
-offset_right = 246.0
-offset_bottom = 384.0
+offset_left = 120.0
+offset_top = 354.0
+offset_right = 269.0
+offset_bottom = 377.0
 text = "AUTH_LOGIN_TITLE"
 
 [node name="LoginEmail" type="LineEdit" parent="LoginContainer" unique_id=1414091408]
 layout_mode = 0
-offset_left = 106.0
-offset_top = 418.0
-offset_right = 295.0
-offset_bottom = 449.0
+offset_left = 101.0
+offset_top = 398.0
+offset_right = 290.0
+offset_bottom = 429.0
 placeholder_text = "AUTH_EMAIL"
 
 [node name="LoginPassword" type="LineEdit" parent="LoginContainer" unique_id=1797424618]
 layout_mode = 0
-offset_left = 107.0
-offset_top = 470.0
-offset_right = 296.0
-offset_bottom = 501.0
+offset_left = 101.0
+offset_top = 449.0
+offset_right = 290.0
+offset_bottom = 480.0
 placeholder_text = "AUTH_PASSWORD"
 
 [node name="BtnLogin" type="TextureButton" parent="." unique_id=1512441400]
-offset_left = 124.0
-offset_top = 566.0
-offset_right = 273.0
-offset_bottom = 581.0
+offset_left = 115.0
+offset_top = 557.0
+offset_right = 264.0
+offset_bottom = 572.0
 texture_normal = ExtResource("4_fuwkr")
 stretch_mode = 0
 
@@ -85,42 +85,42 @@ offset_bottom = 40.0
 
 [node name="TitleRegister" type="Label" parent="RegisterContainer" unique_id=235209478]
 layout_mode = 0
-offset_left = 449.0
-offset_top = 361.0
-offset_right = 550.0
-offset_bottom = 384.0
+offset_left = 414.0
+offset_top = 355.0
+offset_right = 585.0
+offset_bottom = 378.0
 text = "AUTH_REGISTER_TITLE"
 
 [node name="RegisterEmail" type="LineEdit" parent="RegisterContainer" unique_id=625913043]
 layout_mode = 0
-offset_left = 404.0
-offset_top = 423.0
-offset_right = 593.0
-offset_bottom = 454.0
+offset_left = 403.0
+offset_top = 398.0
+offset_right = 592.0
+offset_bottom = 429.0
 placeholder_text = "AUTH_EMAIL"
 
 [node name="RegisterPassword" type="LineEdit" parent="RegisterContainer" unique_id=1324560237]
 layout_mode = 0
 offset_left = 404.0
-offset_top = 513.0
+offset_top = 497.0
 offset_right = 593.0
-offset_bottom = 544.0
+offset_bottom = 528.0
 placeholder_text = "AUTH_PASSWORD"
 
 [node name="RegisterUsername" type="LineEdit" parent="RegisterContainer" unique_id=1141336250]
 layout_mode = 0
-offset_left = 404.0
-offset_top = 467.0
-offset_right = 593.0
-offset_bottom = 498.0
+offset_left = 403.0
+offset_top = 447.0
+offset_right = 592.0
+offset_bottom = 478.0
 placeholder_text = "AUTH_USERNAME"
 
 [node name="BtnRegister" type="TextureButton" parent="RegisterContainer" unique_id=1875013856]
 layout_mode = 0
-offset_left = 410.0
-offset_top = 566.0
-offset_right = 587.0
-offset_bottom = 581.0
+offset_left = 411.0
+offset_top = 559.0
+offset_right = 588.0
+offset_bottom = 574.0
 texture_normal = ExtResource("4_fuwkr")
 stretch_mode = 0
 
@@ -136,15 +136,13 @@ text = "AUTH_BTN_REGISTER"
 horizontal_alignment = 1
 
 [node name="ErrorMessage" type="Label" parent="." unique_id=1500172839]
-layout_mode = 0
-offset_left = 90.0
-offset_top = 598.0
-offset_right = 590.0
-offset_bottom = 648.0
+offset_left = 95.0
+offset_top = 498.0
+offset_right = 295.0
+offset_bottom = 548.0
+theme_override_colors/font_color = Color(0.898039, 0.231373, 0.243137, 1)
 theme_override_fonts/font = ExtResource("5_ja6yd")
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.898039, 0.231373, 0.243137, 1)
-text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
