@@ -42,11 +42,14 @@ var _profile_redirect_scheduled: bool = false
 var _logout_redirect_scheduled: bool = false
 
 func _ready():
+	TranslationBootstrap.ensure_loaded()
 	# La langue est gérée par UserPrefs (préférence locale + compte). On la
 	# (ré)applique au cas où, sans écraser le choix de l'utilisateur.
 	if premier_lancement:
 		UserPrefs.set_language(UserPrefs.get_language(), false)
 		premier_lancement = false
+	if not UserPrefs.language_changed.is_connected(_on_language_changed):
+		UserPrefs.language_changed.connect(_on_language_changed)
 	
 	menu_ui.visible = false
 	scroll_container.visible = false
@@ -67,11 +70,17 @@ func _ready():
 	await get_tree().create_timer(0.5).timeout 
 	book_anim.play("Open_book")
 
+func _on_language_changed(_locale: String) -> void:
+	UserPrefs.apply_locale_now()
+
+
 func _on_animated_sprite_2d_animation_finished():
 	if book_anim.animation == "Open_book":
 		menu_ui.visible = true
 		scroll_container.visible = true
 		menu_interactif.visible = true
+		if UITranslator.has_method("refresh_tree"):
+			UITranslator.refresh_tree()
 		
 		_animer_marque_page(mark_menu)
 		

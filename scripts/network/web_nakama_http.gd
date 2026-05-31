@@ -11,7 +11,7 @@ extends RefCounted
 
 # JS compact sur UNE ligne : JavaScriptBridge.eval est plus fiable ainsi
 # (les chaînes multi-lignes / tabulations peuvent échouer silencieusement).
-const _BRIDGE_JS := "window.PQ=window.PQ||{};window.PQ._r=window.PQ._r||{};window.PQ.send=function(id,url,method,h,b){var hd={};try{hd=JSON.parse(h||'{}');}catch(e){hd={};}var o={method:method||'POST',headers:hd,cache:'no-store',credentials:'omit'};if(method!=='GET'&&b){o.body=b;}fetch(url,o).then(function(r){return r.text().then(function(t){window.PQ._r[id]=JSON.stringify({ok:r.ok,status:r.status,text:t});});}).catch(function(e){window.PQ._r[id]=JSON.stringify({ok:false,status:0,text:'',error:String(e)});});};window.PQ.poll=function(id){if(Object.prototype.hasOwnProperty.call(window.PQ._r,id)){var v=window.PQ._r[id];delete window.PQ._r[id];return v;}return '';};"
+const _BRIDGE_JS := "window.PQ=window.PQ||{};window.PQ._r=window.PQ._r||{};window.PQ.send=function(id,url,method,h,b){var hd={};try{hd=JSON.parse(h||'{}');}catch(e){hd={};}var o={method:method||'POST',headers:hd,cache:'no-store',credentials:'omit'};if(method!=='GET'&&b){o.body=b;}fetch(url,o).then(function(r){return r.text().then(function(t){window.PQ._r[id]=JSON.stringify({ok:r.ok,status:r.status,text:t});});}).catch(function(e){window.PQ._r[id]=JSON.stringify({ok:false,status:0,text:'',error:String(e)});});};window.PQ.poll=function(id){if(Object.prototype.hasOwnProperty.call(window.PQ._r,id)){var v=window.PQ._r[id];delete window.PQ._r[id];return v;}return '';};window.PQ.lsGet=function(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}};window.PQ.lsSet=function(k,v){try{localStorage.setItem(k,v);}catch(e){}};window.PQ.lsDel=function(k){try{localStorage.removeItem(k);}catch(e){}};"
 
 
 static func is_available() -> bool:
@@ -90,3 +90,29 @@ static func poll(id: String) -> Dictionary:
 	if typeof(parsed) == TYPE_DICTIONARY:
 		return parsed as Dictionary
 	return {"ok": false, "status": 0, "text": raw_str}
+
+
+static func ls_get(key: String) -> String:
+	if not ensure_bridge():
+		return ""
+	var raw: Variant = JavaScriptBridge.eval(
+		"window.PQ.lsGet(" + JSON.stringify(key) + ")", true
+	)
+	if raw == null:
+		return ""
+	return str(raw)
+
+
+static func ls_set(key: String, value: String) -> void:
+	if not ensure_bridge() or value.is_empty():
+		return
+	JavaScriptBridge.eval(
+		"window.PQ.lsSet(" + JSON.stringify(key) + "," + JSON.stringify(value) + ")",
+		true
+	)
+
+
+static func ls_del(key: String) -> void:
+	if not ensure_bridge():
+		return
+	JavaScriptBridge.eval("window.PQ.lsDel(" + JSON.stringify(key) + ")", true)

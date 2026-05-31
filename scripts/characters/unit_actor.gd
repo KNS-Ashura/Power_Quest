@@ -838,6 +838,21 @@ func force_network_death() -> void:
 	PlayerNetworkControllerRef.force_network_death(self)
 
 
+func eliminate_instantly() -> void:
+	if is_dying or is_queued_for_deletion():
+		return
+	is_dying = true
+	if net_sync_id >= 0:
+		OnlineGameSync.unregister_unit(net_sync_id)
+	velocity = Vector2.ZERO
+	collision_layer = 0
+	collision_mask = 0
+	if is_instance_valid(agent_navigation):
+		agent_navigation.target_position = global_position
+		agent_navigation.avoidance_enabled = false
+	queue_free()
+
+
 func apply_heal_network_remote(amount: int, caster_sync_id: int) -> void:
 	PlayerNetworkControllerRef.apply_heal_network_remote(self, amount, caster_sync_id)
 

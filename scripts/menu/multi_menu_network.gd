@@ -87,7 +87,12 @@ func _start_matchmaking() -> void:
 	if NetworkSession.has_saved_account_credentials():
 		_enter_matchmaking_ui()
 		_status_label.text = tr("MULTI_CONNECTING_NAKAMA")
-		NetworkSession.authenticate()
+		await NetworkSession.authenticate_and_wait()
+		if not NetworkSession.is_account_logged_in():
+			_cancel_matchmaking(true)
+			_status_label.modulate = Color(1, 0.45, 0.45)
+			_status_label.text = tr("MULTI_LOGIN_REQUIRED")
+			requires_login.emit()
 		return
 
 	# Vraiment non connecté : redirection vers la page connexion.

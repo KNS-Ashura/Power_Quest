@@ -33,6 +33,12 @@ func get_language() -> String:
 	return _locale
 
 
+func apply_locale_now() -> void:
+	_apply_locale()
+	if UITranslator.has_method("refresh_tree"):
+		UITranslator.call_deferred("refresh_tree")
+
+
 ## Change la langue : applique, persiste localement et resynchronise le compte.
 func set_language(locale: String, sync_account: bool = true) -> void:
 	if not SUPPORTED_LOCALES.has(locale):
@@ -50,6 +56,8 @@ func set_language(locale: String, sync_account: bool = true) -> void:
 
 
 func _apply_locale() -> void:
+	TranslationBootstrap.ensure_loaded()
+	_locale = TranslationBootstrap.normalize_locale(_locale)
 	TranslationServer.set_locale(_locale)
 
 

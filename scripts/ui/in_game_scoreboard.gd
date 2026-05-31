@@ -22,6 +22,8 @@ func _ready() -> void:
 
 	if not Economy.gold_changed.is_connected(_on_economy_gold_changed):
 		Economy.gold_changed.connect(_on_economy_gold_changed)
+	if not OnlineGameSync.team_gold_changed.is_connected(_on_remote_team_gold_changed):
+		OnlineGameSync.team_gold_changed.connect(_on_remote_team_gold_changed)
 
 	call_deferred("refresh")
 
@@ -29,6 +31,12 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if Economy.gold_changed.is_connected(_on_economy_gold_changed):
 		Economy.gold_changed.disconnect(_on_economy_gold_changed)
+	if OnlineGameSync.team_gold_changed.is_connected(_on_remote_team_gold_changed):
+		OnlineGameSync.team_gold_changed.disconnect(_on_remote_team_gold_changed)
+
+
+func _on_remote_team_gold_changed(_team_id: int, _amount: int) -> void:
+	refresh()
 
 
 func _on_economy_gold_changed(_new_amount: int) -> void:
@@ -122,6 +130,10 @@ func _count_camps_for_team(team_id: int) -> int:
 func _gold_for_team(team_id: int) -> Variant:
 	if MapSession.is_local_team(team_id):
 		return Economy.gold
+	if MapSession.is_online_match:
+		var synced_gold := OnlineGameSync.get_team_gold(team_id)
+		if synced_gold >= 0:
+			return synced_gold
 	if not MapSession.is_online_match and team_id == 1 and AIManager != null:
 		return AIManager.ai_gold
 	return null

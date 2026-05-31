@@ -21,6 +21,9 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 MapSession="*res://scripts/autoload/map_session.gd"
+TranslationBootstrap="*res://scripts/autoload/translation_bootstrap.gd"
+UserPrefs="*res://scripts/autoload/user_prefs.gd"
+UITranslator="*res://scripts/autoload/ui_translator.gd"
 Economy="*res://scripts/autoload/economy.gd"
 RegionManager="*res://scripts/autoload/region_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
@@ -32,8 +35,6 @@ NetworkConfig="*res://scripts/network/network_config.gd"
 NetworkSession="*res://scripts/network/network_session.gd"
 OnlineMatch="*res://scripts/network/online_match.gd"
 OnlineGameSync="*res://scripts/network/online_game_sync.gd"
-UserPrefs="*res://scripts/autoload/user_prefs.gd"
-TranslationBootstrap="*res://scripts/autoload/translation_bootstrap.gd"
 
 [display]
 
@@ -56,6 +57,7 @@ enabled=PackedStringArray()
 
 [internationalization]
 
+locale/fallback="en"
 locale/translations=PackedStringArray("res://assets/menu/traduction.de.translation", "res://assets/menu/traduction.en.translation", "res://assets/menu/traduction.fr.translation")
 
 [layer_names]

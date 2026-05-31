@@ -30,6 +30,7 @@ func init_match() -> void:
 		global_timer.stop()
 	global_timer.start()
 	if MapSession.is_online_match:
+		MapSession.online_camps_ready = false
 		OnlineMatch.begin_setup_after_main_loaded()
 		return
 	_assign_initial_camps()
@@ -62,6 +63,8 @@ func _process(_delta: float) -> void:
 	if match_over:
 		return
 	if MapSession.is_online_match and local_eliminated:
+		return
+	if MapSession.is_online_match and not MapSession.online_camps_ready:
 		return
 
 	var all_camps = get_tree().get_nodes_in_group("camps")
@@ -169,6 +172,8 @@ func _debug_cheat_lose_all_local_camps() -> void:
 
 func _on_global_timer_timeout() -> void:
 	if match_over or local_eliminated:
+		return
+	if MapSession.is_online_match and not MapSession.online_camps_ready:
 		return
 
 	Economy.add_gold(cycle_gold_bonus)

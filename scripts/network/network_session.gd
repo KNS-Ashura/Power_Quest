@@ -48,7 +48,11 @@ var _use_browser_http: bool = false
 var _web_bridge_warned: bool = false
 var _web_pending_id: String = ""
 var _web_request_started_ms: int = 0
+var _web_http_retry_scheduled: bool = false
+var _auto_reconnect_running: bool = false
 const WEB_HTTP_TIMEOUT_MS := 15000
+const WEB_CREDS_STORAGE_KEY := "pq_account_credentials"
+const WEB_SESSION_STORAGE_KEY := "pq_session_state"
 
 var _http: HTTPRequest
 var _http_queue: Array = []
@@ -81,17 +85,57 @@ func _ready() -> void:
 	add_child(_http)
 	_http.request_completed.connect(_on_http_completed)
 	_load_or_create_device_id()
-	# Reconnexion auto : si des identifiants sont sauvegardés (persistés en
-	# IndexedDB sur le Web), on se reconnecte tout seul au lancement / refresh.
-	call_deferred("_try_auto_reconnect")
+	call_deferred("_run_auto_reconnect_attempt")
+
+
+func _ensure_web_http_ready() -> bool:
+	if not OS.has_feature("web") or not WebNakamaHttp.is_available():
+		return false
+	if WebNakamaHttp.ensure_bridge():
+		_use_browser_http = true
+		return true
+	_use_browser_http = false
+	return false
+
+
+func _run_auto_reconnect_attempt(attempt: int = 0) -> void:
+	if _auto_reconnect_running and attempt == 0:
+		return
+	if attempt == 0:
+		_auto_reconnect_running = true
+	if is_account_logged_in():
+		_auto_reconnect_running = false
+		return
+	if OS.has_feature("web"):
+		WebNakamaHttp.ensure_bridge()
+		await get_tree().process_frame
+		await get_tree().process_frame
+	if _try_restore_persisted_session():
+		_auto_reconnect_running = false
+		return
+	if not has_saved_account_credentials():
+		if OS.has_feature("web") and attempt < 20:
+			await get_tree().create_timer(0.2).timeout
+			_run_auto_reconnect_attempt(attempt + 1)
+			return
+		_auto_reconnect_running = false
+		return
+	if OS.has_feature("web"):
+		_ensure_web_http_ready()
+		if not WebNakamaHttp.bridge_ready() and attempt < 24:
+			await get_tree().create_timer(0.25).timeout
+			_run_auto_reconnect_attempt(attempt + 1)
+			return
+	await _authenticate_with_saved_credentials()
+	_auto_reconnect_running = false
 
 
 func _try_auto_reconnect() -> void:
-	if is_account_logged_in():
-		return
-	if not has_saved_account_credentials():
-		return
-	authenticate()
+	_run_auto_reconnect_attempt()
+
+
+func authenticate_and_wait() -> void:
+	await _authenticate_with_saved_credentials()
 
 
 func is_account_logged_in() -> bool:
@@ -99,7 +143,7 @@ func is_account_logged_in() -> bool:
 
 
 func has_saved_account_credentials() -> bool:
-	return FileAccess.file_exists("user://account_credentials.json")
+	return _credentials_are_usable(_read_saved_credentials())
 
 
 func get_display_username() -> String:
@@ -228,6 +272,7 @@ func logout_account() -> void:
 	profile_cache.clear()
 	leaderboard_cache.clear()
 	_delete_saved_credentials()
+	_delete_persisted_session()
 	if _match_peer != null:
 		_match_peer.close()
 		_match_peer = null
@@ -355,6 +400,7 @@ func _complete_auth_success() -> void:
 	if display_name != "Joueur":
 		profile_cache["username"] = display_name
 		profile_updated.emit(profile_cache.duplicate(true))
+	_save_persisted_session()
 	request_account_info()
 	request_player_profile()
 	request_leaderboard()
@@ -368,13 +414,129 @@ func request_leaderboard(limit: int = 20) -> void:
 	_rpc("get_leaderboard", payload)
 
 
+func _credentials_are_usable(creds: Dictionary) -> bool:
+	return (
+		str(creds.get("email", "")).strip_edges() != ""
+		and str(creds.get("password", "")) != ""
+	)
+
+
 func _read_saved_credentials() -> Dictionary:
+	# Web : localStorage fait foi (IndexedDB user:// peut être vide ou obsolète).
+	if OS.has_feature("web"):
+		var from_web := _read_web_saved_credentials()
+		if _credentials_are_usable(from_web):
+			return from_web
+	var from_file := _read_credentials_file()
+	if _credentials_are_usable(from_file):
+		return from_file
+	if FileAccess.file_exists("user://account_credentials.json"):
+		DirAccess.remove_absolute("user://account_credentials.json")
+	if not OS.has_feature("web"):
+		var from_web := _read_web_saved_credentials()
+		if _credentials_are_usable(from_web):
+			return from_web
+	return {}
+
+
+func _read_credentials_file() -> Dictionary:
 	if not FileAccess.file_exists("user://account_credentials.json"):
 		return {}
-	var parsed: Variant = _parse_json_safe(FileAccess.get_file_as_string("user://account_credentials.json"))
+	var parsed: Variant = _parse_json_safe(
+		FileAccess.get_file_as_string("user://account_credentials.json")
+	)
 	if typeof(parsed) == TYPE_DICTIONARY:
 		return parsed as Dictionary
 	return {}
+
+
+func _read_web_saved_credentials() -> Dictionary:
+	return _read_web_storage(WEB_CREDS_STORAGE_KEY)
+
+
+func _read_web_storage(storage_key: String) -> Dictionary:
+	if not OS.has_feature("web"):
+		return {}
+	var raw_str := ""
+	if WebNakamaHttp.is_available():
+		WebNakamaHttp.ensure_bridge()
+		raw_str = WebNakamaHttp.ls_get(storage_key).strip_edges()
+	if raw_str.is_empty() and ClassDB.class_exists("JavaScriptBridge"):
+		var payload := JSON.stringify({"key": storage_key})
+		var raw: Variant = JavaScriptBridge.eval(
+			"(function(p){try{return localStorage.getItem(p.key)||'';}catch(e){return '';}})("
+			+ payload
+			+ ")",
+			true
+		)
+		if raw != null:
+			raw_str = str(raw).strip_edges()
+	if raw_str.is_empty():
+		return {}
+	return _decode_web_storage_json(raw_str)
+
+
+func _decode_web_storage_json(raw_str: String) -> Dictionary:
+	var parsed: Variant = _parse_json_safe(raw_str)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		return parsed as Dictionary
+	if typeof(parsed) == TYPE_STRING:
+		var inner: Variant = _parse_json_safe(str(parsed))
+		if typeof(inner) == TYPE_DICTIONARY:
+			return inner as Dictionary
+	return _extract_credentials_from_text(raw_str)
+
+
+func _extract_credentials_from_text(text: String) -> Dictionary:
+	var out := {}
+	if text.is_empty():
+		return out
+	var email_re := RegEx.new()
+	if email_re.compile("\"email\"\\s*:\\s*\"([^\"]+)\"") == OK:
+		var em := email_re.search(text)
+		if em:
+			out["email"] = em.get_string(1)
+	var pass_re := RegEx.new()
+	if pass_re.compile("\"password\"\\s*:\\s*\"([^\"]*)\"") == OK:
+		var pm := pass_re.search(text)
+		if pm:
+			out["password"] = pm.get_string(1)
+	var user_re := RegEx.new()
+	if user_re.compile("\"username\"\\s*:\\s*\"([^\"]+)\"") == OK:
+		var um := user_re.search(text)
+		if um:
+			out["username"] = um.get_string(1)
+	return out
+
+
+func _write_web_storage(storage_key: String, json_text: String) -> void:
+	if not OS.has_feature("web") or json_text.is_empty():
+		return
+	if WebNakamaHttp.is_available():
+		WebNakamaHttp.ls_set(storage_key, json_text)
+		return
+	if not ClassDB.class_exists("JavaScriptBridge"):
+		return
+	var payload := JSON.stringify({"key": storage_key, "value": json_text})
+	JavaScriptBridge.eval(
+		"(function(p){try{localStorage.setItem(p.key,p.value);}catch(e){}})(" + payload + ")",
+		true
+	)
+
+
+func _remove_web_storage(storage_key: String) -> void:
+	if not OS.has_feature("web"):
+		return
+	if WebNakamaHttp.is_available():
+		WebNakamaHttp.ls_del(storage_key)
+		return
+	if not ClassDB.class_exists("JavaScriptBridge"):
+		return
+	var payload := JSON.stringify({"key": storage_key})
+	JavaScriptBridge.eval(
+		"(function(p){try{localStorage.removeItem(p.key);}catch(e){}})(" + payload + ")",
+		true
+	)
 
 
 func _load_saved_username_for_email(email: String) -> String:
@@ -393,9 +555,6 @@ func _apply_saved_username_hints(email: String) -> void:
 
 
 func _save_credentials(email: String, password: String, username: String = "") -> void:
-	var f := FileAccess.open("user://account_credentials.json", FileAccess.WRITE)
-	if f == null:
-		return
 	var data := {
 		"email": email.strip_edges().to_lower(),
 		"password": password,
@@ -407,12 +566,102 @@ func _save_credentials(email: String, password: String, username: String = "") -
 		u = account_username
 	if _is_human_username(u):
 		data["username"] = u
-	f.store_string(JSON.stringify(data))
+	var json_text := JSON.stringify(data)
+	var f := FileAccess.open("user://account_credentials.json", FileAccess.WRITE)
+	if f != null:
+		f.store_string(json_text)
+	_save_web_credentials(json_text)
+
+
+func _save_web_credentials(json_text: String) -> void:
+	_write_web_storage(WEB_CREDS_STORAGE_KEY, json_text)
+
+
+func _save_persisted_session() -> void:
+	if not is_account_logged_in():
+		return
+	var data := {
+		"token": session_token,
+		"user_id": user_id,
+		"email": account_email,
+		"username": account_username,
+		"auth_mode": _auth_mode,
+	}
+	var json_text := JSON.stringify(data)
+	var file := FileAccess.open("user://session_state.json", FileAccess.WRITE)
+	if file != null:
+		file.store_string(json_text)
+	_write_web_storage(WEB_SESSION_STORAGE_KEY, json_text)
+
+
+func _session_data_is_usable(data: Dictionary) -> bool:
+	var token := str(data.get("token", "")).strip_edges()
+	if token.is_empty():
+		return false
+	if str(data.get("auth_mode", "account")) != "account":
+		return false
+	return not _jwt_is_expired(token)
+
+
+func _read_persisted_session() -> Dictionary:
+	if OS.has_feature("web"):
+		var from_web := _read_web_storage(WEB_SESSION_STORAGE_KEY)
+		if _session_data_is_usable(from_web):
+			return from_web
+		if not from_web.is_empty() or WebNakamaHttp.ls_get(WEB_SESSION_STORAGE_KEY) != "":
+			_remove_web_storage(WEB_SESSION_STORAGE_KEY)
+	var from_file := _read_session_file()
+	if _session_data_is_usable(from_file):
+		return from_file
+	if FileAccess.file_exists("user://session_state.json"):
+		DirAccess.remove_absolute("user://session_state.json")
+	if not OS.has_feature("web"):
+		var from_web := _read_web_storage(WEB_SESSION_STORAGE_KEY)
+		if _session_data_is_usable(from_web):
+			return from_web
+	return {}
+
+
+func _read_session_file() -> Dictionary:
+	if not FileAccess.file_exists("user://session_state.json"):
+		return {}
+	var parsed: Variant = _parse_json_safe(
+		FileAccess.get_file_as_string("user://session_state.json")
+	)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		return parsed as Dictionary
+	return {}
+
+
+func _delete_persisted_session() -> void:
+	if FileAccess.file_exists("user://session_state.json"):
+		DirAccess.remove_absolute("user://session_state.json")
+	_remove_web_storage(WEB_SESSION_STORAGE_KEY)
+
+
+func _try_restore_persisted_session() -> bool:
+	var data := _read_persisted_session()
+	if data.is_empty():
+		return false
+	var token := str(data.get("token", "")).strip_edges()
+	session_token = token
+	user_id = str(data.get("user_id", ""))
+	account_email = str(data.get("email", ""))
+	account_username = str(data.get("username", ""))
+	_auth_mode = str(data.get("auth_mode", "account"))
+	if _auth_mode != "account":
+		return false
+	is_authenticated = true
+	if _is_human_username(account_username):
+		_session_username_override = account_username
+	_complete_auth_success()
+	return true
 
 
 func _delete_saved_credentials() -> void:
 	if FileAccess.file_exists("user://account_credentials.json"):
 		DirAccess.remove_absolute("user://account_credentials.json")
+	_remove_web_storage(WEB_CREDS_STORAGE_KEY)
 
 
 func _load_or_create_device_id() -> void:
@@ -458,16 +707,39 @@ func authenticate() -> void:
 	if is_account_logged_in():
 		auth_ready.emit()
 		return
-	if not FileAccess.file_exists("user://account_credentials.json"):
-		auth_failed.emit(tr("AUTH_LOGIN_FIRST"))
-		return
 	var parsed := _read_saved_credentials()
-	if parsed.is_empty():
-		auth_failed.emit(tr("AUTH_LOCAL_INVALID"))
+	if not _credentials_are_usable(parsed):
+		auth_failed.emit(tr("AUTH_LOGIN_FIRST"))
 		return
 	var email := str(parsed.get("email", ""))
 	_apply_saved_username_hints(email)
 	login_account(email, str(parsed.get("password", "")))
+
+
+func _authenticate_with_saved_credentials() -> void:
+	if is_account_logged_in():
+		auth_ready.emit()
+		return
+	var parsed := _read_saved_credentials()
+	if not _credentials_are_usable(parsed):
+		return
+	var finished := false
+	var on_ready := func() -> void:
+		finished = true
+	var on_failed := func(_message: String) -> void:
+		finished = true
+	if not auth_ready.is_connected(on_ready):
+		auth_ready.connect(on_ready, CONNECT_ONE_SHOT)
+	if not auth_failed.is_connected(on_failed):
+		auth_failed.connect(on_failed, CONNECT_ONE_SHOT)
+	authenticate()
+	var deadline_ms := Time.get_ticks_msec() + 20000
+	while not finished and Time.get_ticks_msec() < deadline_ms:
+		await get_tree().process_frame
+	if auth_ready.is_connected(on_ready):
+		auth_ready.disconnect(on_ready)
+	if auth_failed.is_connected(on_failed):
+		auth_failed.disconnect(on_failed)
 
 
 func join_ranked_queue() -> void:
@@ -523,6 +795,14 @@ func _pump_http_queue() -> void:
 	if _web_pending_id != "":
 		return
 	var job: Dictionary = _http_queue.pop_front()
+	if OS.has_feature("web"):
+		_ensure_web_http_ready()
+		if WebNakamaHttp.bridge_ready():
+			_start_web_request(job)
+			return
+		_http_queue.push_front(job)
+		_schedule_web_http_retry()
+		return
 	if _use_browser_http and WebNakamaHttp.bridge_ready():
 		_start_web_request(job)
 		return
@@ -540,6 +820,17 @@ func _pump_http_queue() -> void:
 		_http_busy = false
 		push_error("[NetworkSession] HTTP request failed to start: " + str(err))
 		_pump_http_queue()
+
+
+func _schedule_web_http_retry() -> void:
+	if _web_http_retry_scheduled:
+		return
+	_web_http_retry_scheduled = true
+	var timer := get_tree().create_timer(0.3)
+	timer.timeout.connect(func() -> void:
+		_web_http_retry_scheduled = false
+		_pump_http_queue()
+	, CONNECT_ONE_SHOT)
 
 
 func _apply_http_job_meta(job: Dictionary) -> void:
@@ -1326,6 +1617,8 @@ func _on_server_peer_disconnected(peer_id: int) -> void:
 		return
 	print("[NetworkSession] Client WebSocket déconnecté: ", peer_id)
 	_server_registered_peers.erase(peer_id)
+	if _server_match_started and MapSession.is_online_match and MapSession.online_camps_ready:
+		OnlineGameSync.handle_player_abandoned(peer_id)
 	if multiplayer.get_peers().is_empty():
 		reset_server_match_state()
 
@@ -1535,6 +1828,16 @@ func _parse_jwt_payload(token: String) -> Dictionary:
 	if typeof(parsed) == TYPE_DICTIONARY:
 		return parsed as Dictionary
 	return {}
+
+
+func _jwt_is_expired(token: String) -> bool:
+	var payload := _parse_jwt_payload(token)
+	if not payload.has("exp"):
+		return false
+	var exp := int(payload.get("exp", 0))
+	if exp <= 0:
+		return false
+	return Time.get_unix_time_from_system() >= exp - 30
 
 
 func _handle_error(msg: String) -> void:

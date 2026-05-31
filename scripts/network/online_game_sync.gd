@@ -20,6 +20,12 @@ var _sync_accum: float = 0.0
 var _pending_by_token: Dictionary = {}
 var _next_spawn_token: int = 1
 var _captured_camp_state: Dictionary = {}
+var _team_gold: Dictionary = {}
+var _gold_sync_accum: float = 0.0
+
+signal team_gold_changed(team_id: int, amount: int)
+
+const GOLD_SYNC_INTERVAL := 1.0
 
 
 func reset() -> void:
@@ -31,6 +37,33 @@ func reset() -> void:
 	_pending_by_token.clear()
 	_next_spawn_token = 1
 	_captured_camp_state.clear()
+	_team_gold.clear()
+	_gold_sync_accum = 0.0
+
+
+func _ready() -> void:
+	if not Economy.gold_changed.is_connected(_on_local_gold_changed):
+		Economy.gold_changed.connect(_on_local_gold_changed)
+	if not OnlineMatch.setup_complete.is_connected(_on_online_setup_complete):
+		OnlineMatch.setup_complete.connect(_on_online_setup_complete)
+
+
+func _on_online_setup_complete() -> void:
+	if not is_online_active() or ServerMode.is_dedicated_server or multiplayer.is_server():
+		return
+	report_team_gold.rpc_id(1, MapSession.local_team, Economy.gold)
+
+
+func get_team_gold(team_id: int) -> int:
+	return int(_team_gold.get(team_id, -1))
+
+
+func _on_local_gold_changed(amount: int) -> void:
+	if not is_online_active() or ServerMode.is_dedicated_server or multiplayer.is_server():
+		return
+	if not MapSession.online_camps_ready:
+		return
+	report_team_gold.rpc_id(1, MapSession.local_team, amount)
 
 
 func notify_unit_spawned(camp: Node, unit: Node, unite_id: int, spawn_pos: Vector2) -> void:
@@ -44,18 +77,36 @@ func notify_unit_spawned(camp: Node, unit: Node, unite_id: int, spawn_pos: Vecto
 	_next_spawn_token += 1
 	_pending_by_token[token] = unit
 	rpc_report_unit_spawn.rpc_id(
-		1, str(camp.get_path()), unite_id, spawn_pos, int(camp.get("team")), token
+		1, normalize_camp_path(camp), unite_id, spawn_pos, int(camp.get("team")), token
 	)
 
 
+func normalize_camp_path(camp: Node) -> String:
+	if camp == null:
+		return ""
+	var path := str(camp.get_path())
+	const MARKER := "MapSlot/"
+	var idx := path.find(MARKER)
+	if idx >= 0:
+		return path.substr(idx)
+	return camp.name
+
+
 func _resolve_node(path: String) -> Node:
+	var node := _resolve_node_direct(path)
+	if node != null:
+		return node
+	return _resolve_camp_path(path)
+
+
+func _resolve_node_direct(path: String) -> Node:
 	if path.is_empty():
 		return null
 	var node: Node = get_tree().root.get_node_or_null(NodePath(path))
 	if node != null:
 		return node
 	if path.begins_with("/root/"):
-		node = get_tree().root.get_node_or_null(NodePath(path.trim_prefix("/root")))
+		node = get_tree().root.get_node_or_null(NodePath(path.trim_prefix("/root/")))
 		if node != null:
 			return node
 	var scene: Node = get_tree().current_scene
@@ -64,15 +115,64 @@ func _resolve_node(path: String) -> Node:
 	return null
 
 
-func _find_camp_for_spawn(camp_path: String, spawn_pos: Vector2, team_id: int) -> Node:
-	var camp: Node = _resolve_node(camp_path)
-	if camp != null:
-		return camp
+func _resolve_camp_path(path: String) -> Node:
+	if path.is_empty():
+		return null
+	const MARKER := "MapSlot/"
+	var relative := path
+	if path.begins_with(MARKER):
+		relative = path.substr(MARKER.length())
+	elif path.find("/" + MARKER) >= 0:
+		relative = path.substr(path.find(MARKER) + MARKER.length())
+	var slot: Node = null
+	if get_tree().current_scene != null:
+		slot = get_tree().current_scene.get_node_or_null("MapSlot")
+	if slot != null and not relative.is_empty() and relative != path:
+		var camp: Node = slot.get_node_or_null(NodePath(relative))
+		if camp != null:
+			return camp
+	var node_name := path.get_file()
+	if node_name.is_empty():
+		node_name = path
 	for c in get_tree().get_nodes_in_group("camps"):
-		if int(c.get("team")) == team_id:
-			if c.global_position.distance_to(spawn_pos) < 500.0:
-				return c
+		if c.name == node_name:
+			return c
 	return null
+
+
+func _find_camp_for_spawn(
+	camp_path: String, spawn_pos: Vector2, team_id: int, unit_id: int = -1
+) -> Node:
+	var direct: Node = _resolve_camp_path(camp_path)
+	if direct == null:
+		direct = _resolve_node_direct(camp_path)
+	if direct != null and _camp_can_spawn_unit(direct, unit_id):
+		return direct
+	var best: Node = null
+	var best_dist := INF
+	for c in get_tree().get_nodes_in_group("camps"):
+		if int(c.get("team")) != team_id:
+			continue
+		if not _camp_can_spawn_unit(c, unit_id):
+			continue
+		var dist: float = c.global_position.distance_to(spawn_pos)
+		if dist < best_dist:
+			best_dist = dist
+			best = c
+	if best != null and best_dist <= 900.0:
+		return best
+	return null
+
+
+func _camp_can_spawn_unit(camp: Node, unit_id: int) -> bool:
+	if unit_id < 0:
+		return true
+	if camp.get("unit_catalog") == null:
+		return false
+	var catalog: Variant = camp.get("unit_catalog")
+	if catalog is Dictionary:
+		return (catalog as Dictionary).has(unit_id)
+	return false
 
 
 func register_peer_team(peer_id: int, team: int) -> void:
@@ -81,6 +181,82 @@ func register_peer_team(peer_id: int, team: int) -> void:
 
 func peer_team(peer_id: int) -> int:
 	return int(_peer_to_team.get(peer_id, -1))
+
+
+func handle_player_abandoned(peer_id: int) -> void:
+	if not multiplayer.is_server() or not is_online_active():
+		return
+	var team_id := peer_team(peer_id)
+	if team_id < 0:
+		return
+
+	var sync_ids: Array[int] = []
+	for sync_id in _owner_peer_for_id.keys():
+		if int(_owner_peer_for_id[sync_id]) == peer_id:
+			sync_ids.append(int(sync_id))
+			_owner_peer_for_id.erase(sync_id)
+	_peer_to_team.erase(peer_id)
+
+	var camp_paths: PackedStringArray = PackedStringArray()
+	for camp in get_tree().get_nodes_in_group("camps"):
+		if int(camp.get("team")) == team_id:
+			var path := str(camp.get_path())
+			camp_paths.append(path)
+			_captured_camp_state[path] = TEAM_NEUTRAL
+
+	_apply_player_abandoned(team_id, camp_paths, sync_ids)
+
+	for remaining_peer_id in multiplayer.get_peers():
+		rpc_apply_player_abandoned.rpc_id(remaining_peer_id, team_id, camp_paths, sync_ids)
+
+	print(
+		"[OnlineGameSync] Joueur peer %d (équipe %d) a quitté — %d camp(s) neutres, %d unité(s) retirée(s)."
+		% [peer_id, team_id, camp_paths.size(), sync_ids.size()]
+	)
+
+
+func _apply_player_abandoned(
+	team_id: int, camp_paths: PackedStringArray, sync_ids: Array
+) -> void:
+	for path in camp_paths:
+		var camp: Node = _resolve_node(str(path))
+		if camp == null:
+			for c in get_tree().get_nodes_in_group("camps"):
+				if str(c.get_path()) == str(path):
+					camp = c
+					break
+		if camp != null and camp.has_method("_capture_by_team"):
+			if int(camp.get("team")) != TEAM_NEUTRAL:
+				camp._capture_by_team(TEAM_NEUTRAL)
+
+	for sid in sync_ids:
+		var unit: Node = get_unit(int(sid))
+		unregister_unit(int(sid))
+		if unit != null and is_instance_valid(unit):
+			_eliminate_unit_instantly(unit)
+
+	_eliminate_units_for_team(team_id)
+
+
+func _eliminate_units_for_team(team_id: int) -> void:
+	for group_name in ["soldiers", "enemies"]:
+		for unit in get_tree().get_nodes_in_group(group_name):
+			if not is_instance_valid(unit):
+				continue
+			if int(unit.get("team")) != team_id:
+				continue
+			if unit.get("net_sync_id") != null and int(unit.get("net_sync_id")) >= 0:
+				unregister_unit(int(unit.get("net_sync_id")))
+			_eliminate_unit_instantly(unit)
+
+
+func _eliminate_unit_instantly(unit: Node) -> void:
+	if unit.has_method("eliminate_instantly"):
+		unit.eliminate_instantly()
+	elif unit.has_method("force_network_death"):
+		unit.force_network_death()
+	elif is_instance_valid(unit) and not unit.is_queued_for_deletion():
+		unit.queue_free()
 
 
 func is_online_active() -> bool:
@@ -113,10 +289,14 @@ func _process(delta: float) -> void:
 	if multiplayer.is_server():
 		return
 	_sync_accum += delta
-	if _sync_accum < SYNC_INTERVAL:
-		return
-	_sync_accum = 0.0
-	_envoyer_snapshots_locaux()
+	if _sync_accum >= SYNC_INTERVAL:
+		_sync_accum = 0.0
+		_envoyer_snapshots_locaux()
+	if MapSession.online_camps_ready:
+		_gold_sync_accum += delta
+		if _gold_sync_accum >= GOLD_SYNC_INTERVAL:
+			_gold_sync_accum = 0.0
+			report_team_gold.rpc_id(1, MapSession.local_team, Economy.gold)
 
 
 func _unit_hp(unit: Node) -> int:
@@ -195,13 +375,38 @@ func rpc_spawn_unit(
 ) -> void:
 	if ServerMode.is_dedicated_server:
 		return
-	var camp: Node = _find_camp_for_spawn(camp_path, spawn_pos, equipe)
+	var camp: Node = _find_camp_for_spawn(camp_path, spawn_pos, equipe, unite_id)
 	if camp == null or not camp.has_method("spawn_unite_reseau"):
-		push_warning("[OnlineGameSync] Camp introuvable pour spawn: %s" % camp_path)
+		push_warning(
+			"[OnlineGameSync] Camp introuvable pour spawn (path=%s, unit=%d, team=%d)."
+			% [camp_path, unite_id, equipe]
+		)
 		return
 	var unit: Node = camp.spawn_unite_reseau(unite_id, spawn_pos, equipe, sync_id)
 	if unit != null:
 		register_unit(sync_id, unit)
+
+
+# --- Or (scoreboard) ---
+
+@rpc("any_peer", "unreliable")
+func report_team_gold(team_id: int, gold_amount: int) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	if peer_team(sender) != team_id:
+		return
+	_team_gold[team_id] = maxi(0, gold_amount)
+	for peer_id in multiplayer.get_peers():
+		rpc_team_gold_update.rpc_id(peer_id, team_id, _team_gold[team_id])
+
+
+@rpc("authority", "call_remote", "unreliable")
+func rpc_team_gold_update(team_id: int, gold_amount: int) -> void:
+	if ServerMode.is_dedicated_server:
+		return
+	_team_gold[team_id] = maxi(0, gold_amount)
+	team_gold_changed.emit(team_id, _team_gold[team_id])
 
 
 # --- Ordres (déplacement / attaque) ---
@@ -445,3 +650,12 @@ func rpc_apply_camp_capture(camp_path: String, new_team: int) -> void:
 		return
 	if int(camp.get("team")) != new_team:
 		camp._capture_by_team(new_team)
+
+
+@rpc("authority", "call_remote", "reliable")
+func rpc_apply_player_abandoned(
+	team_id: int, camp_paths: PackedStringArray, sync_ids: Array
+) -> void:
+	if ServerMode.is_dedicated_server:
+		return
+	_apply_player_abandoned(team_id, camp_paths, sync_ids)

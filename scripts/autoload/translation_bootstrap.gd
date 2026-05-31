@@ -1,63 +1,36 @@
 extends Node
 
-## Charge traduction.csv au runtime pour éviter les clés brutes (MENU_*)
-## quand les fichiers .translation importés ne sont pas à jour.
-
-const CSV_PATH := "res://assets/menu/traduction.csv"
-const LOCALES := ["en", "fr", "de"]
-const LOCALE_COLUMNS := {"en": 1, "fr": 2, "de": 3}
+## Charge les traductions pour l'export Web.
+## Source de vérité : translation_keys.gd (généré depuis traduction.csv).
 
 var _loaded: bool = false
 
 
-func _init() -> void:
-	_load_from_csv()
+func _ready() -> void:
+	call_deferred("ensure_loaded")
 
 
-func _load_from_csv() -> void:
+func ensure_loaded() -> void:
 	if _loaded:
 		return
-	if not FileAccess.file_exists(CSV_PATH):
-		push_warning("[TranslationBootstrap] CSV introuvable : " + CSV_PATH)
-		return
+	var count := TranslationKeys.apply_to_server()
+	_loaded = count > 0
+	if not _loaded:
+		push_warning("[TranslationBootstrap] Aucune traduction chargée.")
 
-	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
-	if file == null:
-		push_warning("[TranslationBootstrap] Impossible de lire : " + CSV_PATH)
-		return
 
-	var header := file.get_line()
-	if header.is_empty() or not header.begins_with("id;"):
-		file.close()
-		push_warning("[TranslationBootstrap] En-tête CSV invalide.")
-		return
+func normalize_locale(locale: String) -> String:
+	var code := locale.strip_edges().to_lower()
+	if code.is_empty():
+		return "en"
+	if code.begins_with("fr"):
+		return "fr"
+	if code.begins_with("de"):
+		return "de"
+	return "en"
 
-	var by_locale: Dictionary = {}
-	for loc in LOCALES:
-		by_locale[loc] = {}
 
-	while not file.eof_reached():
-		var line := file.get_line().strip_edges()
-		if line.is_empty() or line.begins_with("#"):
-			continue
-		var parts := line.split(";")
-		if parts.size() < 4:
-			continue
-		var key := str(parts[0]).strip_edges()
-		if key.is_empty():
-			continue
-		for loc in LOCALES:
-			var col: int = LOCALE_COLUMNS[loc]
-			if col < parts.size():
-				by_locale[loc][key] = str(parts[col])
-
-	file.close()
-
-	for loc in LOCALES:
-		var translation := Translation.new()
-		translation.locale = loc
-		for key in by_locale[loc]:
-			translation.add_message(key, str(by_locale[loc][key]))
-		TranslationServer.add_translation(translation)
-
-	_loaded = true
+func reapply_current_locale() -> void:
+	ensure_loaded()
+	var locale := normalize_locale(TranslationServer.get_locale())
+	TranslationServer.set_locale(locale)

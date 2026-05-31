@@ -645,6 +645,8 @@ func spawn_unite_reseau(
 		unit.net_sync_id = sync_id
 		unit.net_remote_proxy = true
 		OnlineGameSync.register_unit(sync_id, unit)
+	if unit.has_method("_appliquer_couleur_unite"):
+		unit._appliquer_couleur_unite()
 	return unit
 
 
@@ -788,7 +790,17 @@ func receive_reinforcements(count: int) -> void:
 	var infantry_stats = CampCatalogue.stats_for_level(CampCatalogue.STATS_INFANTRY, camp_level)
 	for _i in range(count):
 		var unit = CampCatalogue.scene_for_unit(infantry_stats, 0, camp_level).instantiate()
+		if not ("stats" in unit):
+			unit.queue_free()
+			continue
 		unit.stats = infantry_stats
+		unit.team = team
+		if MapSession.is_local_team(team):
+			unit.add_to_group("soldiers")
+		else:
+			if unit.is_in_group("soldiers"):
+				unit.remove_from_group("soldiers")
+			unit.add_to_group("enemies")
 		var spawn_position = _unit_spawn_position()
 		var parent_node = get_parent()
 		if not is_instance_valid(parent_node):
@@ -797,3 +809,8 @@ func receive_reinforcements(count: int) -> void:
 		parent_node.add_child(unit)
 		unit.global_position = spawn_position
 		_play_spawn_vfx(spawn_position)
+		if unit.has_method("_apply_stats_to_unit"):
+			unit._apply_stats_to_unit()
+		if unit.has_method("_configurer_calques_navigation"):
+			unit._configurer_calques_navigation()
+		_notify_network_spawn(unit, 0, spawn_position)
