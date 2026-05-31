@@ -14,6 +14,7 @@ var _defend_cooldowns: Dictionary = {}
 var _next_squad_id: int = 1
 var _last_template_index: int = -1
 var _upgrade_timer: float = 0.0
+var _spawn_credit_timer: float = 0.0
 var _connected_camps: Dictionary = {}
 var _capture_listeners: Dictionary = {}
 var _camp_healer_units: Dictionary = {}
@@ -61,6 +62,7 @@ func init_match() -> void:
 	_set_difficulty(MapSession.get_ai_difficulty())
 	squads.reset_squad_state()
 	_upgrade_timer = 0.0
+	_spawn_credit_timer = AIConstants.SQUAD_SPAWN_CREDIT_INTERVAL
 	_connected_camps.clear()
 	_capture_listeners.clear()
 	_camp_healer_units.clear()
@@ -97,6 +99,7 @@ func _on_think() -> void:
 	camps.sync_ai_camp_connections()
 	camps.sync_camp_capture_listeners()
 	squads.cleanup_stale_squads()
+	_tick_spawn_credit_timer()
 	squads.tick_squad_slots()
 	squads.tick_defend_squads()
 	squads.tick_naval_squad_slots()
@@ -136,3 +139,12 @@ func _deferred_grant_initial_camp_healers() -> void:
 
 func _deferred_ensure_camp_healer(camp: Node) -> void:
 	healers.ensure_camp_healer(camp)
+
+
+func _tick_spawn_credit_timer() -> void:
+	var dt: float = float(_profile.get("think_interval", 0.4))
+	_spawn_credit_timer -= dt
+	if _spawn_credit_timer > 0.0:
+		return
+	squads.grant_spawn_credit()
+	_spawn_credit_timer = AIConstants.SQUAD_SPAWN_CREDIT_INTERVAL
